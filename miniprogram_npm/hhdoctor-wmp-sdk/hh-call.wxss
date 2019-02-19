@@ -1,0 +1,546 @@
+.full-screen {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+}
+
+.hidden {
+  display: none;
+}
+
+.live-player {
+  background-color: #333;
+  width: 100%;
+  height: 100%;
+  left: 0px;
+  top: 0px;
+}
+
+.live-pusher {
+  /* width: 120px;
+  height: 167px; */
+  position: fixed;
+  right: 5px;
+  top: 5px;
+  z-index: 2;
+}
+
+.video-time-panel {
+  width: 100%;
+  position: fixed;
+  left: 0px;
+  bottom: 134px;
+  text-align: center;
+  font-size: 16px;
+  color: #fff;
+}
+
+.video-control-panel {
+  width: 100%;
+  position: fixed;
+  left: 0px;
+  bottom: 20px;
+}
+
+.video-control-item {
+  width: 33%;
+  display: inline-block;
+  text-align: center;
+}
+
+.video-control-btn {
+  width: 65px;
+  height: 65px;
+  margin: 0 auto;
+}
+
+.video-control-btn-text {
+  color: #4eb7ff;
+  font-size: 12px;
+  margin-top: 11px;
+}
+
+.ext-control-panel {
+  width: 70px;
+  height: 180px;
+  position: fixed;
+  right: 30px;
+  bottom: 139px;
+  /* background-color: #000; *//* opacity: 0.5; */
+  background-color: rgba(0, 0, 0, 0.35);
+  border-radius: 5px;
+}
+
+.ext-control-item {
+  width: 100%;
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.ext-control-bottom {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.ext-control-btn {
+  margin: 0px auto;
+}
+
+.ext-control-license {
+  width: 40px;
+  height: 30px;
+}
+
+.ext-control-flash {
+  width: 20px;
+  height: 30px;
+}
+
+.ext-control-folding {
+  width: 25px;
+  height: 25px;
+}
+
+.ext-control-btn-text {
+  font-size: 9px;
+  color: #fff;
+  margin-top: 10px;
+}
+
+.logo {
+  position: fixed;
+  left: 10px;
+  top: 37px;
+  /* width: 235px; *//* height: 100px; */
+  z-index: 999;
+}
+
+.logo-img {
+  width: 100%;
+  /* height: 100%; */
+}
+
+.logo-view {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20px 5px;
+}
+
+.calltype-mask {
+  position: absolute;
+  background-color: #000;
+  opacity: 0.5;
+  top: 0px;
+  left: 0px;
+}
+
+.calltype-panel {
+  position: absolute;
+  width: 100%;
+  height: 180px;
+  left: 0px;
+  bottom: 0px;
+  box-sizing: border-box;
+  text-align: center;
+  background-color: #fff;
+}
+
+.calltype-title {
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.calltype-btn {
+  width: 200px;
+  margin-top: 10px;
+}
+
+.calltype-btn:active {
+  background-color: #107bf2;
+}
+
+/* .btn-call {
+  width: 48px;
+  height: 48px;
+  position: absolute;
+  left: 20%;
+  bottom: 50px;
+}
+
+.btn-hangup {
+  width: 48px;
+  height: 48px;
+  position: absolute;
+  right: 20%;
+  bottom: 50px;
+} */
+
+.logo-text {
+  color: #fff;
+}
+
+.demo-mask {
+  position: fixed;
+  left: 0px;
+  top: 240px;
+  width: 100%;
+  display: flex;
+  align-content: center;
+  justify-content: center;
+}
+
+.demo-mask-call {
+  position: absolute;
+  left: 10px;
+  top: 110px;
+  display: flex;
+  align-content: center;
+  justify-content: center;
+}
+
+.demo-mask-img {
+  left: 20px;
+  top: 110px;
+  width: 205px;
+}
+
+.demo-mask-call-tip {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  text-align: center;
+  font-size: 17px;
+  line-height: 30px;
+  color: #ec0606;
+}
+
+.demo-mask-tip {
+  text-align: center;
+  font-size: 17px;
+  line-height: 18px;
+  color: #ec0606;
+  background-color: rgba(255, 255, 255, 0.6);
+  box-sizing: border-box;
+  padding: 6px 20px;
+  border-radius: 15px;
+}
+
+.waitting-mask {
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+  height: 219px;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.waitting-text {
+  position: absolute;
+  left: 0px;
+  width: 100%;
+  text-align: center;
+  color: #fff;
+}
+
+.waitting-control-item {
+  display: inline-block;
+  top: 100px;
+}
+
+.waitting-control-items {
+  top: 100px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.waitting-items-btn {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.waitting-doctorname {
+  /* bottom: 160px; */
+  top: 25px;
+  font-size: 24px;
+  color: #ebf1f8;
+}
+
+.waitting-countdown {
+  /* bottom: 140px; */
+  top: 65px;
+  font-size: 14px;
+}
+
+/* .waitting-hangup-container {
+  position: absolute;
+  left: 0%;
+  bottom: 60px;
+  width: 100%;
+  height: 40px;
+  text-align: center;
+  margin: auto auto;
+} */
+
+.waitting-hangup-btn {
+  width: 61px;
+  height: 61px;
+}
+
+.waitting-hangup-btn-text {
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.waitting-hangup {
+  width: 40px;
+  height: 40px;
+}
+
+.waitting-hanguptext {
+  bottom: 30px;
+  font-size: 12px;
+}
+
+.camera {
+  width: 100%;
+  height: 100%;
+}
+
+.mmbb-main {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  left: 0px;
+  top: 0px;
+  background-color: #fb8474;
+}
+
+.mmbb-img {
+  position: fixed;
+  width: 100%;
+  left: 0px;
+}
+
+.mmbb-img.top {
+  top: 0px;
+}
+
+.mmbb-img.bottom {
+  bottom: 0px;
+}
+
+.mmbb-btn-panel {
+  position: fixed;
+  width: 100%;
+  height: 60%;
+  left: 0px;
+  bottom: 0px;
+  display: flex;
+  box-sizing: border-box;
+  padding: 0px 4%;
+}
+
+.mmbb-btn-column {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  text-align: center;
+}
+
+.mmbb-btn {
+  flex-grow: 1;
+  text-align: center;
+  align-items: center;
+}
+
+.mmbb-btn-img {
+  width: 115px;
+  height: 115px;
+}
+
+.mmbb-btn-text {
+  color: #fff;
+  font-size: 16px;
+  font-weight: normal;
+  /* margin-top: 10px; */
+  text-align: center;
+}
+
+.mmbb-naviback {
+  position: fixed;
+  width: 100%;
+  height: 16px;
+  left: 0px;
+  bottom: 30px;
+}
+
+.main-container {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  left: 0px;
+  top: 0px;
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/online-background.jpg');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  -moz-background-size: 100% 100%;
+}
+
+.btn-panel {
+  position: relative;
+}
+
+.mainbtn-panel {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 109px;
+  box-sizing: border-box;
+  padding: 30px 15px 30px 15px;
+  background-color: rgba(255, 255, 255, 1);
+  z-index: 9;
+}
+
+.callbtn-panel {
+  position: absolute;
+  top: 10px;
+  left: 0px;
+  width: 100%;
+  height: 99px;
+  display: flex;
+  box-sizing: border-box;
+  padding-top: 2px;
+  padding-left: 26px;
+  padding-right: 26px;
+  padding-bottom: 27px;
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-main {
+  background-color: #0592f5;
+  height: 49px;
+  width: 100%;
+  border-radius: 5px;
+  color: #fff;
+  text-align: center;
+  line-height: 49px;
+  font-size: 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-main-img {
+  width: 28px;
+  height: 20px;
+  margin-right: 10px;
+}
+
+.call-doctor {
+  flex-grow: 1;
+  height: 70px;
+  width: 100%;
+  text-align: center;
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/online-btn.png');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  -moz-background-size: 100% 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.call-btn-sept {
+  min-width: 26px;
+}
+
+.btn-call-img {
+  width: 26px;
+  height: 26px;
+  margin-right: 7px;
+}
+
+.btn-call-text {
+  font-size: 17px;
+  color: #0592f5;
+}
+
+.demo-line {
+  position: fixed;
+  left: 50px;
+  top: 79px;
+  width: 50px;
+  height: 50px;
+  border-left: solid 1px #ec0606;
+  border-bottom: solid 1px #ec0606;
+  z-index: 10;
+}
+
+.demo-dot {
+  position: fixed;
+  left: 100px;
+  top: 125px;
+  width: 8px;
+  height: 8px;
+  border: solid 1px #ec0606;
+  background-color: #ec0606;
+  border-radius: 8px;
+  z-index: 10;
+}
+
+.demo-tip-main {
+  position: fixed;
+  left: 100px;
+  top: 118px;
+  width: 250px;
+  text-align: center;
+  color: #ec0606;
+  font-size: 17px;
+  background-color: transparent;
+  z-index: 10;
+}
+
+.setting-mask {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  left: 0px;
+  top: 0px;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.setting-panel {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  left: 0px;
+  top: 0px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 10px 20px;
+}
+
+.setting-text {
+  margin-bottom: 20px;
+  color: #fff;
+  text-align: center;
+}
+
+.setting-btn {
+  width: 100%;
+}

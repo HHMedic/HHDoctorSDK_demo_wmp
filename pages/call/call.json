@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "hhCall": "hhdoctor-wmp-sdk/hh-call"
+  },
+  "navigationBarBackgroundColor": "#000000",
+  "navigationBarTextStyle": "white",
+  "navigationBarTitleText": "视频医生"
+}

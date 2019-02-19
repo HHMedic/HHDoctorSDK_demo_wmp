@@ -1,0 +1,113 @@
+<block wx:if="{{0==status}}">
+  <view class='full-screen'>
+    <image class="full-screen" src='https://imgs.hh-medic.com/icon/wmp/bg-default.jpg' mode='widthFix'></image>
+    <view class='waitting-mask'>
+      <text class='waitting-text waitting-doctorname'></text>
+      <text class='waitting-text waitting-countdown'>正在呼叫视频医生...</text>
+      <view class='waitting-text waitting-control-item'>
+        <image class="waitting-hangup-btn" src='https://imgs.hh-medic.com/icon/wmp/hangup.png'></image>
+        <view class='waitting-hangup-btn-text'>取消</view>
+      </view>
+    </view>
+  </view>
+</block>
+
+<block wx:if="{{1==status}}">
+  <view class='full-screen'>
+    <image class="full-screen" src='{{photoUrl}}' mode='widthFix'></image>
+    <view class='waitting-mask'>
+      <block wx:if="{{showCancelBtn}}">
+        <text class='waitting-text waitting-doctorname'>{{name}}</text>
+        <text class='waitting-text waitting-countdown'>{{waittingText}} {{timeout}}s</text>
+        <view class='waitting-text waitting-control-item'>
+          <image bindtap='_cancelInitiative' class="waitting-hangup-btn" src='https://imgs.hh-medic.com/icon/wmp/hangup.png' data-hanguptype='CANCEL'></image>
+          <view class='waitting-hangup-btn-text'>取消</view>
+        </view>
+      </block>
+      <block wx:if="{{showCalledPanel}}">
+        <text class='waitting-text waitting-doctorname'>{{name}}</text>
+        <text class='waitting-text waitting-countdown'>正在向你发起一次视频...</text>
+        <view class='waitting-text waitting-control-items'>
+          <view class='waitting-items-btn' bindtap='_answerCall' data-answer='0'>
+            <image class="waitting-hangup-btn" src='https://imgs.hh-medic.com/icon/wmp/hangup.png'></image>
+            <view class='waitting-hangup-btn-text'>取消</view>
+          </view>
+          <view class='waitting-items-btn' catchtap='_answerCall' data-answer='1'>
+            <image class="waitting-hangup-btn" src='https://imgs.hh-medic.com/icon/wmp/accept.png'></image>
+            <view class='waitting-hangup-btn-text'>接听</view>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+</block>
+
+<view class='full-screen {{playerVisible}}'>
+  <live-player id="livePlayer" class="live-player" autoplay="false" src="{{playUrl}}" mode="RTC" min-cache="1" max-cache="1" object-fit="{{uiStyle.objFit}}" muted="{{uiStyle.muted}}" background-mute="true" bindstatechange="_statechangePlayer" binderror="_errorPlayer">
+    <cover-view class='logo' style='width:{{logoWidth}}px;'>
+      <cover-image class='logo-img' mode='widthFix' src='{{logoImage}}'></cover-image>
+    </cover-view>
+    <cover-view class='video-time-panel'>{{videoTime}}</cover-view>
+    <cover-view class='video-control-panel'>
+      <cover-view class='video-control-item'>
+        <cover-image bindtap='_selectImage' class="video-control-btn" src='https://imgs.hh-medic.com/icon/wmp/video-camera.png'></cover-image>
+        <cover-view class='video-control-btn-text'>拍照</cover-view>
+      </cover-view>
+      <cover-view class='video-control-item'>
+        <cover-image bindtap='_cancelInitiative' class="video-control-btn" src='https://imgs.hh-medic.com/icon/wmp/hangup.png' data-hanguptype='HANGUP'></cover-image>
+        <cover-view class='video-control-btn-text' style="color:#fff;">挂断</cover-view>
+      </cover-view>
+      <cover-view class='video-control-item'>
+        <cover-image bindtap='_switchCamera' class="video-control-btn" src='https://imgs.hh-medic.com/icon/wmp/switch-camera.png'></cover-image>
+        <cover-view class='video-control-btn-text'>切换摄像头</cover-view>
+      </cover-view>
+    </cover-view>
+    <block wx:if="{{uiStyle.extBtns}}">
+      <cover-view class='ext-control-panel' style="height:{{extControlHeight}}px">
+        <block wx:if="{{showExtControls}}">
+          <cover-view bindtap='_tapShowLicense' class='ext-control-item'>
+            <cover-image class="ext-control-btn  ext-control-license" src='https://imgs.hh-medic.com/icon/wmp/license.png'></cover-image>
+            <cover-view class='ext-control-btn-text'>{{uiStyle.license}}</cover-view>
+          </cover-view>
+          <cover-view bindtap='_tapToggleFlash' class='ext-control-item'>
+            <cover-image class="ext-control-btn  ext-control-license" src='{{flashIcon}}'></cover-image>
+            <cover-view class='ext-control-btn-text'>闪光灯</cover-view>
+          </cover-view>
+        </block>
+        <cover-view bindtap='_tapFolding' class='ext-control-item ext-control-bottom'>
+          <cover-image class="ext-control-btn ext-control-folding" src='{{extControlImgSrc}}'></cover-image>
+        </cover-view>
+      </cover-view>
+    </block>
+  </live-player>
+</view>
+
+<live-pusher class="live-pusher {{pusherVisible}}" style="width:{{pusherWidth}}px;height:{{pusherHeight}}px;" url="{{pushUrl}}" mode="RTC" beauty="1" whiteness="1" bindstatechange="_onLivePusherChange" binderror="_onLivePusherError" bindnetstatus="_onLivePusherNetInfo"
+/>
+
+<block wx:if="{{3==status}}">
+  <view class='full-screen'>
+    <camera class="camera" device-position="back" flash="off">
+      <cover-view class='video-control-panel'>
+        <cover-view class='video-control-item'>
+        </cover-view>
+        <cover-view class='video-control-item'>
+          <cover-image bindtap='' class="video-control-btn" src='https://imgs.hh-medic.com/icon/wmp/hangup.png'></cover-image>
+          <cover-view class='video-control-btn-text'>拍照</cover-view>
+        </cover-view>
+        <cover-view class='video-control-item'>
+        </cover-view>
+      </cover-view>
+    </camera>
+  </view>
+</block>
+
+<block wx:if="{{showSettingBtn}}">
+  <view class="setting-mask"></view>
+  <view class="setting-panel">
+    <text class='setting-text'>您未授权小程序使用您的麦克风或摄像头，无法使用相应功能</text>
+    <button open-type='openSetting' type='primary' class='setting-btn'>现在去授权</button>
+  </view>
+</block>
+
+<hhFeedback class='{{feedbackVisible}}' catchclose='_evaClose' catchask='_evaAsk' catchevaluate='_evaluate' question='{{question}}'  ></hhFeedback>

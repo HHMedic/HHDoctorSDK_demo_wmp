@@ -1,0 +1,1 @@
+<hhCall sdk-product-id='{{sdkProductId}}' user-uuid='{{userUuid}}' user-token='{{userToken}}' open-id='{{openId}}' dept='{{dept}}'></hhCall>
