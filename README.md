@@ -90,6 +90,10 @@
   - https://e.hh-medic.com
   - https://dicom.hh-medic.com
 
+### 5.在"开发"-"接口设置"下打开相应权限
+
+ ![](https://imgs.hh-medic.com/icon/wmp/sdk/WX20190225-093837.png)  
+    
 ## SDK说明
 
 ### 1.公共参数说明
