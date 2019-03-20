@@ -12,6 +12,7 @@
 1. 本项目所使用的AppId为接口测试号AppId，在终端上执行预览会提示错误信息，请更换为实际可用的AppId。
 2. 本项目需要使用微信小程序的livePusher和livePlayer组件，请确保AppId归属的小程序已开启相应的权限。
 3. 本项目所使用uuid和sdkProductId为演示专用，无法应用到测试或生产环境。
+4. 本项目需要使用微信小程序的音视频相关功能，要求用户的微信基础版本库不低于2.5.0，请在正式发布前，登录微信小程序管理后台（https://mp.weixin.qq.com），在“设置”-“基本设置”下，将“基础库最低版本设置”设置为2.5.0或更高版本。
 ```
 
 通过本SDK可实现以下功能：
@@ -108,6 +109,10 @@
 
   - ***`open-id`*** :String，当前用户的微信openId，获取方法参见微信小程序文档：https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/login.html
 
+  - ***`profile-name`*** :Enum枚举，可设置为如下值：
+    - **`test`** :连接测试环境服务器。
+    - **`prod`** :连接生产环境服务器，默认值。
+  
 ### 2.hh-im组件
 
   - **功能** ：联系医助、查看健康档案
@@ -116,7 +121,7 @@
 
   - **参数说明**： 
 
-    - ***`call-page`*** :String，呼叫视频医生页面相对当前页面的位置，例如“../call/call”，点击页面顶部的呼叫医生按纽，可跳转到上述页面进行呼叫。
+    - ***`call-page`*** :String，呼叫视频医生页面相对当前页面的位置，例如“../call/call”，点击页面顶部的呼叫医生按纽，可跳转到上述页面进行呼叫。不设置该属性，或该属性值为空字符串，则隐藏最上方的呼叫按钮区域。
 
     - ***`view-target`*** : Enum枚举，可设置为如下值：
       - **`im`** :显示联系医助界面。
@@ -125,7 +130,16 @@
     - ***`view-module`*** : Enum枚举，可设置为如下值：
       - **`memberList`** :默认值，显示家庭成员列表界面。
       - **`ehrList`** :显示家庭成员主账号健康档案列表界面。
+      - **`detail`** :显示指定的健康档案详情，需与patient属性及medic-record-id配合使用。
+      
+    - ***`add-member`*** : Enum枚举，当view-target=ehr且view-module=memberList时生效，可设置为如下值：
+      - **`true`** :在家庭成员列表下方显示添加新成员按钮，默认值。
+      - **`false`** :在家庭成员列表下方隐藏添加新成员按钮。
 
+    - ***`patient`*** : String，当view-target=ehr且view-module=detail时生效，为需要查看健康档案的实际患者的uuid或userToken值。
+    
+    - ***`medic-record-id`*** : String，当view-target=ehr且view-module=detail时生效，为需要查看健康档案的id值。
+    
 ### 3.hh-call组件
   - **功能** ：呼叫视频医生
 
