@@ -69,6 +69,12 @@
   
   - 编辑index.js文件，通过setData()给相应的变量赋值。
 
+### 6. 如何更新SDK
+
+  - 使用命令提示符或终端，进入小程序项目所在根目录，执行命令更新：`npm i hhdoctor-wmp-sdk --production`。
+  
+  - 打开小程序开发者IDE，点击IDE菜单中的“工具”-“构建 npm”。
+  
 ## 小程序后台配置
 
 ### 1.登录微信小程序管理后台：https://mp.weixin.qq.com
@@ -77,19 +83,27 @@
 
 ### 3.在”服务器域名“中增加如下配置：
 
-  - request合法域名:https://wmp.hh-medic.com
-  - socket合法域名:wss://wmp.hh-medic.com
-  - uploadFile合法域名:https://wmp.hh-medic.com
+  - request合法域名:
+    - https://wmp.hh-medic.com
+    - https://test.hh-medic.com
+  - socket合法域名:
+    - wss://wmp.hh-medic.com
+    - wss://test.hh-medic.com
+  - uploadFile合法域名:
+    - https://wmp.hh-medic.com
+    - https://test.hh-medic.com
   - downloadFile合法域名:
     - https://wmp.hh-medic.com
     - https://imgfamily.hh-medic.com
     - https://imgs.hh-medic.com
+    - https://test.hh-medic.com
 
 ### 4.在"业务域名”下增加如下配置：
 
   - https://wmp.hh-medic.com
   - https://e.hh-medic.com
   - https://dicom.hh-medic.com
+  - https://test.hh-medic.com
 
 ### 5.在"开发"-"接口设置"下打开相应权限
 
