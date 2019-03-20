@@ -83,27 +83,35 @@
 ### 3.在”服务器域名“中增加如下配置：
 
   - request合法域名:
-    - https://wmp.hh-medic.com
-    - https://test.hh-medic.com
+  ```
+    https://wmp.hh-medic.com
+    https://test.hh-medic.com
+  ```
   - socket合法域名:
-    - wss://wmp.hh-medic.com
-    - wss://test.hh-medic.com
+  ```
+    wss://wmp.hh-medic.com
+    wss://test.hh-medic.com
+  ```
   - uploadFile合法域名:
-    - https://wmp.hh-medic.com
-    - https://test.hh-medic.com
+  ```
+    https://wmp.hh-medic.com
+    https://test.hh-medic.com
+  ```  
   - downloadFile合法域名:
-    - https://wmp.hh-medic.com
-    - https://imgfamily.hh-medic.com
-    - https://imgs.hh-medic.com
-    - https://test.hh-medic.com
+  ```
+    https://wmp.hh-medic.com
+    https://imgfamily.hh-medic.com
+    https://imgs.hh-medic.com
+    https://test.hh-medic.com
+  ```  
 
 ### 4.在"业务域名”下增加如下配置：
-
-  - https://wmp.hh-medic.com
-  - https://e.hh-medic.com
-  - https://dicom.hh-medic.com
-  - https://test.hh-medic.com
-
+  ```
+    https://wmp.hh-medic.com
+    https://e.hh-medic.com
+    https://dicom.hh-medic.com
+    https://test.hh-medic.com
+  ```
 ### 5.在"开发"-"接口设置"下打开相应权限
 
  ![](https://imgs.hh-medic.com/icon/wmp/sdk/WX20190225-093837.png)  
