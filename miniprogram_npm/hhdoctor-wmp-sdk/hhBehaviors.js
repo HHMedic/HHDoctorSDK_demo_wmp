@@ -95,6 +95,11 @@ module.exports =
 module.exports = Behavior({
   behaviors: [],
   properties: {
+    profileName: {
+      type: String,
+      value: 'prod'
+    },
+
     sdkProductId: {
       type: String,
       observer: function observer(newVal, oldVal, changedPath) {
@@ -128,7 +133,27 @@ module.exports = Behavior({
   attached: function attached() {},
 
   methods: {
-    propertyChanged: function propertyChanged(newVal, oldVal, changedPath) {}
+    propertyChanged: function propertyChanged(newVal, oldVal, changedPath) {},
+    getHost: function getHost() {
+      //wsServer: 'wss://wmp.hh-medic.com/wmp/websocket',
+      //fileServer: 'https://dev.hh-medic.com/miniprogramweb_master/wmp/im/upload/'
+      var host = {};
+      switch (this.data.profileName) {
+        case 'prod':
+          host.wmpHost = 'https://wmp.hh-medic.com/wmp/';
+          host.ehrHost = 'https://e.hh-medic.com/ehrweb/';
+          host.wsServer = 'wss://wmp.hh-medic.com/wmp/websocket';
+          break;
+        case 'test':
+          host.wmpHost = 'https://test.hh-medic.com/wmp/';
+          host.ehrHost = 'https://test.hh-medic.com/ehrweb/';
+          host.wsServer = 'wss://test.hh-medic.com/wmp/websocket';
+          break;
+        default:
+          break;
+      }
+      return host;
+    }
   }
 });
 

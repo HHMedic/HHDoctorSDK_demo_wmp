@@ -1,5 +1,5 @@
 <!-- 咨询医助界面 -->
-<hhIm sdk-product-id='{{sdkProductId}}' user-uuid='{{userUuid}}' user-token='{{userToken}}' open-id='{{openId}}' call-page='{{callPage}}' view-target='im'>
+<hhIm profile-name='test' sdk-product-id='{{sdkProductId}}' user-uuid='{{userUuid}}' user-token='{{userToken}}' open-id='{{openId}}' call-page='{{callPage}}' view-target='im'>
 </hhIm>
 
 <!-- 健康档案-家庭成员列表界面 -->

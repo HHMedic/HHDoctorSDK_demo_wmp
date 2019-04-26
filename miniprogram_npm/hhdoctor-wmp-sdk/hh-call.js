@@ -95,6 +95,11 @@ module.exports =
 module.exports = Behavior({
   behaviors: [],
   properties: {
+    profileName: {
+      type: String,
+      value: 'prod'
+    },
+
     sdkProductId: {
       type: String,
       observer: function observer(newVal, oldVal, changedPath) {
@@ -128,7 +133,27 @@ module.exports = Behavior({
   attached: function attached() {},
 
   methods: {
-    propertyChanged: function propertyChanged(newVal, oldVal, changedPath) {}
+    propertyChanged: function propertyChanged(newVal, oldVal, changedPath) {},
+    getHost: function getHost() {
+      //wsServer: 'wss://wmp.hh-medic.com/wmp/websocket',
+      //fileServer: 'https://dev.hh-medic.com/miniprogramweb_master/wmp/im/upload/'
+      var host = {};
+      switch (this.data.profileName) {
+        case 'prod':
+          host.wmpHost = 'https://wmp.hh-medic.com/wmp/';
+          host.ehrHost = 'https://e.hh-medic.com/ehrweb/';
+          host.wsServer = 'wss://wmp.hh-medic.com/wmp/websocket';
+          break;
+        case 'test':
+          host.wmpHost = 'https://test.hh-medic.com/wmp/';
+          host.ehrHost = 'https://test.hh-medic.com/ehrweb/';
+          host.wsServer = 'wss://test.hh-medic.com/wmp/websocket';
+          break;
+        default:
+          break;
+      }
+      return host;
+    }
   }
 });
 
@@ -261,7 +286,7 @@ function sendImages(files, callback) {
 }
 
 //预呼叫
-function preCall(dept, callback, toUuid) {
+function preCall(dept, callback, toUuid, appointedDoctorId, appointedOrderId, mrId, patientId, hospitalId) {
   log('preCalling...');
   if (isPrecall) {
     return;
@@ -282,6 +307,21 @@ function preCall(dept, callback, toUuid) {
   };
   if (toUuid) {
     msg.data.to = toUuid;
+  }
+  if (appointedDoctorId) {
+    msg.data.appointedDoctorId = appointedDoctorId;
+  }
+  if (appointedOrderId) {
+    msg.data.appointedOrderId = appointedOrderId;
+  }
+  if (mrId) {
+    msg.data.mrId = mrId;
+  }
+  if (patientId) {
+    msg.data.patientId = patientId;
+  }
+  if (hospitalId) {
+    msg.data.hospitalId = hospitalId;
   }
 
   if (isConnected()) {
@@ -1351,6 +1391,9 @@ var secondes = 0;
 var pageIsShowing = true;
 var famOrderId = '';
 var _attached = false;
+var callStatus = {
+  openCamera: false
+};
 
 Component({
   behaviors: [__webpack_require__(0)],
@@ -1372,6 +1415,34 @@ Component({
     waittingText: {
       type: String,
       value: '预计接通时间:'
+    },
+    appointedDoctorId: {
+      type: String,
+      value: ''
+    },
+    appointedOrderId: {
+      type: String,
+      value: ''
+    },
+    medicRecordId: {
+      type: String,
+      value: ''
+    },
+    patient: {
+      type: String,
+      value: ''
+    },
+    hospitalId: {
+      type: String,
+      value: ''
+    },
+    cameraTimeoutSeconds: {
+      type: String,
+      value: '10'
+    },
+    cameraTimeoutMessage: {
+      type: String,
+      value: '打开摄像头失败，请重启微信再呼叫'
     }
   },
 
@@ -1473,7 +1544,7 @@ Component({
       code1101 = 0;
       if (!onLoading) {
         if (hhim.loginStatus()) {
-          hhim.sendLog('1', 'meetingpush onShow');
+          hhim.sendLog('1', 'hh-call onShow');
           if (1 == that.data.status) {
             setTimeout(function () {
               ring.play();
@@ -1494,7 +1565,7 @@ Component({
       pageIsShowing = false;
       ring.stop();
       if (hhim.loginStatus()) {
-        hhim.sendLog('1', 'meetingpush onHide');
+        hhim.sendLog('1', 'hh-call onHide');
       }
     }
   },
@@ -1515,14 +1586,15 @@ Component({
       that.triggerEvent(name, detail, eventOption);
     },
     _initHhWmp: function _initHhWmp() {
-      if (!that.data.userUuid || !that.data.userToken || !that.data.sdkProductId || !that.data.openId || !that.data.dept) {
+      if (!that.data.userUuid || !that.data.userToken || !that.data.sdkProductId || !that.data.openId || !that.data.dept && (this.data.appointedDoctorId || this.data.appointedOrderId) && !that.data.medicRecordId) {
         console.error('呼叫信息不全');
         return;
       }
+      var host = this.getHost();
       hhim.init({
         debug: false,
-        wsServer: 'wss://wmp.hh-medic.com/wmp/websocket',
-        fileServer: 'https://dev.hh-medic.com/miniprogramweb_master/wmp/im/upload/'
+        wsServer: host.wsServer,
+        fileServer: host.wmpHost + 'im/upload/'
       });
 
       hhim.login(that.data.sdkProductId, '', that.data.userUuid, that.data.userToken, false);
@@ -1707,6 +1779,19 @@ Component({
         that._playerMonitor();
       }
       hhim.sendLog('3', 'status:' + e.detail.code);
+      that._triggerEvent('playerstatechange', e);
+    },
+    _netChangedPlayer: function _netChangedPlayer(e) {
+      var nInfo = {
+        vbr: e.detail.info.videoBitrate,
+        abr: e.detail.info.audioBitrate,
+        fps: parseInt(e.detail.info.videoFPS),
+        spd: e.detail.info.netSpeed,
+        jit: e.detail.info.netJitter,
+        vw: e.detail.info.videoWidth,
+        vh: e.detail.info.videoHeight
+      };
+      hhim.sendLog('3', 'netinfo:' + JSON.stringify(nInfo));
     },
     _errorPlayer: function _errorPlayer(e) {
       hhim.sendLog('3', 'error:' + e.detail.errCode);
@@ -1741,11 +1826,17 @@ Component({
       }
       hhim.sendLog('2', 'status:' + e.detail.code);
       that._processPusherCode(e.detail.code);
+      that._triggerEvent('pusherstatechange', e);
     },
 
     /** 处理推流状态码 */
     _processPusherCode: function _processPusherCode(code) {
       code = parseInt(code);
+      if (1003 == code) {
+        //打开摄像头成功
+        callStatus.openCamera = true;
+        return;
+      }
       if (-1308 == code) {
         code1308++;
       }
@@ -1802,6 +1893,7 @@ Component({
               }
             },
             fail: function fail() {
+              hhim.sendLog('1', 'authorize failed:camera');
               if (callback) {
                 callback(false);
               }
@@ -1809,6 +1901,7 @@ Component({
           });
         },
         fail: function fail() {
+          hhim.sendLog('1', 'authorize failed:record');
           if (callback) {
             callback(false);
           }
@@ -1823,17 +1916,18 @@ Component({
       that._doCall(that._preCallCb, that.data.dept);
     },
     _doCall: function _doCall(callback, dept) {
+      hhim.sendLog('1', 'authorize check start');
       //检查用户麦克风和摄像头是否已授权
       that._checkAuthorize(function (success) {
         if (!success) {
-          hhim.sendLog('1', 'authorize failed');
           //麦克风或摄像头未授权 
           that.setData({
             showSettingBtn: true
           });
           return;
         }
-        hhim.preCall(dept, callback);
+        hhim.sendLog('1', 'authorize successs ');
+        hhim.preCall(dept, callback, null, that.data.appointedDoctorId, that.data.appointedOrderId, that.data.medicRecordId, that.data.patient, that.data.hospitalId);
       });
     },
     _preCallCb: function _preCallCb(data) {
@@ -1842,28 +1936,35 @@ Component({
         that._hangup(true, 'CANCEL', true);
         return;
       }
+
+      var eventDetail = Object.assign({}, data);
+      eventDetail.livePlayUrl = '';
+      eventDetail.livePushUrl = '';
+      that._triggerEvent('precallstatechange', eventDetail);
+
       hhim.sendLog('1', 'push:' + data.livePushUrl);
       hhim.sendLog('1', 'play:' + data.livePlayUrl);
       if (!data.success) {
-        wx.showToast({
-          title: '医生繁忙，请稍后再试。',
-          icon: 'none',
-          duration: 2000
-        });
         that.setData({
           status: 0,
           pushUrl: '',
           playUrl: ''
         });
-        setTimeout(function () {
-          //返回之前的界面
-          wx.navigateBack({
-            delta: 1
-          });
-        }, 2000);
+        var msg = data.message ? data.message : '医生繁忙，请稍后再拨';
+        wx.hideLoading();
+        wx.showModal({
+          title: '错误',
+          content: msg,
+          showCancel: false,
+          success: function success() {
+            wx.navigateBack({
+              delta: 1
+            });
+          }
+        });
         return;
       }
-
+      callStatus.openCamera = false;
       that._showPusher();
 
       //图片
@@ -1881,7 +1982,6 @@ Component({
         }
       }
 
-      console.dir(data);
       if (data.orderId) {
         famOrderId = data.orderId;
       }
@@ -1907,32 +2007,6 @@ Component({
       pushStart = false;
       that.data.pusher.start();
 
-      /*that.data.pusher.setBGMVolume({
-        volume: 1
-      })
-      that.data.pusher.playBGM({
-        url: 'https://imgs.hh-medic.com/icon/ring.mp3'
-      })
-       var bgmInt = setInterval(function() {
-        console.log(11111);
-        if (1 == that.data.status) {
-          that.data.pusher.playBGM({
-            url: 'https://imgs.hh-medic.com/icon/ring.mp3'
-          })
-        } else {
-          clearInterval(bgmInt);
-        }
-      }, 3000);
-       that._pusherMonitor();
-      that.setData({
-        status: 1
-      })
-       var pushInt = setInterval(function() {
-        if (pushStart) {
-          clearInterval(pushInt);          
-        }
-      }, 500)*/
-
       ring.play();
       ring.onTimeUpdate(function () {
         ring.offTimeUpdate();
@@ -1946,6 +2020,7 @@ Component({
           status: 1
         });
       }, 1000);
+      that._checkCameraIsOpen();
     },
     _callCb: function _callCb(data) {
       ring.stop();
@@ -1971,10 +2046,40 @@ Component({
         }, 500);
       } else {
         //拒绝或错误
-        that._hangup(true);
+        that._hangup(false);
       }
     },
 
+
+    /** 检查推流摄像头是否已打开 */
+    _checkCameraIsOpen: function _checkCameraIsOpen() {
+      setTimeout(function () {
+        if (callStatus.openCamera) {
+          //摄像头已打开
+          return;
+        }
+        if (1 != that.data.status && 2 != that.data.status) {
+          //不是处于呼叫等待或视频中
+          return;
+        }
+        if (!pageIsShowing) {
+          //当前页面没有显示
+          return;
+        }
+        hhim.sendLog('1', 'can not open camera');
+        that._hangup(true, 'HANGUP', false);
+        wx.showModal({
+          title: '错误',
+          content: that.data.cameraTimeoutMessage,
+          showCancel: false,
+          success: function success() {
+            wx.navigateBack({
+              delta: 1
+            });
+          }
+        });
+      }, parseInt(this.data.cameraTimeoutSeconds) * 1000);
+    },
 
     /**
      * 显示图片
@@ -2186,6 +2291,11 @@ Component({
 
       secondes = that.data.t301Timeout;
       var t = setInterval(function () {
+        if (2 == that.data.status) {
+          //视频进行中
+          that._clearCountDown();
+          return;
+        }
         secondes--;
         that.setData({
           timeout: secondes
@@ -2370,6 +2480,12 @@ Component({
 
     _hhImError: function _hhImError(e) {
       that._hangup(false, 'HANGUP', false);
+    },
+
+    _navBack: function _navBack() {
+      wx.navigateBack({
+        delta: 1
+      });
     }
   }
 });

@@ -96,6 +96,11 @@ module.exports =
 module.exports = Behavior({
   behaviors: [],
   properties: {
+    profileName: {
+      type: String,
+      value: 'prod'
+    },
+
     sdkProductId: {
       type: String,
       observer: function observer(newVal, oldVal, changedPath) {
@@ -129,7 +134,27 @@ module.exports = Behavior({
   attached: function attached() {},
 
   methods: {
-    propertyChanged: function propertyChanged(newVal, oldVal, changedPath) {}
+    propertyChanged: function propertyChanged(newVal, oldVal, changedPath) {},
+    getHost: function getHost() {
+      //wsServer: 'wss://wmp.hh-medic.com/wmp/websocket',
+      //fileServer: 'https://dev.hh-medic.com/miniprogramweb_master/wmp/im/upload/'
+      var host = {};
+      switch (this.data.profileName) {
+        case 'prod':
+          host.wmpHost = 'https://wmp.hh-medic.com/wmp/';
+          host.ehrHost = 'https://e.hh-medic.com/ehrweb/';
+          host.wsServer = 'wss://wmp.hh-medic.com/wmp/websocket';
+          break;
+        case 'test':
+          host.wmpHost = 'https://test.hh-medic.com/wmp/';
+          host.ehrHost = 'https://test.hh-medic.com/ehrweb/';
+          host.wsServer = 'wss://test.hh-medic.com/wmp/websocket';
+          break;
+        default:
+          break;
+      }
+      return host;
+    }
   }
 });
 
@@ -144,6 +169,8 @@ module.exports = Behavior({
 // components/hh-im.js
 var hhBehaviors = __webpack_require__(0);
 var that;
+var waitInterval;
+
 Component({
   behaviors: [hhBehaviors],
   /**
@@ -152,9 +179,7 @@ Component({
   properties: {
     callPage: {
       type: String,
-      observer: function observer(newVal, oldVal, changedPath) {
-        this.propertyChanged(newVal, oldVal, changedPath);
-      }
+      value: ''
     },
 
     viewTarget: {
@@ -164,6 +189,30 @@ Component({
     viewModule: {
       type: String,
       value: 'memberList'
+    },
+
+    appointedDoctorId: {
+      type: String,
+      value: ''
+    },
+    appointedOrderId: {
+      type: String,
+      value: ''
+    },
+
+    addMember: {
+      type: String,
+      value: 'true'
+    },
+
+    patient: {
+      type: String,
+      value: ''
+    },
+
+    medicRecordId: {
+      type: String,
+      value: ''
     }
   },
 
@@ -172,18 +221,19 @@ Component({
       that = this;
     },
     ready: function ready() {
-      switch (that.data.viewTarget.toLowerCase()) {
-        case 'im':
-          that._viewIm();
-          break;
-        case 'ehr':
-          that._viewEhr();
-          break;
-        default:
-          break;
-      }
+      this.setData({
+        host: this.getHost()
+      });
+
+      waitInterval = setInterval(function () {
+        that._waitforParams();
+      }, 100);
     },
-    detached: function detached() {}
+    detached: function detached() {
+      if (waitInterval) {
+        clearInterval(waitInterval);
+      }
+    }
   },
 
   /**
@@ -191,8 +241,7 @@ Component({
    */
   data: {
     url: '',
-    wmpHost: 'https://wmp.hh-medic.com/wmp/',
-    ehrHost: 'https://e.hh-medic.com/ehrweb/'
+    host: {}
   },
 
   /**
@@ -205,28 +254,77 @@ Component({
     onWebLoad: function onWebLoad() {
       console.log('onWebLoad');
     },
+    _waitforParams: function _waitforParams() {
+      if (!this.data.userUuid || !this.data.userToken || !this.data.sdkProductId || !this.data.openId) {
+        return;
+      }
+      if (waitInterval) {
+        clearInterval(waitInterval);
+      }
+
+      switch (that.data.viewTarget.toLowerCase()) {
+        case 'im':
+          that._viewIm();
+          break;
+        case 'ehr':
+          that._viewEhr();
+          break;
+        default:
+          break;
+      }
+    },
     _viewIm: function _viewIm() {
-      if (!this.data.userUuid || !this.data.userToken || !this.data.sdkProductId || !this.data.openId || !this.data.callPage) {
+      if (!this.data.userUuid || !this.data.userToken || !this.data.sdkProductId || !this.data.openId) {
         return;
       }
       var vParam = 'module=im' + '&appId=' + this.data.sdkProductId +
       //'&appKey=' + this.data.appKey +
-      '&uuid=' + this.data.userUuid + '&token=' + this.data.userToken + '&openId=' + this.data.openId + '&version=3&callPage=' + encodeURIComponent(this.data.callPage);
+      '&uuid=' + this.data.userUuid + '&token=' + this.data.userToken + '&openId=' + this.data.openId + '&version=3';
 
-      var s = that.data.wmpHost + 'view/?' + vParam;
+      if (this.data.callPage) {
+        vParam += '&callPage=' + encodeURIComponent(this.data.callPage);
+      }
+
+      if (this.data.appointedOrderId) {
+        vParam += '&orderId=' + this.data.appointedOrderId;
+      }
+      if (this.data.appointedDoctorId) {
+        vParam += '&doctorId=' + this.data.appointedDoctorId;
+      }
+      var s = that.data.host.wmpHost + 'view/?' + vParam;
       this.setData({
         url: s
       });
     },
     _viewEhr: function _viewEhr() {
-      if (!this.data.userUuid || !this.data.userToken || !this.data.sdkProductId || !this.data.openId || !this.data.callPage) {
+      if (!this.data.userUuid || !this.data.userToken || !this.data.sdkProductId || !this.data.openId) {
         return;
       }
-      var vParam = 'module=' + this.data.viewModule + '&appId=' + this.data.sdkProductId +
-      //'&appKey=' + this.data.appKey +
-      '&uuid=' + this.data.userUuid + '&token=' + this.data.userToken + '&openId=' + this.data.openId;
+      var vParam = 'module=' + this.data.viewModule + '&appId=' + this.data.sdkProductId + '&uuid=' + this.data.userUuid + '&token=' + this.data.userToken + '&openId=' + this.data.openId;
+      if (this.data.appointedOrderId) {
+        vParam += '&orderId=' + this.data.appointedOrderId;
+      }
+      if (this.data.appointedDoctorId) {
+        vParam += '&doctorId=' + this.data.appointedDoctorId;
+      }
+      if ('false' == this.data.addMember) {
+        vParam += '&hideAddBtn=true';
+      }
 
-      var s = that.data.ehrHost + 'view/?' + vParam;
+      if (this.data.patient) {
+        var p = Number(this.data.patient);
+        if (isNaN(p)) {
+          vParam += '&patientUserToken=';
+        } else {
+          vParam += '&patient=';
+        }
+        vParam += this.data.patient;
+      }
+      if (this.data.medicRecordId) {
+        vParam += '&mrid=' + this.data.medicRecordId;
+      }
+
+      var s = that.data.host.ehrHost + 'view/?' + vParam;
       this.setData({
         url: s
       });

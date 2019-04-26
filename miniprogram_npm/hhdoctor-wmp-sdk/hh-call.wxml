@@ -5,7 +5,7 @@
       <text class='waitting-text waitting-doctorname'></text>
       <text class='waitting-text waitting-countdown'>正在呼叫视频医生...</text>
       <view class='waitting-text waitting-control-item'>
-        <image class="waitting-hangup-btn" src='https://imgs.hh-medic.com/icon/wmp/hangup.png'></image>
+        <image catchtap='_navBack' class="waitting-hangup-btn" src='https://imgs.hh-medic.com/icon/wmp/hangup.png'></image>
         <view class='waitting-hangup-btn-text'>取消</view>
       </view>
     </view>
@@ -43,7 +43,8 @@
 </block>
 
 <view class='full-screen {{playerVisible}}'>
-  <live-player id="livePlayer" class="live-player" autoplay="false" src="{{playUrl}}" mode="RTC" min-cache="1" max-cache="1" object-fit="{{uiStyle.objFit}}" muted="{{uiStyle.muted}}" background-mute="true" bindstatechange="_statechangePlayer" binderror="_errorPlayer">
+  <live-player id="livePlayer" class="live-player" autoplay="false" src="{{playUrl}}" mode="RTC" min-cache="1" max-cache="1" object-fit="{{uiStyle.objFit}}" muted="{{uiStyle.muted}}" background-mute="true" bindstatechange="_statechangePlayer" bindnetstatus="_netChangedPlayer"
+    binderror="_errorPlayer">
     <cover-view class='logo' style='width:{{logoWidth}}px;'>
       <cover-image class='logo-img' mode='widthFix' src='{{logoImage}}'></cover-image>
     </cover-view>
@@ -110,4 +111,4 @@
   </view>
 </block>
 
-<hhFeedback class='{{feedbackVisible}}' catchclose='_evaClose' catchask='_evaAsk' catchevaluate='_evaluate' question='{{question}}'  ></hhFeedback>
+<hhFeedback class='{{feedbackVisible}}' catchclose='_evaClose' catchask='_evaAsk' catchevaluate='_evaluate' question='{{question}}'></hhFeedback>

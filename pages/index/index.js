@@ -14,8 +14,8 @@ Page({
   onLoad: function(options) {
     this.setData({
       sdkProductId: 9003,
-      userUuid: 8052309,
-      userToken: 'd22ea7a9c5deec7d8650365a0e2f6823',
+      userUuid: 100006259,
+      userToken: '06c8f11fb002102b25593fdc075382cb',
       openId: 'oirIW0Rc9lRBp3PyfCyxis455JR0123',
       callPage: '../call/call'
     })
