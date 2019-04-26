@@ -178,7 +178,7 @@
 
     - ***`logo-image`*** :String，与医生对话界面左上角的logo图片url，留空显示默认logo。建议图片大小：470 * 120 px，png格式，背景透明。
 
-    - ***`camera-timeout-seconds`***:Integer，启动摄像头超时(单位：秒)，当因某些原因导致微信无法摄像头时，会提示用户，并退出呼叫，默认为：`5`
+    - ***`camera-timeout-seconds`***:Integer，启动摄像头超时(单位：秒)，当因某些原因导致微信无法摄像头时，会提示用户，并退出呼叫，默认为：`10`
     
     - ***`camera-timeout-message`***:String，启动摄像头超时后提示用户的信息内容，默认为：`打开摄像头失败，请重启微信再呼叫`。
 
