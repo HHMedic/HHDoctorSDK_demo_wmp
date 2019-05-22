@@ -73,7 +73,7 @@
   - 使用命令提示符或终端，进入小程序项目所在根目录，执行命令更新：`npm i hhdoctor-wmp-sdk --production`。
   
   - 打开小程序开发者IDE，点击IDE菜单中的“工具”-“构建 npm”。
-  
+
 ## 小程序后台配置
 
 ### 1.登录微信小程序管理后台：https://mp.weixin.qq.com
@@ -96,14 +96,14 @@
   ```
     https://wmp.hh-medic.com
     https://test.hh-medic.com
-  ```  
+  ```
   - downloadFile合法域名:
   ```
     https://wmp.hh-medic.com
     https://imgfamily.hh-medic.com
     https://imgs.hh-medic.com
     https://test.hh-medic.com
-  ```  
+  ```
 
 ### 4.在"业务域名”下增加如下配置：
   ```
@@ -117,7 +117,7 @@
  ![](https://imgs.hh-medic.com/icon/wmp/sdk/WX20190225-093837.png)  
     
 ### 6. 在“设置”-“基本设置”下，将“基础库最低版本设置”设置为2.5.0或更高版本。
-  
+
 ## SDK说明
 
 ### 1.公共参数说明
@@ -135,7 +135,7 @@
   - ***`profile-name`*** :Enum枚举，可设置为如下值：
     - **`test`** :连接测试环境服务器。
     - **`prod`** :连接生产环境服务器，默认值。
-  
+
 ### 2.hh-im组件
 
   - **功能** ：联系医助、查看健康档案
@@ -179,7 +179,14 @@
     - ***`logo-image`*** :String，与医生对话界面左上角的logo图片url，留空显示默认logo。建议图片大小：470 * 120 px，png格式，背景透明。
 
     - ***`camera-timeout-seconds`***:Integer，启动摄像头超时(单位：秒)，当因某些原因导致微信无法摄像头时，会提示用户，并退出呼叫，默认为：`10`
-    
+
     - ***`camera-timeout-message`***:String，启动摄像头超时后提示用户的信息内容，默认为：`打开摄像头失败，请重启微信再呼叫`。
 
-    
+    - ***`bindcallevent`***:Eventhandler，呼叫事件，detail={name,data,message}。
+
+- **呼叫事件** (callevent)
+
+  | name   | 事件     | data                                                         |
+  | ------ | -------- | ------------------------------------------------------------ |
+  | login  | 用户登录 | {<br />success:[true:false]  //登录是否成功<br />}           |
+  | hangup | 用户挂机 | {<br />initiative:[true:false],  //是否主动挂机<br />hangupType:['HANGUP','CANCEL','TIMEOUT'],  //挂断类型<br />videoDur:Integer   //视频持续时长(秒)<br />} |
