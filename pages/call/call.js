@@ -73,5 +73,9 @@ Page({
    */
   onShareAppMessage: function() {
 
+  },
+
+  onCallEvent(e) {
+    console.log('收到呼叫事件:' + e.detail.name);
   }
 })

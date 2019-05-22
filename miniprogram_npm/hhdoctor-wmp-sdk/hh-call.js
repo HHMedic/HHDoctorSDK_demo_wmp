@@ -1582,8 +1582,8 @@ Component({
     //   }
     // },
 
-    _triggerEvent: function _triggerEvent(name, detail) {
-      that.triggerEvent(name, detail, eventOption);
+    _triggerEvent: function _triggerEvent(detail) {
+      that.triggerEvent('callevent', detail, eventOption);
     },
     _initHhWmp: function _initHhWmp() {
       if (!that.data.userUuid || !that.data.userToken || !that.data.sdkProductId || !that.data.openId || !that.data.dept && (this.data.appointedDoctorId || this.data.appointedOrderId) && !that.data.medicRecordId) {
@@ -1599,13 +1599,17 @@ Component({
 
       hhim.login(that.data.sdkProductId, '', that.data.userUuid, that.data.userToken, false);
       var count = 30;
-      var eventDetai = {};
       var loginInterval = setInterval(function () {
         if (hhim.loginStatus()) {
           onLoading = false;
           clearInterval(loginInterval);
-          eventDetai.login = true;
-          that._triggerEvent('login', eventDetai);
+          that._triggerEvent({
+            name: 'login',
+            data: {
+              success: true
+            },
+            message: ''
+          });
           that._addMonitorLog();
           that._getStyle();
         }
@@ -1613,8 +1617,23 @@ Component({
         if (count <= 0) {
           onLoading = false;
           clearInterval(loginInterval);
-          eventDetai.login = false;
-          that._triggerEvent('login', eventDetai);
+          that._triggerEvent({
+            name: 'login',
+            data: {
+              success: false
+            },
+            message: ''
+          });
+          wx.showModal({
+            title: '错误',
+            content: '登录失败，请检查登录参数',
+            showCancel: false,
+            success: function success() {
+              wx.navigateBack({
+                delta: 1
+              });
+            }
+          });
         }
       }, 100);
     },
@@ -1779,7 +1798,6 @@ Component({
         that._playerMonitor();
       }
       hhim.sendLog('3', 'status:' + e.detail.code);
-      that._triggerEvent('playerstatechange', e);
     },
     _netChangedPlayer: function _netChangedPlayer(e) {
       var nInfo = {
@@ -1826,7 +1844,6 @@ Component({
       }
       hhim.sendLog('2', 'status:' + e.detail.code);
       that._processPusherCode(e.detail.code);
-      that._triggerEvent('pusherstatechange', e);
     },
 
     /** 处理推流状态码 */
@@ -1937,11 +1954,6 @@ Component({
         return;
       }
 
-      var eventDetail = Object.assign({}, data);
-      eventDetail.livePlayUrl = '';
-      eventDetail.livePushUrl = '';
-      that._triggerEvent('precallstatechange', eventDetail);
-
       hhim.sendLog('1', 'push:' + data.livePushUrl);
       hhim.sendLog('1', 'play:' + data.livePlayUrl);
       if (!data.success) {
@@ -2001,8 +2013,8 @@ Component({
 
       that._countDown();
       hhim.call(that._callCb, false);
-      hhim.on('transfer', that.transfer);
-      hhim.on('error', that.hhImError);
+      hhim.on('transfer', that._transfer);
+      hhim.on('error', that._hhImError);
 
       pushStart = false;
       that.data.pusher.start();
@@ -2212,6 +2224,15 @@ Component({
         pushUrl: '',
         playUrl: ''
       });
+      that._triggerEvent({
+        name: 'hangup',
+        data: {
+          initiative: initiative,
+          hangupType: hangupType,
+          videoDur: videoTimeSeconds
+        },
+        message: ''
+      });
 
       if (initiative) {
         hhim.hangup(function (success, data) {
@@ -2381,9 +2402,9 @@ Component({
       that._pusherMonitor();
     },
     _queryCallInfo: function _queryCallInfo() {
-      hhim.on('transfer', that.transfer);
-      hhim.on('callinfo', that.parseCallInfo);
-      hhim.on('hangup', that.calledHangup);
+      hhim.on('transfer', that._transfer);
+      hhim.on('callinfo', that._parseCallInfo);
+      hhim.on('hangup', that._calledHangup);
       hhim.callInfo();
     },
     _calledHangup: function _calledHangup() {
