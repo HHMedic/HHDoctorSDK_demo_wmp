@@ -186,7 +186,26 @@
 
 - **呼叫事件** (callevent)
 
-  | name   | 事件     | data                                                         |
-  | ------ | -------- | ------------------------------------------------------------ |
-  | login  | 用户登录 | {<br />success:[true:false]  //登录是否成功<br />}           |
-  | hangup | 用户挂机 | {<br />initiative:[true:false],  //是否主动挂机<br />hangupType:['HANGUP','CANCEL','TIMEOUT'],  //挂断类型<br />videoDur:Integer   //视频持续时长(秒)<br />} |
+  - ***`name`*** :Enum枚举，可设置为如下值:
+
+    - ***`login`***:用户登录，data数据结构如下：
+
+      ```json
+      {
+        success:[true:false]  //是否登录成功 
+      }
+      ```
+
+      
+
+    - ***`hangup`***:用户挂机，data数据结构如下：
+
+      ```json
+      {
+        initiative:[true:false],  //是否主动挂机
+        hangupType:['HANGUP','CANCEL','TIMEOUT'],  //挂机类型
+        videoDur:Integer  //视频持续时长
+      }
+      ```
+
+      
