@@ -7,17 +7,16 @@
 *  使用命令提示符或终端，进入当前项目所在本地目录，执行命令更新SDK：`npm i hhdoctor-wmp-sdk --production`。
 *  点击IDE菜单中的“工具”-“构建 npm”。
 
+## 旧版本SDK文档
+
+ 如需查看旧版本(0.1.*)文档，请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_0.1.md) 
+ 
 ## ⚠特别说明⚠
 ```
 1. ⚠本项目所使用的AppId为接口测试号AppId，在终端上执行预览会提示错误信息，请更换为实际可用的AppId。
 2. ⚠本项目需要使用微信小程序的livePusher和livePlayer组件，请确保AppId归属的小程序已开启相应的权限。
 3. ⚠本项目所使用uuid和sdkProductId为演示专用，无法应用到测试或生产环境。
 ```
-
-## 旧版本SDK文档
-
- 如需查看旧版本(0.1.*)文档，请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_0.1.md) 
-
 
 通过本SDK可实现以下功能：
 * 咨询医助
