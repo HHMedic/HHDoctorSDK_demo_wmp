@@ -10,7 +10,7 @@
 ## 特别说明
 ```
 1. 本项目所使用的AppId为接口测试号AppId，在终端上执行预览会提示错误信息，请更换为实际可用的AppId。
-2. 本项目需要使用微信小程序的livePusher和livePlayer组件，请确保AppId归属的小程序已开启相应的权限。更多详情请参考微信小程序文档：[live-player](https://developers.weixin.qq.com/miniprogram/dev/component/live-player.html)及[live-pusher](https://developers.weixin.qq.com/miniprogram/dev/component/live-pusher.html)
+2. 本项目需要使用微信小程序的livePusher和livePlayer组件，请确保AppId归属的小程序已开启相应的权限。更多详情请参考微信小程序文档：https://developers.weixin.qq.com/miniprogram/dev/component/live-player.html及https://developers.weixin.qq.com/miniprogram/dev/component/live-pusher.html
 3. 本项目所使用uuid和sdkProductId为演示专用，无法应用到测试或生产环境。
 ```
 
@@ -147,7 +147,7 @@
   - ***`login`***:用户登录事件，登录成功后正式发起呼叫，detail数据结构如下：
 
     ```json
-  {
+    {
       success:[true:false]  //是否登录成功 
     }
     ```
@@ -157,7 +157,7 @@
   - ***`hangup`***:用户挂机事件，detail数据结构如下：
 
     ```json
-  {
+    {
       initiative:[true:false],  //是否主动挂机
       hangupType:['HANGUP','CANCEL','TIMEOUT'],  //挂机类型，依次为：正常挂断、取消挂断、超时挂断
       videoDur:Integer  //视频持续时长,单位：秒。
