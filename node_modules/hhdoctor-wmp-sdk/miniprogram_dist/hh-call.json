@@ -1,6 +1,10 @@
 {
   "component": true,
   "usingComponents": {
-    "hhFeedback":"./feedback-view"
+    "hhFeedback": "./feedback-view",
+    "hhAddress": "./hh-addresslist",
+    "hhAddressEdit": "./hh-addressedit",
+    "hhAddressSearch": "./hh-addresssearch",
+    "hhCityList": "./hh-citylist"
   }
 }

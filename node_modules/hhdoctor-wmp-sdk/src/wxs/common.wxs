@@ -1,0 +1,67 @@
+var phoneDesensitization = function(phone) {
+  if (!phone || !phone.trim() || phone.trim().length <= 3) {
+    return phone;
+  }
+  phone = phone.trim();
+  var i = Math.floor(phone.length / 3);
+  var j = Math.ceil(phone.length / 3);
+  phone = phone.substring(0, i) + getChars(phone.length - i - j, '*') + phone.substring(phone.length - j);
+  return phone;
+};
+
+var getChars = function(number, char) {
+  if (!number || parseInt(number) <= 0) {
+    return '';
+  }
+  var str = '';
+  for (var i = 0; i < parseInt(number); i++) {
+    str += char;
+  }
+  return str;
+};
+
+var getPeriod = function(product) {
+  if ('number' == product.batchType) {
+    if (1 == product.batchNum) {
+      return '次';
+    }
+    return product.batchNum + '次';
+  }
+  if (1 == product.validateMonth) {
+    return '月';
+  }
+  if (3 == product.validateMonth) {
+    return '季';
+  }
+  if (12 == product.validateMonth) {
+    return '年';
+  }
+  return product.validateMonth + '月';
+}
+
+var getPeriod2 = function(batchType, batchNum, validateMonth) {
+  if ('number' == batchType) {
+    if (1 == batchNum) {
+      return '次';
+    }
+    return batchNum + '次';
+  }
+  if (1 == validateMonth) {
+    return '月';
+  }
+  if (3 == validateMonth) {
+    return '季';
+  }
+  if (12 == validateMonth) {
+    return '年';
+  }
+  return validateMonth + '月';
+}
+
+//module.exports.phoneDesensitization = phoneDesensitization;
+module.exports = {
+  phoneDesensitization: phoneDesensitization,
+  getChars: getChars,
+  getPeriod: getPeriod,
+  getPeriod2: getPeriod2
+}

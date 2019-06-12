@@ -1,5 +1,10 @@
 {
   "usingComponents": {
     "hhIm": "hhdoctor-wmp-sdk/hh-im"
-  }
+  },
+  "navigationStyle": "custom",
+  "disableSwipeBack": true,
+  "navigationBarBackgroundColor": "#ffffff",
+  "navigationBarTitleText": "视频医生",
+  "navigationBarTextStyle": "black"
 }

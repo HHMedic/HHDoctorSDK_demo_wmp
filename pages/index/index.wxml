@@ -1,11 +1,2 @@
-<!-- 咨询医助界面 -->
-<hhIm profile-name='test' sdk-product-id='{{sdkProductId}}' user-uuid='{{userUuid}}' user-token='{{userToken}}' open-id='{{openId}}' call-page='{{callPage}}' view-target='im'>
+<hhIm request='{{hhRequest}}'>
 </hhIm>
-
-<!-- 健康档案-家庭成员列表界面 -->
-<!-- <hhIm sdk-product-id='{{sdkProductId}}' user-uuid='{{userUuid}}' user-token='{{userToken}}' open-id='{{openId}}' call-page='{{callPage}}' view-target='ehr'>
-</hhIm> -->
-
-<!-- 健康档案-当前主账号档案列表界面 -->
-<!-- <hhIm sdk-product-id='{{sdkProductId}}' user-uuid='{{userUuid}}' user-token='{{userToken}}' open-id='{{openId}}' call-page='{{callPage}}' view-target='ehr' view-module='ehrList'> 
-</hhIm> u-->

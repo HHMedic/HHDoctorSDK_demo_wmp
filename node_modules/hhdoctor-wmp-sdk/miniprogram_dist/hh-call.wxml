@@ -1,9 +1,9 @@
 <block wx:if="{{0==status}}">
   <view class='full-screen'>
-    <image class="full-screen" src='https://imgs.hh-medic.com/icon/wmp/bg-default.jpg' mode='widthFix'></image>
+    <image class="full-screen" src='https://imgs.hh-medic.com/icon/wmp/bg-default.jpg' mode='aspectFill'></image>
     <view class='waitting-mask'>
       <text class='waitting-text waitting-doctorname'></text>
-      <text class='waitting-text waitting-countdown'>正在呼叫视频医生...</text>
+      <text class='waitting-text waitting-countdown'>拨号中...</text>
       <view class='waitting-text waitting-control-item'>
         <image catchtap='_navBack' class="waitting-hangup-btn" src='https://imgs.hh-medic.com/icon/wmp/hangup.png'></image>
         <view class='waitting-hangup-btn-text'>取消</view>
@@ -14,11 +14,11 @@
 
 <block wx:if="{{1==status}}">
   <view class='full-screen'>
-    <image class="full-screen" src='{{photoUrl}}' mode='widthFix'></image>
+    <image class="full-screen" src='{{photoUrl}}' mode='aspectFill'></image>
     <view class='waitting-mask'>
       <block wx:if="{{showCancelBtn}}">
         <text class='waitting-text waitting-doctorname'>{{name}}</text>
-        <text class='waitting-text waitting-countdown'>{{waittingText}} {{timeout}}s</text>
+        <text class='waitting-text waitting-countdown'>{{_request.waittingText}} {{timeout}}s</text>
         <view class='waitting-text waitting-control-item'>
           <image bindtap='_cancelInitiative' class="waitting-hangup-btn" src='https://imgs.hh-medic.com/icon/wmp/hangup.png' data-hanguptype='CANCEL'></image>
           <view class='waitting-hangup-btn-text'>取消</view>
@@ -26,7 +26,7 @@
       </block>
       <block wx:if="{{showCalledPanel}}">
         <text class='waitting-text waitting-doctorname'>{{name}}</text>
-        <text class='waitting-text waitting-countdown'>正在向你发起一次视频...</text>
+        <text class='waitting-text waitting-countdown'>正在向您发起一次视频...</text>
         <view class='waitting-text waitting-control-items'>
           <view class='waitting-items-btn' bindtap='_answerCall' data-answer='0'>
             <image class="waitting-hangup-btn" src='https://imgs.hh-medic.com/icon/wmp/hangup.png'></image>
@@ -42,17 +42,65 @@
   </view>
 </block>
 
+<block wx:if="{{4==status}}">
+  <view class='full-screen exp-waitting' style='padding-top:{{expertTop}}px'>
+    <view class='exp-top'>
+      <image class='exp-photo' src='{{photoUrl}}'></image>
+      <view class='exp-waitting-text'>
+        <view class='exp-name'>{{name}}</view>
+        <view class='exp-waitting-tip'>正在等待对方接受邀请</view>
+      </view>
+    </view>
+    <view class='exp-bottom'>
+      <view class='exp-bottom-panel'>
+        <image class="waitting-hangup-btn" src='../../../resources/image/hangup.png'></image>
+        <view class='waitting-hangup-btn-text'>取消</view>
+        <button class='launch-app-btn' app-parameter="wechat" open-type="launchApp" catchtap='_cancelInitiative' data-hanguptype='CANCEL'></button>
+      </view>
+    </view>
+  </view>
+</block>
+
+<block wx:if="{{5==status}}">
+  <view class='full-screen exp-waitting'>
+    <view class='usr-top'>
+      <image class='usr-exp-photo' style='margin-top:{{155+expertTop}}px;' src='{{photoUrl}}'></image>
+      <view class='usr-exp-name'>{{name}}</view>
+      <view class='usr-waitting-tip'>正在向您发起视频...</view>
+    </view>
+    <block wx:if="{{showAcceptBtn}}">
+      <view class='exp-bottom'>
+        <image class="waitting-hangup-btn" bindtap='_acceptCall' src='../../../resources/image/accept.png'></image>
+        <view class='waitting-hangup-btn-text'>接听</view>
+      </view>
+    </block>
+  </view>
+</block>
+
 <view class='full-screen {{playerVisible}}'>
-  <live-player id="livePlayer" class="live-player" autoplay="false" src="{{playUrl}}" mode="RTC" min-cache="1" max-cache="1" object-fit="{{uiStyle.objFit}}" muted="{{uiStyle.muted}}" background-mute="true" bindstatechange="_statechangePlayer" bindnetstatus="_netChangedPlayer"
+  <live-player id="livePlayer" class="live-player" autoplay="false" src="{{playUrl}}" mode="RTC" min-cache="0.2" max-cache="0.8" object-fit="{{uiStyle.objFit}}" muted="{{uiStyle.muted}}" background-mute="true" bindstatechange="_statechangePlayer" bindnetstatus="_netChangedPlayer"
     binderror="_errorPlayer">
-    <cover-view class='logo' style='width:{{logoWidth}}px;'>
-      <cover-image class='logo-img' mode='widthFix' src='{{logoImage}}'></cover-image>
-    </cover-view>
+    <block wx:if='{{!expertCalling}}'>
+      <cover-view class='logo' style='width:{{logoWidth}}px;'>
+        <cover-image class='logo-img' mode='widthFix' src='{{_request.logoImage}}'></cover-image>
+      </cover-view>
+    </block>
+
+    <block wx:if='{{uploadedImages.length>0}}'>
+      <cover-view class='uploaded-img-panel'>
+        <cover-image catchtap='_tapShowUploaded' class='uploaded-img' mode='scaleToFill' src='{{uploadedImages[uploadedImages.length-1]}}'>
+        </cover-image>
+        <cover-view class='uploaded-img-count'>{{uploadedImages.length}}</cover-view>
+      </cover-view>
+    </block>
+
     <cover-view class='video-time-panel'>{{videoTime}}</cover-view>
     <cover-view class='video-control-panel'>
       <cover-view class='video-control-item'>
-        <cover-image bindtap='_selectImage' class="video-control-btn" src='https://imgs.hh-medic.com/icon/wmp/video-camera.png'></cover-image>
-        <cover-view class='video-control-btn-text'>拍照</cover-view>
+        <block wx:if='{{!expertCalling}}'>
+          <cover-image bindtap='_selectImage' class="video-control-btn" src='https://imgs.hh-medic.com/icon/wmp/video-camera.png'></cover-image>
+          <cover-view class='video-control-btn-text'>拍照</cover-view>
+        </block>
       </cover-view>
       <cover-view class='video-control-item'>
         <cover-image bindtap='_cancelInitiative' class="video-control-btn" src='https://imgs.hh-medic.com/icon/wmp/hangup.png' data-hanguptype='HANGUP'></cover-image>
@@ -63,7 +111,7 @@
         <cover-view class='video-control-btn-text'>切换摄像头</cover-view>
       </cover-view>
     </cover-view>
-    <block wx:if="{{uiStyle.extBtns}}">
+    <block wx:if="{{uiStyle.extBtns && !expertCalling}}">
       <cover-view class='ext-control-panel' style="height:{{extControlHeight}}px">
         <block wx:if="{{showExtControls}}">
           <cover-view bindtap='_tapShowLicense' class='ext-control-item'>
@@ -80,11 +128,48 @@
         </cover-view>
       </cover-view>
     </block>
+
+    <cover-view class='location' catchtap='_showAddress'>
+      <cover-image class='location-image' src='https://imgs.hh-medic.com/icon/wmp/location.png'></cover-image>
+      <cover-view class='location-text'>地址</cover-view>
+    </cover-view>
+
+    <cover-view class='address-panel' wx:if='{{1==addressStatus}}'>
+      <cover-view class='address-title'>
+        选择配送地址
+        <cover-view class='address-btn' catchtap='_hideAddress'>取消</cover-view>
+      </cover-view>
+      <cover-view class='address-list'>
+        <hhAddress id='hhAddress' request='{{_request}}' parent-container='native' bindeditaddress='_editAddress' bindselectaddress='_chooseAddress'></hhAddress>
+      </cover-view>
+      <cover-view class='address-opt'>
+        <cover-view class='address-addbtn' catchtap='_addAddress'>
+          <cover-image class='address-addicon' src='https://imgs.hh-medic.com/icon/wmp/add.png'></cover-image>
+          <cover-view class='address-addtext'>添加地址</cover-view>
+        </cover-view>
+      </cover-view>
+    </cover-view>
+
+    <cover-view class='address-panel confirm' wx:if='{{2==addressStatus}}'>
+      <cover-view class='address-title'>
+        确认配送地址
+        <cover-view class='address-btn left' catchtap='_showAddress'>返回</cover-view>
+        <cover-view class='address-btn' catchtap='_hideAddress'>取消</cover-view>
+      </cover-view>
+      <cover-view class='address-confirm'>
+        <cover-view class='address-confirm-tip'>您选择的收货地址为：</cover-view>
+        <cover-view class='address-detail'>{{address.province}}{{address.city}}{{address.district}}{{address.address}}{{address.houseNum}}，收货人{{address.name}}，电话：{{address.phoneNum}}</cover-view>
+      </cover-view>
+      <cover-view class='address-confirm-btnpanel'>
+        <cover-view class='address-confirm-btn' catchtap='_confirmAddress'>确认</cover-view>
+      </cover-view>
+    </cover-view>
+
   </live-player>
 </view>
 
-<live-pusher class="live-pusher {{pusherVisible}}" style="width:{{pusherWidth}}px;height:{{pusherHeight}}px;" url="{{pushUrl}}" mode="RTC" beauty="1" whiteness="1" bindstatechange="_onLivePusherChange" binderror="_onLivePusherError" bindnetstatus="_onLivePusherNetInfo"
-/>
+<live-pusher class="live-pusher {{pusherVisible}}" style="width:{{pusherWidth}}px;height:{{pusherHeight}}px;top:{{pusherTop}}px;" url="{{pushUrl}}" mode="RTC" beauty="1" whiteness="1" bindstatechange="_onLivePusherChange" binderror="_onLivePusherError"
+  bindnetstatus="_onLivePusherNetInfo" />
 
 <block wx:if="{{3==status}}">
   <view class='full-screen'>
@@ -110,5 +195,25 @@
     <button open-type='openSetting' type='primary' class='setting-btn'>现在去授权</button>
   </view>
 </block>
+
+
+<block wx:if="{{showLaunchBtn}}">
+  <view class="setting-mask"></view>
+  <view class="setting-panel">
+    <text class='setting-text'>视频已结束</text>
+    <button open-type='launchApp' app-parameter="wechat" type='primary' class='setting-btn'>点击返回</button>
+  </view>
+</block>
+
+
+<view class='full-screen' wx:if='{{showAddressEdit}}'>
+  <hhAddressEdit request='{{_request}}' class='common edit-address {{1==editStatus?"":"hidden"}}' address='{{chooseAddress}}' bindnaviback='_editNaviBack' bindselectaddress='_selectAddress' bindsaveaddress='_saveAddress'></hhAddressEdit>
+
+  <hhAddressSearch id='hhAddressSearch' currentCity='{{curCity}}' class='common search-address {{2==editStatus?"":"hidden"}}' bindshowcitylist='_selectCity' bindnaviback='_editNaviBack' bindlocatecity='_locateCity' bindselectAddress='_changeAddress' style='left:{{sysInfo.windowWidth}}px'
+    animation='{{animationSearch}}'></hhAddressSearch>
+
+  <hhCityList locationCity='{{locCity}}' class='common city-list {{3==editStatus? "": "hidden"}}' bindnaviback='_editNaviBack' bindcitylistselect='_changeCity' style='left:{{sysInfo.windowWidth}}px' animation='{{animationCity}}'></hhCityList>
+
+</view>
 
 <hhFeedback class='{{feedbackVisible}}' catchclose='_evaClose' catchask='_evaAsk' catchevaluate='_evaluate' question='{{question}}'></hhFeedback>

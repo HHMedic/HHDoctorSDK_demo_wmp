@@ -1,0 +1,179 @@
+page {
+  width: 100%;
+  background-color: #e6e6e6;
+}
+
+.address-list {
+  overflow: scroll;
+  width: 100%;
+  background-color: #e6e6e6;
+}
+
+.address {
+  position: relative;
+  margin-bottom: 0.5px;
+  background-color: #fff;
+}
+
+.address-baseinfo {
+  position: relative;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  min-height: 78px;
+  box-sizing: border-box;
+  padding: 16px 0px 16px 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-size: 16px;
+  background-color: #fff;
+  z-index: 9;
+}
+
+.address-delete {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  width: 100px;
+  height: 100%;
+  line-height: 100%;
+  color: #fff;
+  background-color: #f00;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.address-infos {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+}
+
+.address-split {
+  width: 1px;
+  height: 45px;
+  background-color: #e6e6e6;
+}
+
+.address-link {
+  display: flex;
+  flex-direction: row;
+}
+
+.address-name {
+  min-width: 70px;
+  font-weight: bold;
+}
+
+.address-phone {
+}
+
+.address-detail {
+  position: relative;
+  margin-top: 10px;
+  margin-right: 36px;
+  font-size: 14px;
+  line-height: 16px;
+  color: #969696;
+  white-space: pre-line;
+}
+
+.address-detail.default {
+  text-indent: 45px;
+}
+
+.address-detail.default::before {
+  content: '默认';
+  text-indent: 6px;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 36px;
+  height: 16px;
+  font-size: 12px;
+  line-height: 16px;
+  border-radius: 5px;
+  background-color: #0592f5;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.address-edit {
+  width: 50px;
+  min-width: 50px;
+  height: 100%;
+  min-height: 45px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.address-edit-image {
+  width: 15px;
+  height: 15px;
+}
+
+.address-opt {
+  position: fixed;
+  left: 0px;
+  bottom: 0px;
+  width: 100%;
+  height: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.address-addicon {
+  width: 13px;
+  height: 14px;
+}
+
+.address-addbtn {
+  width: 170px;
+  height: 40px;
+  border: solid 0.5px #0592f5;
+  margin-top: 20px;
+  font-size: 15px;
+  line-height: 40px;
+  color: #0592f5;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.address-addicon {
+  width: 13px;
+  height: 14px;
+  margin-right: 10px;
+}
+
+.noaddress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.noaddress-image {
+  margin-top: 100px;
+  width: 139px;
+  height: 76px;
+}
+
+.noaddress-text {
+  margin-top: 25px;
+  color: #999;
+  width: 100%;
+  text-align: center;
+  font-size: 15px;
+}

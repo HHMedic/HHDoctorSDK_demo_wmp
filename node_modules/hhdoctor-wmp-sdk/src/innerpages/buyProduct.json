@@ -1,0 +1,9 @@
+{
+  "usingComponents": {
+    "hhBuy": "../hh-buyproduct"
+  },
+  "navigationStyle": "default",
+  "navigationBarBackgroundColor": "#fff",
+  "navigationBarTitleText": "选择会员方案",
+  "navigationBarTextStyle": "black"
+}

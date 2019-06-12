@@ -82,12 +82,12 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 8);
+/******/ 	return __webpack_require__(__webpack_require__.s = 13);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 8:
+/***/ 13:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -118,6 +118,7 @@ Component({
    * 组件的初始数据
    */
   data: {
+    _name: 'hh-head',
     sysInfo: null,
     imageDispInfo: null,
     imageSelected: false,

@@ -1,0 +1,44 @@
+<hhNavibar text='添加配送地址' color='#000' background-color='#fff' bindnaviback='_naviBack' bindnavbarresize='_navbarResize'></hhNavibar>
+
+<view class='address-form' style='padding-top:{{navibarHeight}}px'>
+  <view class='section'>
+    <view class='input-row'>
+      <view class='input-name'>姓名</view>
+      <view class='input-value'>
+        <input type='text' maxlength='20' value='{{saveAddress.name}}' placeholder='收件人姓名' bindinput='_setInputValue' data-name='name'></input>
+      </view>
+      <view class='input-icon clear' catchtap='_clearInputValue' data-name='name'></view>
+    </view>
+
+    <view class='input-row'>
+      <view class='input-name'>手机号</view>
+      <view class='input-value'>
+        <input type='number' minlength='6' maxlength='11' value='{{saveAddress.phoneNum}}' placeholder='收件人手机号' bindinput='_setInputValue' data-name='phoneNum'></input>
+      </view>
+      <view class='input-icon clear' catchtap='_clearInputValue' data-name='phoneNum'></view>
+    </view>
+  </view>
+
+  <view class='section'>
+    <view class='input-row' catchtap='_selectAddress'>
+      <view class='input-name'>地址</view>
+      <view class='input-value'>
+        <!-- <view class='{{address.address?"":"address-placeholder"}}'>{{address.province?address.province+'-'+address.city+'-'+address.area:'选择地址'}}</view> -->
+        <view class='{{saveAddress.address?"":"address-placeholder"}}'>{{saveAddress.address?saveAddress.address:"选择地址"}}</view>
+      </view>
+      <view class='input-icon arrow'></view>
+    </view>
+
+    <view class='input-row'>
+      <view class='input-name'>门牌号</view>
+      <view class='input-value'>
+        <input type='text' maxlength='64' placeholder='例：5号楼302' value='{{saveAddress.houseNum}}' bindinput='_setInputValue' data-name='houseNum'></input>
+      </view>
+      <view class='input-icon'></view>
+    </view>
+  </view>
+
+  <view class='section-btn'>
+    <view class='btn {{btnEnable?"":"disabled"}}' catchtap='_checkInputValue'>确定</view>
+  </view>
+</view>

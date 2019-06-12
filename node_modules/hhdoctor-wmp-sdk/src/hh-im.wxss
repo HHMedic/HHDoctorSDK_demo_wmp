@@ -1,1 +1,825 @@
-/* components/hh-im.wxss */
+page {
+  height: 100%;
+  font-family: PingFangSC-Regular, sans-serif;
+}
+
+/* .full-screen {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+} */
+
+video {
+  width: 100%;
+}
+
+.hidden {
+  display: none;
+}
+
+.main-container {
+  /* display: flex; *//* flex-direction: column; */
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  left: 0px;
+  top: 0px;
+  box-sizing: border-box;
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/online-background.jpg');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  -moz-background-size: 100% 100%;
+}
+
+.btn-panel {
+  /* position: relative; *//* height: 109px; *//* min-height: 109px; */
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 128px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  z-index: 9;
+}
+
+.topbtn-panel {
+  width: 100%;
+  height: 64px;
+  background-color: rgba(255, 255, 255, 1);
+  z-index: 9;
+  box-sizing: border-box;
+  border-bottom: solid 0.5px #ebebeb;
+}
+
+.topbtn {
+  position: absolute;
+  left: 10px;
+  top: 30px;
+  width: 24px;
+  height: 24px;
+  z-index: 10;
+}
+
+.topbtn.personal {
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/personal.png');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  -moz-background-size: 100% 100%;
+}
+
+.topbtn.personal.light {
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/personal-light.png');
+}
+
+.topbtn-title {
+  position: absolute;
+  left: 0px;
+  top: 30px;
+  width: 100%;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.disconnect-info {
+  position: fixed;
+  left: 0px;
+  width: 100%;
+  text-align: center;
+  font-size: 15px;
+  color: #f00;
+  z-index: 19;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.mainbtn-panel {
+  /* position: absolute; */
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 64px;
+  box-sizing: border-box;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 1);
+  z-index: 9;
+}
+
+.btn-main {
+  background-color: #0592f5;
+  height: 100%;
+  width: 100%;
+  border-radius: 5px;
+  color: #fff;
+  text-align: center;
+  line-height: 49px;
+  font-size: 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-main::before {
+  content: '';
+  width: 28px;
+  height: 20px;
+  margin-right: 10px;
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/online-video.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.callbtn-panel {
+  position: fixed;
+  top: 35px;
+  left: 0px;
+  width: 100%;
+  height: 99px;
+  display: flex;
+  box-sizing: border-box;
+  padding-top: 2px;
+  padding-left: 26px;
+  padding-right: 26px;
+  padding-bottom: 27px;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 8;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.call-doctor {
+  flex-grow: 1;
+  height: 55px;
+  max-width: 135px;
+  width: 100%;
+  border-radius: 5px;
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 15px;
+  border: solid 1px #0592f5;
+}
+
+.btn-call-img {
+  width: 26px;
+  height: 26px;
+  margin-right: 7px;
+}
+
+.btn-call-text {
+  font-size: 17px;
+  color: #0592f5;
+}
+
+.call-btn-sept {
+  min-width: 26px;
+}
+
+.msg-panel-scroll {
+  position: fixed;
+  left: 0px;
+  /* top: 109px; */
+  top: 120px;
+  width: 100%;
+  background-color: #f2f2f2;
+  box-sizing: border-box;
+  padding: 2px 10px;
+}
+
+.input-panel {
+  position: fixed;
+  left: 0px;
+  bottom: 0px;
+  width: 100%;
+  height: 50px;
+  min-height: 50px;
+  background-color: #fff;
+  border-top: solid 1px #e4e4e4;
+  box-sizing: border-box;
+}
+
+.input-ext-panel {
+  position: fixed;
+  left: 0px;
+  bottom: 0px;
+  width: 100%;
+  height: 0px;
+}
+
+.safe-area {
+  position: absolute;
+  left: 0px;
+  top: 49px;
+  width: 100%;
+  background-color: #fff;
+}
+
+.msg-row {
+  width: 100%;
+  display: flex;
+  margin-top: 20px;
+  box-sizing: border-box;
+  padding-right: 45px;
+}
+
+.msg-row.timestamp {
+  flex-direction: column;
+  align-items: center;
+  padding-right: 0px;
+}
+
+.msg-time {
+  background-color: #d2d2d2;
+  box-sizing: border-box;
+  padding: 2px 5px;
+  border-radius: 5px;
+  font-size: 12px;
+  color: #fff;
+}
+
+.msg-row.user {
+  flex-direction: row-reverse;
+  padding-right: 0px;
+  padding-left: 45px;
+}
+
+.msg-img {
+  width: 35px;
+  min-width: 35px;
+}
+
+.img-head {
+  width: 35px;
+  height: 35px;
+}
+
+.msg-body {
+  margin-left: 10px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.msg-body.user {
+  margin-left: 0px;
+  margin-right: 10px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.msg-name {
+  font-size: 12px;
+  color: #d2d2d2;
+}
+
+.msg-content-main {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  box-sizing: border-box;
+  padding-top: 8px;
+}
+
+.msg-content-main.user {
+  padding-top: 0px;
+  flex-direction: row-reverse;
+}
+
+.msg {
+  background-color: #fff;
+  box-sizing: border-box;
+  padding: 15px 15px 15px 10px;
+  border-radius: 5px;
+  position: relative;
+  /*border: solid 1px #e4e4e4;*//*box-shadow: 1px 1px 6px 1px rgba(0, 0, 0, 0.1);*/
+}
+
+.msg::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 0px;
+  width: 0px;
+  height: 0px;
+  border-top: 6px solid #fff;
+  border-left: 10px solid transparent;
+}
+
+.msg.user {
+  background-color: #c4e7ff;
+}
+
+.msg.user::before {
+  border-top: 0px solid #fff;
+  border-left: 0px solid transparent;
+}
+
+.msg.user::after {
+  content: '';
+  position: absolute;
+  right: -5px;
+  top: 0px;
+  width: 0px;
+  height: 0px;
+  border-top: 6px solid #c4e7ff;
+  border-right: 10px solid transparent;
+}
+
+.msg.text {
+  font-size: 15px;
+  color: #666;
+}
+
+.msg.user.text {
+  color: #333;
+}
+
+.msg.image {
+  max-width: 100px;
+  border-radius: 5px;
+  overflow: hidden;
+  padding: 0px;
+}
+
+.msg.image::before {
+  border-top: 0px solid #fff;
+  border-left: 0px solid transparent;
+}
+
+.msg.audio {
+  width: 100px;
+  height: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.sound-icon {
+  border: 2px solid #646464;
+  border-left: 2px solid transparent;
+  border-bottom: 2px solid transparent;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  position: absolute;
+}
+
+.sound-icon.user {
+  border: 2px solid #646464;
+  border-right: 2px solid transparent;
+  border-bottom: 2px solid transparent;
+  border-top: 2px solid transparent;
+}
+
+.sound-icon.arc1 {
+  width: 0px;
+  height: 0px;
+  border-width: 3px;
+  left: 8px;
+  top: 17px;
+}
+
+.sound-icon.arc2 {
+  width: 10px;
+  height: 10px;
+  left: 5px;
+  top: 13px;
+}
+
+.sound-icon.arc3 {
+  width: 20px;
+  height: 20px;
+  left: 0px;
+  top: 8px;
+}
+
+.sound-icon.arc1.user {
+  left: auto;
+  right: 8px;
+}
+
+.sound-icon.arc2.user {
+  left: auto;
+  right: 5px;
+}
+
+.sound-icon.arc3.user {
+  left: auto;
+  right: 0px;
+}
+
+.sound-length {
+  margin-left: 10px;
+  line-height: 40px;
+  height: 40px;
+  font-size: 12px;
+  color: #969696;
+}
+
+.sound-length.user {
+  margin-left: auto;
+  margin-right: 10px;
+}
+
+.msg-body.card {
+  width: 100%;
+}
+
+.msg.card {
+  width: 100%;
+  box-shadow: 6px 6px 30px 1px rgba(0, 0, 0, 0.1);
+}
+
+.msg-card-head {
+  font-size: 15px;
+  line-height: 15px;
+  font-weight: bold;
+  color: #333;
+  box-sizing: border-box;
+  padding-bottom: 10px;
+  border-bottom: solid 0.5px #d2d2d2;
+}
+
+.msg-card-body {
+  box-sizing: border-box;
+  padding: 10px 0px;
+}
+
+.msg-card-body.summary {
+  border-bottom: dashed 0.5px #d2d2d2;
+}
+
+.msg-card-body.medicine {
+  padding-bottom: 5px;
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-row {
+  display: flex;
+  margin-bottom: 5px;
+}
+
+.summary-row:last-child {
+  margin-bottom: 0px;
+}
+
+.summary {
+  font-size: 15px;
+  color: #666;
+}
+
+.summary.name {
+  width: 79px;
+}
+
+.summary.value {
+  flex-grow: 1;
+}
+
+.summary.medicine {
+  font-size: 15px;
+  color: #333;
+}
+
+.msg-card-foot {
+}
+
+.show-more {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.show-more-text {
+  flex-grow: 1;
+}
+
+.show-more-text:before {
+  content: '详情';
+  color: #999;
+  font-size: 12px;
+}
+
+.show-more-text.custom {
+  color: #999;
+  font-size: 12px;
+}
+
+.show-more-text.custom:before {
+  content: '';
+}
+
+.show-more-arraw {
+  background-image: url("https://wmp.hh-medic.com/wmp/resources/image/arrow.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 8px;
+  height: 14px;
+}
+
+.show-more-btn {
+  width: 100%;
+  height: 35px;
+  border-radius: 5px;
+  background-color: #0592f5;
+  color: #fff;
+  text-align: center;
+  line-height: 35px;
+  font-size: 14px;
+}
+
+.disabled.disabled {
+  background-color: #d2d2d2;
+  color: #000;
+}
+
+.medicine-row {
+  box-sizing: border-box;
+  padding: 5px 0px;
+  border-bottom: dashed 0.5px #d2d2d2;
+  width: 100%;
+}
+
+.medicine {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  font-size: 15px;
+  line-height: 23px;
+  color: #323232;
+}
+
+.medicine-name {
+  flex-grow: 1;
+}
+
+.medicine-count {
+  min-width: 55px;
+  text-align: right;
+}
+
+.medicine-count::before {
+  content: 'x';
+  position: relative;
+  left: -8px;
+}
+
+.medicine-remark {
+  font-size: 13px;
+  line-height: 32px;
+  color: #646464;
+}
+
+/* .medicine-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0px;
+} */
+
+/* .medicine {
+  font-size: 15px;
+  line-height: 15px;
+  color: #333;
+}
+
+.medicine.count {
+  color: #666;
+}
+
+.medicine-remark {
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 13px;
+  color: #666;
+} */
+
+.input-tools {
+  width: 100%;
+  height: 50px;
+  display: flex;
+  align-items: flex-end;
+  box-sizing: border-box;
+  padding: 7px 10px;
+}
+
+.input-text {
+  -webkit-appearance: none;
+  flex-grow: 1;
+  height: 100%;
+  margin-left: 10px;
+  border: solid 1px #e4e4e4;
+  border-radius: 5px;
+  padding: 5px 0px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 50px;
+}
+
+.input-text.touchstart {
+  background-color: #e4e4e4;
+}
+
+.textarea {
+  height: 100%;
+  font-size: 15px;
+  line-height: 17px;
+  outline: none;
+  border: none;
+  padding: 0px 2px;
+  color: #333;
+  z-index: 999;
+}
+
+.input-btn-box {
+  width: 28px;
+  height: 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-left: 10px;
+}
+
+.input-btn-box:first-child {
+  margin-left: 0px;
+}
+
+.input-btn {
+  width: 28px;
+  height: 28px;
+  box-sizing: border-box;
+  min-width: 28px;
+}
+
+.input-btn.audio {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_audio.png");
+  background-size: cover;
+  margin-left: 0px;
+}
+
+.input-btn.audio:active {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_audio_press.png");
+}
+
+.input-btn.keyboard {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_kb.png");
+  background-size: cover;
+  margin-left: 0px;
+}
+
+.input-btn.keyboard:active {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_kb_press.png");
+}
+
+.input-btn.emoji {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_smail.png");
+  background-size: cover;
+}
+
+.input-btn.emoji:active {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_smail_press.png");
+}
+
+.input-btn.plus {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_add.png");
+  background-size: cover;
+}
+
+.input-btn.plus:active {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_add_press.png");
+}
+
+.input-record {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  font-size: 17px;
+  font-weight: bold;
+  color: #333;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -ms-touch-callout: none;
+  -moz-touch-callout: none;
+}
+
+.anchor {
+  height: 0px;
+  overflow: hidden;
+}
+
+.record-mask {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  z-index: 99;
+  background-color: rgba(0, 0, 0, 0);
+}
+
+.record-msg-box {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: 150px;
+  height: 150px;
+  z-index: 100;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.5);
+  transform: translateX(-50%) translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  /*justify-content: center;*/
+  align-items: center;
+}
+
+.record-msg-icon {
+  margin-top: 37px;
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_recording.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 42px;
+  height: 65px;
+}
+
+.record-msg-icon.cancel {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_recordcancel.png");
+}
+
+.record-msg-text {
+  margin-top: 19px;
+  font-size: 14px;
+  color: #fff;
+}
+
+.record-msg-text:before {
+  content: '手指上滑，取消发送';
+}
+
+.record-msg-text.cancel:before {
+  content: '松开手指，取消发送';
+  background-color: #903d3b;
+  box-sizing: border-box;
+  padding: 2px;
+  border-radius: 4px;
+}
+
+.util-tools {
+  width: 100%;
+  height: 210px;
+  background-color: #f2f2f2;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  box-sizing: border-box;
+  padding: 0px 15px;
+}
+
+.util-tool {
+  min-width: 25%;
+  min-height: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.util-icon {
+  width: 55px;
+  height: 55px;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.util-icon.album {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_album.png");
+}
+
+.util-icon.camera {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_camera.png");
+}
+
+.util-text {
+  margin-top: 7px;
+  font-size: 12px;
+  color: #787878;
+}

@@ -1,0 +1,117 @@
+Page {
+  background-color: #f2f2f2;
+}
+
+.hidden {
+  display: none;
+}
+
+/* .search-form {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  font-size: 15px;
+  color: #323232;
+  width: 100%;
+  height: 100%;
+  background-color: #f2f2f2;
+} */
+
+.search-row {
+  display: flex;
+  flex-direction: row;
+  background-color: #fff;
+  align-items: center;
+  width: 100%;
+  height: 50px;
+  box-sizing: border-box;
+  padding: 0px 10px;
+}
+
+.current-city {
+  line-height: 50px;
+}
+
+.down-arrow {
+  margin-left: 6px;
+  width: 20px;
+  height: 20px;
+}
+
+.search-area {
+  margin-left: 9px;
+  flex-grow: 1;
+  height: 35px;
+}
+
+.search-input {
+  background-color: #f6f6f6;
+  width: 100%;
+  height: 100%;
+}
+
+.ph-input {
+  margin-left: 16px;
+  text-indent: 23px;
+}
+
+.ph-input::before {
+  content: '';
+  width: 13px;
+  height: 13px;
+  position: absolute;
+  left: 0px;
+  top: 11px;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  -moz-background-size: 100% 100%;
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/search.png');
+}
+
+.result-list {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 5px;
+  background-color: #fff;
+}
+
+.result {
+  width: 100%;
+  min-height: 77px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 0px 16px;
+  border-bottom: solid 0.5px #e6e6e6;
+  background-color: #fff;
+}
+
+.result:last-child {
+  border-bottom: none;
+}
+
+.result-name {
+  font-size: 16px;
+  line-height: 24px;
+  color: #333;
+}
+
+.result-name.active {
+  color: #0592f5;
+}
+
+.result-address {
+  margin-top: 11px;
+  line-height: 15px;
+  font-size: 13px;
+  color: #999;
+}
+
+.city-list {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  left: 0px;
+  top: 0px;
+  z-index: 999;
+}

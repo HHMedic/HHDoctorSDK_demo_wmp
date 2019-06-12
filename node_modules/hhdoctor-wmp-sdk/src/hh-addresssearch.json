@@ -1,0 +1,7 @@
+{
+  "component": true,
+  "usingComponents": {
+    "hhNavibar": "./hh-navibar",
+    "hhCityList": "./hh-citylist"
+  }
+}

@@ -1,7 +1,8 @@
 {
   "pages": [
     "pages/index/index",
-    "pages/call/call"
+    "pages/call/call",
+    "pages/ehr/ehr"
   ],
   "window": {
     "backgroundTextStyle": "light",
