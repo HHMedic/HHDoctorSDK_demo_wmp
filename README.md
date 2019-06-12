@@ -12,7 +12,7 @@
 1. 本项目所使用的AppId为接口测试号AppId，在终端上执行预览会提示错误信息，请更换为实际可用的AppId。
 2. 本项目需要使用微信小程序的livePusher和livePlayer组件，请确保AppId归属的小程序已开启相应的权限。更多详情请参考微信小程序文档：https://developers.weixin.qq.com/miniprogram/dev/component/live-player.html及https://developers.weixin.qq.com/miniprogram/dev/component/live-pusher.html
 3. 本项目所使用uuid和sdkProductId为演示专用，无法应用到测试或生产环境。
-4. 0.1.*版本SDK文档请参考：https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_0.1.md
+4. 0.1.*版本SDK文档请参考：[前往](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_0.1.md)
 ```
 
 通过本SDK可实现以下功能：
