@@ -16,7 +16,7 @@
 
 ## 旧版本SDK文档
 
- [旧版本文档：0.1.\*](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_0.1.md) 
+ 如需查看旧版本(0.1.*)文档，请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_0.1.md) 
 
 
 通过本SDK可实现以下功能：
