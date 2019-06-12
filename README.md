@@ -1,6 +1,6 @@
-# 视频医生微信小程序SDK使用指南
+# 和缓视频医生微信小程序SDK使用指南（1.*）
 
-视频医生微信小程序SDK（**本SDK**）为小程序自定义组件形式，使用npm方式发布。本文引导开发者从零开始，一步一步搭建起视频医生基本功能框架。如果开发者是在现有项目中集成本SDK，可直接从第2步开始阅读。
+和缓视频医生微信小程序SDK（**本SDK**）为小程序自定义组件形式，使用npm方式发布。本文引导开发者从零开始，一步一步搭建起和缓视频医生基本功能框架。如果开发者是在现有项目中集成本SDK，可直接从第2步开始阅读。
 
 开发者也可直接克隆当前仓库，使用微信开发者工具导入本项目后，执行以下步骤，快速浏览相关功能：
 *  点击IDE右上角的“详情”，修改AppID。
@@ -10,8 +10,9 @@
 ## 特别说明
 ```
 1. 本项目所使用的AppId为接口测试号AppId，在终端上执行预览会提示错误信息，请更换为实际可用的AppId。
-2. 本项目需要使用微信小程序的livePusher和livePlayer组件，请确保AppId归属的小程序已开启相应的权限。
+2. 本项目需要使用微信小程序的livePusher和livePlayer组件，请确保AppId归属的小程序已开启相应的权限。更多详情请参考微信小程序文档：https://developers.weixin.qq.com/miniprogram/dev/component/live-player.html及https://developers.weixin.qq.com/miniprogram/dev/component/live-pusher.html
 3. 本项目所使用uuid和sdkProductId为演示专用，无法应用到测试或生产环境。
+4. 0.1.*版本SDK文档请参考：https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_0.1.md
 ```
 
 通过本SDK可实现以下功能：
@@ -60,11 +61,11 @@
 
   - 使用小程序IDE创建新的页面(以pages/index/index为例)，编辑index.json文件，声明要使用的SDK组件。
 
-    ![](https://imgs.hh-medic.com/icon/wmp/sdk/WX20190107-181921.png)  
+    ![](https://imgs.hh-medic.com/icon/wmp/sdk/WX20190612-162422.png)  
   
   - 编辑index.wxml文件，插入SDK组件标签。
 
-    ![](https://imgs.hh-medic.com/icon/wmp/sdk/WX20190107-184046.png)  
+    ![](https://imgs.hh-medic.com/icon/wmp/sdk/WX20190612-162217.png)  
   
   - 编辑index.js文件，通过setData()给相应的变量赋值。
 
@@ -110,6 +111,7 @@
     https://wmp.hh-medic.com
     https://e.hh-medic.com
     https://dicom.hh-medic.com
+    https://sec.hh-medic.com
     https://test.hh-medic.com
   ```
 ### 5.在"开发"-"接口设置"下打开相应权限
@@ -118,94 +120,82 @@
     
 ### 6. 在“设置”-“基本设置”下，将“基础库最低版本设置”设置为2.5.0或更高版本。
 
+
 ## SDK说明
 
-### 1.公共参数说明
+### 1.hh-im组件
 
-  - **说明** ：以下参数为公共参数(必填)，用于用户登录和身份验证，**hh-im和hh-call组件均需设置**。
-
-  - ***`sdk-product-id`*** :Integer,视频医生提供方分配的sdkProductId。
-
-  - ***`user-uuid`*** :Long，通过视频医生提供方服务端API/SDK注册用户成功后获取到的用户uuid。
-
-  - ***`user-token`*** :String，md5(sdkProductId+appSecret+uuid)，全小写。
-
-  - ***`open-id`*** :String，当前用户的微信openId，获取方法参见微信小程序文档：https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/login.html
-
-  - ***`profile-name`*** :Enum枚举，可设置为如下值：
-    - **`test`** :连接测试环境服务器。
-    - **`prod`** :连接生产环境服务器，默认值。
-
-### 2.hh-im组件
-
-  - **功能** ：联系医助、查看健康档案
+  - **功能** ：联系医助、查看病历档案
 
   - **入口** ：hhdoctor-wmp-sdk/hh-im
 
   - **参数说明**： 
 
-    - ***`call-page`*** :String，呼叫视频医生页面相对当前页面的位置，例如“../call/call”，点击页面顶部的呼叫医生按纽，可跳转到上述页面进行呼叫。不设置该属性，或该属性值为空字符串，则隐藏最上方的呼叫按钮区域。
+    - ***`request`*** :Object，请求参数，说明见下方。
 
-    - ***`view-target`*** : Enum枚举，可设置为如下值：
-      - **`im`** :显示联系医助界面。
-      - **`ehr`** :显示健康档案界面（默认显示家庭成员列表）。
-
-    - ***`view-module`*** : Enum枚举，可设置为如下值：
-      - **`memberList`** :默认值，显示家庭成员列表界面。
-      - **`ehrList`** :显示家庭成员主账号健康档案列表界面。
-      - **`detail`** :显示指定的健康档案详情，需与patient属性及medic-record-id配合使用。
-      
-    - ***`add-member`*** : Enum枚举，当view-target=ehr且view-module=memberList时生效，可设置为如下值：
-      - **`true`** :在家庭成员列表下方显示添加新成员按钮，默认值。
-      - **`false`** :在家庭成员列表下方隐藏添加新成员按钮。
-
-    - ***`patient`*** : String，当view-target=ehr且view-module=detail时生效，为需要查看健康档案的实际患者的uuid或userToken值。
-    
-    - ***`medic-record-id`*** : String，当view-target=ehr且view-module=detail时生效，为需要查看健康档案的id值。
-    
-### 3.hh-call组件
+### 2.hh-call组件
   - **功能** ：呼叫视频医生
 
   - **入口** ：hhdoctor-wmp-sdk/hh-call
 
   - **参数说明** ：
 
-    - ***`dept`*** :Enum枚举，可设置为如下值：
-      - **`600002`** ：呼叫医生咨询成人问题。
-          - **`600000`** ：呼叫医生咨询儿童问题。
-
-    - ***`waitting-text`*** :String，呼叫等待界面显示的提示语，默认为：`预计接通时间:`
-
-    - ***`logo-image`*** :String，与医生对话界面左上角的logo图片url，留空显示默认logo。建议图片大小：470 * 120 px，png格式，背景透明。
-
-    - ***`camera-timeout-seconds`***:Integer，启动摄像头超时(单位：秒)，当因某些原因导致微信无法摄像头时，会提示用户，并退出呼叫，默认为：`10`
-
-    - ***`camera-timeout-message`***:String，启动摄像头超时后提示用户的信息内容，默认为：`打开摄像头失败，请重启微信再呼叫`。
-
-    - ***`bindcallevent`***:Eventhandler，呼叫事件，detail={name,data,message}。
-
-- **呼叫事件** (callevent)
-
-  - ***`name`*** :Enum枚举，可设置为如下值:
-
-    - ***`login`***:用户登录，data数据结构如下：
-
-      ```json
-      {
-        success:[true:false]  //是否登录成功 
-      }
-      ```
-
+    - ***`request`*** :Object，请求参数，说明见下方。
       
+    
+- **事件** 
 
-    - ***`hangup`***:用户挂机，data数据结构如下：
+  - ***`login`***:用户登录事件，登录成功后正式发起呼叫，detail数据结构如下：
 
-      ```json
-      {
-        initiative:[true:false],  //是否主动挂机
-        hangupType:['HANGUP','CANCEL','TIMEOUT'],  //挂机类型
-        videoDur:Integer  //视频持续时长
-      }
-      ```
+    ```json
+    {
+      success:[true:false]  //是否登录成功 
+    }
+    ```
+  
+    
 
-      
+  - ***`hangup`***:用户挂机事件，detail数据结构如下：
+
+    ```json
+    {
+      initiative:[true:false],  //是否主动挂机
+      hangupType:['HANGUP','CANCEL','TIMEOUT'],  //挂机类型，依次为：正常挂断、取消挂断、超时挂断
+      videoDur:Integer  //视频持续时长,单位：秒。
+    }
+    ```
+  
+    
+### 3.hh-ehr组件
+
+ - **功能** :查看病历档案
+
+ - **入口** : hhdoctor-wmp-sdk/hh-ehr
+
+ - **参数说明** ：
+
+   - ***`request`*** :Object，请求参数，说明见下方。
+   
+   
+## request参数说明
+
+| 属性         | 类型    | 组件 | 默认值 | 必填 | 说明                                                         |
+| ------------ | ------- | ---- | ------ | ---- | ------------------------------------------------------------ |
+| profileName  | Enum    | 公共|test   | 是   | **`test`**:测试环境<br />**`prod`**:生产环境                 |
+| sdkProductId | Integer | 公共|无     | 是   | 和缓分配的sdkProductId                                       |
+| userToken    | String  | 公共|无     | 是   | 调用服务器接口注册用户成功后，服务器返回的userToken          |
+| openId       | String  | 公共|无     | 是   | 当前用户的微信openId，获取方法参见微信小程序文档：https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/login.html |
+| callPage  | String | hh-im | 无 | 否 | 呼叫视频医生页面相对当前页面的位置，例如“/pages/call/call”，点击页面顶部的呼叫医生按纽，可跳转到上述页面进行呼叫。不设置该属性，或该属性值为空字符串，则隐藏最上方的呼叫按钮区域。 |
+| dept  | Enum | hh-call | 无 | 是 | **`600002`**：呼叫医生咨询成人问题<br />**`600000`**：呼叫医生咨询儿童问题 |
+| logoImage | String | hh-call | 无 | 否 | 与医生对话界面左上角的logo图片url，留空不显示logo。建议图片大小：470 * 120 px，png格式，背景透明 |
+| waittingText    | String | hh-call | 预计接通时间 | 否 | 呼叫等待界面显示的提示语 |
+| cameraTimeoutSeconds       | Integer | hh-call | 10 | 否 | 启动摄像头超时(单位：秒)，当因某些原因导致微信无法启动摄像头时，会提示用户，并退出呼叫 |
+| cameraTimeoutMessage        | String | hh-call | 打开摄像头失败，请重启微信再呼叫 | 否 | 启动摄像头超时后提示用户的信息内容 |
+| playTimeoutSeconds        | Integer | hh-call | 10 | 否 | 播放医生画面超时(单位：秒)，当因某些原因导致微信无法播放医生画面时，会提示用户，并退出呼叫 |
+| playTimeoutMessage        | String | hh-call | 播放视频失败，请重启微信再呼叫 | 否 | 播放医生画面超时后提示用户的信息内容 |
+| weakNetworkTimeout        | Integer | hh-call | 6 | 否 | 弱网监控超时时间(单位：秒)，当小程序与服务器通信往返消息总耗时大于设置的超时时间时，认为当前是弱网环境，会主动终止当前呼叫。 |
+| viewModule  | Enum | hh-ehr | memberList | 否 | **`memberList`**: 显示家庭成员列表界面<br />**`ehrList`**: 显示家庭成员主账号健康档案列表界面<br />**`detail`**: 显示指定的健康档案详情，需与patient属性及medicRecordId配合使用 |
+| addMember | Boolen | hh-ehr |  true | 否 | 家庭成员列表下方是否显示添加新成员按钮 |
+| patient    | String | hh-ehr | 无        | 否 | 需要查看健康档案的实际患者的userToken值 |
+| medicRecordId | String | hh-ehr | 无    | 否 | 需要查看健康档案的id值 |
+
