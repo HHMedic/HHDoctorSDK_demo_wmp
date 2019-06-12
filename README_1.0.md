@@ -180,40 +180,23 @@
 
 ### 公共部分
 
-| 属性         | 类型    | 默认值 | 必填 | 说明                                                         |
-| ------------ | ------- | ------ | ---- | ------------------------------------------------------------ |
-| profileName  | Enum    | test   | 是   | **`test`**:测试环境<br />**`prod`**:生产环境                 |
-| sdkProductId | Integer | 无     | 是   | 和缓分配的sdkProductId                                       |
-| userToken    | String  | 无     | 是   | 调用服务器接口注册用户成功后，服务器返回的userToken          |
-| openId       | String  | 无     | 是   | 当前用户的微信openId，获取方法参见微信小程序文档：https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/login.html |
+| 属性         | 类型    | 组件 | 默认值 | 必填 | 说明                                                         |
+| ------------ | ------- | ---- | ------ | ---- | ------------------------------------------------------------ |
+| profileName  | Enum    | 公共|test   | 是   | **`test`**:测试环境<br />**`prod`**:生产环境                 |
+| sdkProductId | Integer | 公共|无     | 是   | 和缓分配的sdkProductId                                       |
+| userToken    | String  | 公共|无     | 是   | 调用服务器接口注册用户成功后，服务器返回的userToken          |
+| openId       | String  | 公共|无     | 是   | 当前用户的微信openId，获取方法参见微信小程序文档：https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/login.html |
+| callPage  | String | hh-im | 无 | 否 | 呼叫视频医生页面相对当前页面的位置，例如“/pages/call/call”，点击页面顶部的呼叫医生按纽，可跳转到上述页面进行呼叫。不设置该属性，或该属性值为空字符串，则隐藏最上方的呼叫按钮区域。 |
+| dept  | Enum | hh-call | 无 | 是 | **`600002`**：呼叫医生咨询成人问题<br />**`600000`**：呼叫医生咨询儿童问题 |
+| logoImage | String | hh-call | 无 | 否 | 与医生对话界面左上角的logo图片url，留空不显示logo。建议图片大小：470 * 120 px，png格式，背景透明 |
+| waittingText    | String | hh-call | 预计接通时间 | 否 | 呼叫等待界面显示的提示语 |
+| cameraTimeoutSeconds       | Integer | hh-call | 10 | 否 | 启动摄像头超时(单位：秒)，当因某些原因导致微信无法启动摄像头时，会提示用户，并退出呼叫 |
+| cameraTimeoutMessage        | String | hh-call | 打开摄像头失败，请重启微信再呼叫 | 否 | 启动摄像头超时后提示用户的信息内容 |
+| playTimeoutSeconds        | Integer | hh-call | 10 | 否 | 播放医生画面超时(单位：秒)，当因某些原因导致微信无法播放医生画面时，会提示用户，并退出呼叫 |
+| playTimeoutMessage        | String | hh-call | 播放视频失败，请重启微信再呼叫 | 否 | 播放医生画面超时后提示用户的信息内容 |
+| weakNetworkTimeout        | Integer | hh-call | 6 | 否 | 弱网监控超时时间(单位：秒)，当小程序与服务器通信往返消息总耗时大于设置的超时时间时，认为当前是弱网环境，会主动终止当前呼叫。 |
+| viewModule  | Enum | hh-ehr | memberList | 否 | **`memberList`**: 显示家庭成员列表界面<br />**`ehrList`**: 显示家庭成员主账号健康档案列表界面<br />**`detail`**: 显示指定的健康档案详情，需与patient属性及medicRecordId配合使用 |
+| addMember | Boolen | hh-ehr |  true | 否 | 家庭成员列表下方是否显示添加新成员按钮 |
+| patient    | String | hh-ehr | 无        | 否 | 需要查看健康档案的实际患者的userToken值 |
+| medicRecordId | String | hh-ehr | 无    | 否 | 需要查看健康档案的id值 |
 
-
-### hh-im组件相关
-
-| 属性         | 类型 | 默认值 | 必填 | 说明                         |
-| ------------ | ---- | ------ | ---- | ---------------------------- |
-| callPage  | String | 无 | 否 | 呼叫视频医生页面相对当前页面的位置，例如“/pages/call/call”，点击页面顶部的呼叫医生按纽，可跳转到上述页面进行呼叫。不设置该属性，或该属性值为空字符串，则隐藏最上方的呼叫按钮区域。 |
-
-
-### hh-call组件相关
-
-| 属性         | 类型 | 默认值 | 必填 | 说明                         |
-| ------------ | ---- | ------ | ---- | ---------------------------- |
-| dept  | Enum | 无 | 是 | **`600002`**：呼叫医生咨询成人问题<br />**`600000`**：呼叫医生咨询儿童问题 |
-| logoImage | String | 无 | 否 | 与医生对话界面左上角的logo图片url，留空不显示logo。建议图片大小：470 * 120 px，png格式，背景透明 |
-| waittingText    | String | 预计接通时间 | 否 | 呼叫等待界面显示的提示语 |
-| cameraTimeoutSeconds       | Integer | 10 | 否 | 启动摄像头超时(单位：秒)，当因某些原因导致微信无法启动摄像头时，会提示用户，并退出呼叫 |
-| cameraTimeoutMessage        | String | 打开摄像头失败，请重启微信再呼叫 | 否 | 启动摄像头超时后提示用户的信息内容 |
-| playTimeoutSeconds        | Integer | 10 | 否 | 播放医生画面超时(单位：秒)，当因某些原因导致微信无法播放医生画面时，会提示用户，并退出呼叫 |
-| playTimeoutMessage        | String | 播放视频失败，请重启微信再呼叫 | 否 | 播放医生画面超时后提示用户的信息内容 |
-| weakNetworkTimeout        | Integer | 6 | 否 | 弱网监控超时时间(单位：秒)，当小程序与服务器通信往返消息总耗时大于设置的超时时间时，认为当前是弱网环境，会主动终止当前呼叫。 |
-
-### hh-ehr组件相关
-
-
-| 属性         | 类型 | 默认值 | 必填 | 说明                         |
-| ------------ | ---- | ------ | ---- | ---------------------------- |
-| viewModule  | Enum | memberList | 否 | **`memberList`**: 显示家庭成员列表界面<br />**`ehrList`**: 显示家庭成员主账号健康档案列表界面<br />**`detail`**: 显示指定的健康档案详情，需与patient属性及medicRecordId配合使用 |
-| addMember | Boolen | true | 否 | 家庭成员列表下方是否显示添加新成员按钮 |
-| patient    | String |        | 否 | 需要查看健康档案的实际患者的userToken值 |
-| medicRecordId       | String |        | 否 | 需要查看健康档案的id值 |
