@@ -1,4 +1,4 @@
-# 和缓视频医生微信小程序SDK使用指南（1.*）
+# 和缓视频医生微信小程序SDK使用指南（1.0.0）
 
 和缓视频医生微信小程序SDK（**本SDK**）为小程序自定义组件形式，使用npm方式发布。本文引导开发者从零开始，一步一步搭建起和缓视频医生基本功能框架。如果开发者是在现有项目中集成本SDK，可直接从第2步开始阅读。
 
@@ -7,13 +7,17 @@
 *  使用命令提示符或终端，进入当前项目所在本地目录，执行命令更新SDK：`npm i hhdoctor-wmp-sdk --production`。
 *  点击IDE菜单中的“工具”-“构建 npm”。
 
-## 特别说明
+## ⚠特别说明⚠
 ```
-1. 本项目所使用的AppId为接口测试号AppId，在终端上执行预览会提示错误信息，请更换为实际可用的AppId。
-2. 本项目需要使用微信小程序的livePusher和livePlayer组件，请确保AppId归属的小程序已开启相应的权限。更多详情请参考微信小程序文档：https://developers.weixin.qq.com/miniprogram/dev/component/live-player.html及https://developers.weixin.qq.com/miniprogram/dev/component/live-pusher.html
-3. 本项目所使用uuid和sdkProductId为演示专用，无法应用到测试或生产环境。
-4. 0.1.*版本SDK文档请参考：[前往](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_0.1.md)
+1. ⚠本项目所使用的AppId为接口测试号AppId，在终端上执行预览会提示错误信息，请更换为实际可用的AppId。
+2. ⚠本项目需要使用微信小程序的livePusher和livePlayer组件，请确保AppId归属的小程序已开启相应的权限。
+3. ⚠本项目所使用uuid和sdkProductId为演示专用，无法应用到测试或生产环境。
 ```
+
+## 旧版本SDK文档
+
+ [旧版本文档：0.1.\*](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_0.1.md) 
+
 
 通过本SDK可实现以下功能：
 * 咨询医助
