@@ -194,7 +194,7 @@
 
    - ***`navigateTo(options)`*** :跳转至相应页面。
     
-    - ****`options`**** :Object，跳转参数，结构如下：
+     - ****`options`**** :Object，跳转参数，结构如下：
 
     ```json
     {
