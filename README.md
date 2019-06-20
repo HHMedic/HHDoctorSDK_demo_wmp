@@ -196,14 +196,13 @@
     
      - ****`options`**** :Object，跳转参数，结构如下：
 
-    ```json
-    {
-      page:'',          //Enum，跳转页面名称，'drugOrder':购药订单详情页;   'drugOrderList':购药订单列表页
-      drugOrderId:'',   //String,购药订单ID，当page='drugOrder'时必填。
-      redirectPage:''   //String,支付完成后跳转页面，留空默认跳转至'pages/index/index'
-    }
-
-    ```
+     ```json
+     {
+       page:'',          //Enum，跳转页面名称，'drugOrder':购药订单详情页;   'drugOrderList':购药订单列表页
+       drugOrderId:'',   //String,购药订单ID，当page='drugOrder'时必填。
+       redirectPage:''   //String,支付完成后跳转页面，留空默认跳转至'pages/index/index'
+     }
+     ```
 
 
 ## request参数说明
