@@ -94,22 +94,22 @@
 
   - request合法域名:
   ```
-    https://wmp.hh-medic.com
+    https://mp.hh-medic.com
     https://test.hh-medic.com
   ```
   - socket合法域名:
   ```
-    wss://wmp.hh-medic.com
+    wss://mp.hh-medic.com
     wss://test.hh-medic.com
   ```
   - uploadFile合法域名:
   ```
-    https://wmp.hh-medic.com
+    https://mp.hh-medic.com
     https://test.hh-medic.com
   ```
   - downloadFile合法域名:
   ```
-    https://wmp.hh-medic.com
+    https://mp.hh-medic.com
     https://imgfamily.hh-medic.com
     https://imgs.hh-medic.com
     https://test.hh-medic.com
