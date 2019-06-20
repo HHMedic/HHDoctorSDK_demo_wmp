@@ -213,6 +213,7 @@
 | 属性         | 类型    | 组件 | 默认值 | 必填 | 说明                                                         |
 | ------------ | ------- | ---- | ------ | ---- | ------------------------------------------------------------ |
 | profileName  | Enum    | 公共|test   | 是   | **`test`**:测试环境<br />**`prod`**:生产环境                 |
+| subDomain  | String    | 公共|无     | 否   | 绑定的业务域名中的二级域名，默认留空                             |
 | sdkProductId | Integer | 公共|无     | 是   | 和缓分配的sdkProductId                                       |
 | userToken    | String  | 公共|无     | 是   | 调用服务器接口注册用户成功后，服务器返回的userToken          |
 | openId       | String  | 公共|无     | 是   | 当前用户的微信openId，获取方法参见微信小程序文档：https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/login.html |
