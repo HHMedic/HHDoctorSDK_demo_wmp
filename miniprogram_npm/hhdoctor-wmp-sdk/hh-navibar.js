@@ -82,12 +82,12 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 8);
+/******/ 	return __webpack_require__(__webpack_require__.s = 9);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 8:
+/***/ 9:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -117,7 +117,8 @@ Component({
    * 组件的初始数据
    */
   data: {
-    customNavBar: false
+    customNavBar: false,
+    topHeight: 0
   },
   lifetimes: {
     attached: function attached() {
@@ -133,17 +134,23 @@ Component({
   methods: {
     _resize: function _resize() {
       var res = wx.getSystemInfoSync();
+      var rect = wx.getMenuButtonBoundingClientRect();
+      var paddingTop = rect.top - 26;
+      this.setData({
+        topHeight: paddingTop
+      });
+
       if (res && res.screenHeight && res.windowHeight && res.screenHeight == res.windowHeight) {
         console.log(this.data.text + ':显示自定义导航栏');
         this.setData({
           customNavBar: true
         });
         this.triggerEvent('navbarresize', {
-          height: 64
+          height: 64 + paddingTop
         }, {});
       } else {
         this.triggerEvent('navbarresize', {
-          height: 0
+          height: paddingTop
         }, {});
       }
     },

@@ -1,0 +1,13 @@
+.tip {
+  font-size: 12pt;
+  line-height: 20pt;
+  text-align: center;
+  background-color: #e1cd56;
+}
+
+button {
+  width: 300px;
+  margin-top: 10px;
+  color: #fff;
+  background-color: #0592f5;
+}

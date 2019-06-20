@@ -82,7 +82,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 15);
+/******/ 	return __webpack_require__(__webpack_require__.s = 16);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -1563,7 +1563,7 @@ module.exports = {
 
 /***/ }),
 
-/***/ 15:
+/***/ 16:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1665,9 +1665,10 @@ module.exports = Behavior({
     }
   },
   data: {
-    _sdkVersion: '1.0.0',
+    _sdkVersion: '1.0.1',
     _request: {
       //公共属性
+      subDomain: '',
       profileName: 'test',
       sdkProductId: null,
       userToken: null,
@@ -1683,12 +1684,12 @@ module.exports = Behavior({
       //hh-ehr属性
       viewModule: 'memberList',
       addMember: true,
-      patient: null,
-      medicRecordId: null,
-      appointedDoctorId: null,
-      appointedOrderId: null,
+      patient: '',
+      medicRecordId: '',
+      appointedDoctorId: '',
+      appointedOrderId: '',
       //hh-call属性
-      dept: null,
+      dept: '',
       logoImage: 'https://imgs.hh-medic.com/icon/wmp/logo-default.png',
       waittingText: '预计接通时间',
       cameraTimeoutSeconds: 10,
@@ -1759,10 +1760,18 @@ module.exports = Behavior({
       var host = {};
       switch (this.data._request.profileName) {
         case 'prod':
-          host.wmpHost = 'https://wmp.hh-medic.com/wmp/';
-          host.ehrHost = 'https://e.hh-medic.com/ehrweb/';
-          host.patHost = 'https://sec.hh-medic.com/patient_web/';
-          host.wsServer = 'wss://wmp.hh-medic.com/wmp/websocket';
+
+          if (this.data._request.subDomain) {
+            host.wmpHost = 'https://' + this.data._request.subDomain + '.hh-medic.com/wmp/';
+            host.ehrHost = 'https://' + this.data._request.subDomain + '.hh-medic.com/ehrweb/';
+            host.patHost = 'https://' + this.data._request.subDomain + '.hh-medic.com/patient_web/';
+            host.wsServer = 'wss://' + this.data._request.subDomain + '.hh-medic.com/wmp/websocket';
+          } else {
+            host.wmpHost = 'https://wmp.hh-medic.com/wmp/';
+            host.ehrHost = 'https://e.hh-medic.com/ehrweb/';
+            host.patHost = 'https://sec.hh-medic.com/patient_web/';
+            host.wsServer = 'wss://wmp.hh-medic.com/wmp/websocket';
+          }
           break;
         case 'test':
           host.wmpHost = 'https://test.hh-medic.com/wmp/';
@@ -1779,7 +1788,13 @@ module.exports = Behavior({
       if (!this.data._request || 'prod' == this.data._request.profileName) {
         return;
       }
-      console.log('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK]]' + content);
+      console.log('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK:' + this.data._name + ']]' + content);
+    },
+    _logError: function _logError(content) {
+      if (!this.data._request || 'prod' == this.data._request.profileName) {
+        return;
+      }
+      console.error('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK:' + this.data._name + ']]' + content);
     },
     _triggerEvent: function _triggerEvent(name, detail) {
       this.triggerEvent(name, detail, eventOption);
@@ -1811,10 +1826,9 @@ module.exports = Behavior({
     },
     _checkRequest: function _checkRequest() {
       if (!this.data._request.sdkProductId || !this.data._request.userToken || !this.data._request.openId) {
-        this._logInfo('缺少必要参数，组件终止');
         return;
       }
-      this._logInfo('当前组件:' + this.data._name);
+      //this._logInfo('当前组件:' + this.data._name);
       switch (this.data._name) {
         case 'hh-im':
         case 'hh-head':
@@ -1822,33 +1836,45 @@ module.exports = Behavior({
         case 'hh-personal':
         case 'hh-my':
         case 'hh-addresslist':
+        case 'hh-addresssearch':
         case 'hh-right':
         case 'hh-buyproduct':
+        case 'hh-sdkcontext':
+
           break;
         case 'hh-call':
           if (!this.data._request.dept && (this.data._request.appointedDoctorId || this.data._request.appointedOrderId) && !this.data._request.medicRecordId) {
+            this._logError('缺少必要参数:dept');
             return;
           }
           break;
         case 'hh-addressedit':
           if ('update' == this.data._request.editType && !this.data._request.addressId) {
+            this._logError('editType为update时，需传入addressId');
             return;
           }
           break;
         case 'hh-medicine':
           if (!this.data._request.drugOrderId) {
+            this._logError('缺少必要参数:drugOrderId');
             return;
           }
           break;
         case 'hh-productright':
           if (!this.data._request.productId) {
+            this._logError('缺少必要参数:productId');
             return;
           }
           break;
         default:
           return;
       }
-      this._logInfo('checkRequest success');
+      this._logInfo('检查request参数完成');
+      var sdkOptions = {
+        _host: this.data._host
+      };
+      getApp().globalData._hhSdkOptions = sdkOptions;
+
       this._requestComplete();
     },
     _getPublicRequestParams: function _getPublicRequestParams() {
@@ -1883,7 +1909,7 @@ module.exports = Behavior({
         return;
       }
 
-      this._logInfo(this.data._name + '初始化hhim...');
+      this._logInfo(this.data._name + '初始化...');
       var hhim = __webpack_require__(1);
       hhim.init({
         debug: false,
@@ -1909,10 +1935,10 @@ module.exports = Behavior({
       }
 
       //hhim登录
-      this._logInfo('hhim login...');
+      this._logInfo('开始登录...');
       hhim.login(this.data._request.sdkProductId, this.data._request.userToken, this.data._request.openId, requestHis, function (res) {
         if (res) {
-          that._logInfo('login success');
+          that._logInfo('登录成功');
           //登录成功
           hhim.sendLog('1', 'login success');
           hhim.sendLog('1', JSON.stringify(that.data.sysInfo));
@@ -1924,7 +1950,7 @@ module.exports = Behavior({
           }
         } else {
           //登录失败
-          that._logInfo('login failed');
+          that._logError('登录失败，请检查request中的公共参数，注意区分测试、生产环境');
           if (initCallback) {
             initCallback({
               status: 400
@@ -1940,14 +1966,19 @@ module.exports = Behavior({
       }
       im.sendLog(logType, logContent);
     },
-    _viewMedicine: function _viewMedicine(drugOrderId) {
-      var vParam = this.data._host.patHost + 'drug/order.html?' + 'drugOrderId=' + drugOrderId + '&sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
+    _viewMedicine: function _viewMedicine(drugOrderId, redirectPage) {
+      getApp().globalData._hhSdkOptions.drugOrderId = drugOrderId;
+      getApp().globalData._hhSdkOptions.redirectPage = redirectPage;
+
+      var vParam = this.data._host.patHost + 'drug/order.html?' + 'drugOrderId=' + drugOrderId + '&sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&payPage=' + encodeURIComponent(this.data.basePath + 'innerpages/pay') + '&redirectPage=' + encodeURIComponent(redirectPage ? redirectPage : '/pages/newIndex/newIndex') + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
       var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(vParam);
       wx.navigateTo({
         url: pageUrl
       });
     },
-    _viewMedicineOrderList: function _viewMedicineOrderList() {
+    _viewMedicineOrderList: function _viewMedicineOrderList(redirectPage) {
+      getApp().globalData._hhSdkOptions.redirectPage = redirectPage;
+
       var url = this.data._host.patHost + 'drug/order-list.html?' + 'sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
       this._viewUrl(url);
     },

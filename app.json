@@ -2,7 +2,8 @@
   "pages": [
     "pages/index/index",
     "pages/call/call",
-    "pages/ehr/ehr"
+    "pages/ehr/ehr",
+    "pages/index/custom"
   ],
   "window": {
     "backgroundTextStyle": "light",

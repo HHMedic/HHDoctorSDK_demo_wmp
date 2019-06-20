@@ -16,7 +16,7 @@ Page({
       hhRequest: {
         sdkProductId: 9003,
         userToken: 'E6E6E880BB3AD4A1D8B31FE763B6ADEB3F0D04F68EA2608F6783B874E4F50EEF',
-        openId: 'oirIW0Rc9lRBp3PyfCyxis455JR0123',
+        openId: 'oirIW0Rc9lRBp3PyfCyxis123JR0',
         callPage: '../call/call'
       }
     })

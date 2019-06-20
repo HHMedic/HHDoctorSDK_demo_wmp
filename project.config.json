@@ -4,17 +4,26 @@
 		"ignore": []
 	},
 	"setting": {
-		"urlCheck": false,
+		"urlCheck": true,
 		"es6": true,
 		"postcss": true,
 		"minified": true,
 		"newFeature": true,
+		"nodeModules": true,
 		"autoAudits": false,
-		"nodeModules": true
+		"uglifyFileName": true,
+		"checkInvalidKey": true,
+		"checkSiteMap": true,
+		"uploadWithSourceMap": true,
+		"babelSetting": {
+			"ignore": [],
+			"disablePlugins": [],
+			"outputPath": ""
+		}
 	},
 	"compileType": "miniprogram",
 	"libVersion": "2.6.0",
-	"appid": "wx4cb4b02322574f52",
+	"appid": "",
 	"projectname": "HHDoctorSDK.Demo.Wmp",
 	"debugOptions": {
 		"hidedInDevtools": []
@@ -40,12 +49,19 @@
 			"list": []
 		},
 		"miniprogram": {
-			"current": 0,
+			"current": -1,
 			"list": [
 				{
 					"id": 0,
 					"name": "ehr",
 					"pathName": "pages/ehr/ehr",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "customIndex",
+					"pathName": "pages/index/custom",
 					"query": "",
 					"scene": null
 				}
