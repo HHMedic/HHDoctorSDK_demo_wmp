@@ -1,4 +1,4 @@
-# 和缓视频医生微信小程序SDK使用指南（1.0.0）
+# 和缓视频医生微信小程序SDK使用指南（1.0.1）
 
 和缓视频医生微信小程序SDK（**本SDK**）为小程序自定义组件形式，使用npm方式发布。本文引导开发者从零开始，一步一步搭建起和缓视频医生基本功能框架。如果开发者是在现有项目中集成本SDK，可直接从第2步开始阅读。
 
@@ -180,6 +180,32 @@
    - ***`request`*** :Object，请求参数，说明见下方。
    
    
+### 4.hh-sdkcontext组件
+
+ - **功能** :hhSdk实例，通过this.selectComponent(ID)获取，以调用hhSdk内部封装好的方法，使用方法可参考pages/index/custom页面
+
+ - **入口** : hhdoctor-wmp-sdk/hh-sdkcontext
+
+ - **参数说明** ：
+
+   - ***`request`*** :Object，请求参数，说明见下方。
+
+ - **方法** ：
+
+   - ***`navigateTo(options)`*** :跳转至相应页面。
+    
+    - ****`options`**** :Object，跳转参数，结构如下：
+
+    ```json
+    {
+      page:'',          //Enum，跳转页面名称，'drugOrder':购药订单详情页;   'drugOrderList':购药订单列表页
+      drugOrderId:'',   //String,购药订单ID，当page='drugOrder'时必填。
+      redirectPage:''   //String,支付完成后跳转页面，留空默认跳转至'pages/index/index'
+    }
+
+    ```
+
+
 ## request参数说明
 
 | 属性         | 类型    | 组件 | 默认值 | 必填 | 说明                                                         |
