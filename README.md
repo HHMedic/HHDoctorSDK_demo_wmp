@@ -11,11 +11,17 @@
 
  如需查看旧版本(0.1.*)文档，请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_0.1.md) 
  
-## ⚠特别说明⚠
+## 特别说明（重点关注事项）
 ```
-1. ⚠本项目所使用的AppId为接口测试号AppId，在终端上执行预览会提示错误信息，请更换为实际可用的AppId。
-2. ⚠本项目需要使用微信小程序的livePusher和livePlayer组件，请确保AppId归属的小程序已开启相应的权限。
-3. ⚠本项目所使用uuid和sdkProductId为演示专用，无法应用到测试或生产环境。
+1. 本项目所使用的AppId为接口测试号AppId，在终端上执行预览会提示错误信息，请更换为实际可用的AppId。
+
+2. 本项目需要使用微信小程序的livePusher和livePlayer组件，请确保AppId归属的小程序已开启相应的权限。如不清楚如何开启权限，请咨询和缓接口人。
+
+3. 本项目所使用uuid和sdkProductId为演示专用，无法应用到测试或生产环境。
+
+4. 如使用购药功能，需提供小程序appid及小程序的主体信息给和缓接口人，以绑定支付功能，绑定成功后方可正常使用。详细绑定步骤请咨询和缓接口人。
+
+5. 小程序开发完成后，需提交微信审核，审核通过后方可正式上线。如贵方小程序属首次提交审核，请务必预留充足的审核时间（至少预留1周审核时间，特殊情况下可能需要2周）。如在上线审核过程中遇到问题，可咨询和缓接口人寻求更多建议。
 ```
 
 通过本SDK可实现以下功能：
@@ -88,22 +94,22 @@
 
   - request合法域名:
   ```
-    https://wmp.hh-medic.com
+    https://mp.hh-medic.com
     https://test.hh-medic.com
   ```
   - socket合法域名:
   ```
-    wss://wmp.hh-medic.com
+    wss://mp.hh-medic.com
     wss://test.hh-medic.com
   ```
   - uploadFile合法域名:
   ```
-    https://wmp.hh-medic.com
+    https://mp.hh-medic.com
     https://test.hh-medic.com
   ```
   - downloadFile合法域名:
   ```
-    https://wmp.hh-medic.com
+    https://mp.hh-medic.com
     https://imgfamily.hh-medic.com
     https://imgs.hh-medic.com
     https://test.hh-medic.com
@@ -111,10 +117,7 @@
 
 ### 4.在"业务域名”下增加如下配置：
   ```
-    https://wmp.hh-medic.com
-    https://e.hh-medic.com
-    https://dicom.hh-medic.com
-    https://sec.hh-medic.com
+    https://mp.hh-medic.com
     https://test.hh-medic.com
   ```
 ### 5.在"开发"-"接口设置"下打开相应权限
@@ -194,16 +197,15 @@
 
    - ***`navigateTo(options)`*** :跳转至相应页面。
     
-    - ****`options`**** :Object，跳转参数，结构如下：
+     - ****`options`**** :Object，跳转参数，结构如下：
 
-    ```json
-    {
-      page:'',          //Enum，跳转页面名称，'drugOrder':购药订单详情页;   'drugOrderList':购药订单列表页
-      drugOrderId:'',   //String,购药订单ID，当page='drugOrder'时必填。
-      redirectPage:''   //String,支付完成后跳转页面，留空默认跳转至'pages/index/index'
-    }
-
-    ```
+     ```json
+     {
+       page:'',          //Enum，跳转页面名称，'drugOrder':购药订单详情页;   'drugOrderList':购药订单列表页
+       drugOrderId:'',   //String,购药订单ID，当page='drugOrder'时必填。
+       redirectPage:''   //String,支付完成后跳转页面，留空默认跳转至'pages/index/index'
+     }
+     ```
 
 
 ## request参数说明
@@ -211,6 +213,7 @@
 | 属性         | 类型    | 组件 | 默认值 | 必填 | 说明                                                         |
 | ------------ | ------- | ---- | ------ | ---- | ------------------------------------------------------------ |
 | profileName  | Enum    | 公共|test   | 是   | **`test`**:测试环境<br />**`prod`**:生产环境                 |
+| subDomain  | String    | 公共|无     | 否   | 绑定的业务域名中的二级域名，默认留空                             |
 | sdkProductId | Integer | 公共|无     | 是   | 和缓分配的sdkProductId                                       |
 | userToken    | String  | 公共|无     | 是   | 调用服务器接口注册用户成功后，服务器返回的userToken          |
 | openId       | String  | 公共|无     | 是   | 当前用户的微信openId，获取方法参见微信小程序文档：https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/login.html |
