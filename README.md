@@ -1,4 +1,4 @@
-# 和缓视频医生微信小程序SDK使用指南（1.0.1）
+# 和缓视频医生微信小程序SDK使用指南（1.0.2）
 
 和缓视频医生微信小程序SDK（**本SDK**）为小程序自定义组件形式，使用npm方式发布。本文引导开发者从零开始，一步一步搭建起和缓视频医生基本功能框架。如果开发者是在现有项目中集成本SDK，可直接从第2步开始阅读。
 
@@ -218,6 +218,8 @@
 | userToken    | String  | 公共|无     | 是   | 调用服务器接口注册用户成功后，服务器返回的userToken          |
 | openId       | String  | 公共|无     | 是   | 当前用户的微信openId，获取方法参见微信小程序文档：https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/login.html |
 | callPage  | String | hh-im | 无 | 否 | 呼叫视频医生页面相对当前页面的位置，例如“/pages/call/call”，点击页面顶部的呼叫医生按纽，可跳转到上述页面进行呼叫。不设置该属性，或该属性值为空字符串，则隐藏最上方的呼叫按钮区域。 |
+| personalPage  | String | hh-im | 无 | 否 | 点击左上角图标跳转页面，例如“/pages/my/my”，不设置该属性，或该属性值为空字符串，则点击图标跳转到默认的个人页面。 |
+| personalIconVisible  | Boolen | hh-im | true | 否 | 是否显示左上角图标。 |
 | dept  | Enum | hh-call | 无 | 是 | **`600002`**：呼叫医生咨询成人问题<br />**`600000`**：呼叫医生咨询儿童问题 |
 | logoImage | String | hh-call | 无 | 否 | 与医生对话界面左上角的logo图片url，留空不显示logo。建议图片大小：470 * 120 px，png格式，背景透明 |
 | waittingText    | String | hh-call | 预计接通时间 | 否 | 呼叫等待界面显示的提示语 |

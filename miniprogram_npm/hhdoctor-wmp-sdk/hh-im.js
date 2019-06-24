@@ -1598,7 +1598,8 @@ module.exports = Behavior({
       //hh-im属性
       callPage: '',
       ehrPage: null,
-      personalPage: null,
+      personalPage: '',
+      personalIconVisible: true,
       medicinePage: null,
       addressPage: '',
       payPage: '',
@@ -2092,7 +2093,8 @@ Component({
       summaryTitle: '家庭医生视频咨询总结'
     },
     disConnected: false,
-    personalIconLight: ''
+    personalIconLight: '',
+    extendBtns: []
   },
 
   /**
@@ -2546,6 +2548,18 @@ Component({
         return;
       }
       var style = this.data._request.style;
+      //console.log(style);
+      if (style.extendBtns) {
+        this.setData({
+          extendBtns: style.extendBtns
+        });
+      }
+      if (this.data.extendBtns.length > 0) {
+        this.setData({
+          msgPanelHeight: this.data.msgPanelHeight - 40
+        });
+      }
+
       var bg = '#ffffff',
           fg = '#000000',
           title = '视频医生';
@@ -2668,10 +2682,19 @@ Component({
       });
     },
     _viewPers: function _viewPers() {
-      //this._viewPersonal('personal');
+      var pageUrl = this.data._request.personalPage ? this.data._request.personalPage : this.data.basePath + 'innerpages/my';
+      pageUrl += '?' + this._getPublicRequestParams();
+      if (!this.data._request.personalPage) {
+        pageUrl += '&addressPage=' + this.data._request.addressPage + '&payPage=' + this.data._request.payPage + '&autoAcl=true';
+      }
+
       wx.navigateTo({
-        url: this.data.basePath + 'innerpages/my?' + this._getPublicRequestParams() + '&addressPage=' + this.data._request.addressPage + '&payPage=' + this.data._request.payPage + '&autoAcl=true'
+        url: pageUrl
       });
+
+      /*wx.navigateTo({
+        url: this.data.basePath + 'innerpages/my?' + this._getPublicRequestParams() + '&addressPage=' + this.data._request.addressPage + '&payPage=' + this.data._request.payPage + '&autoAcl=true',
+      })*/
     },
     _buyService: function _buyService(e) {
       this._logInfo('buyService...');
@@ -2698,6 +2721,53 @@ Component({
         return;
       }
       this._viewMedicine(e.currentTarget.dataset.drugid);
+    },
+    _tapExtendBtn: function _tapExtendBtn(e) {
+      if (!e.currentTarget.dataset.btn) {
+        return;
+      }
+      var btn = e.currentTarget.dataset.btn;
+      console.log(btn);
+      switch (btn.type) {
+        case 'view':
+          this._viewUrl(btn.url);
+          break;
+        case 'click':
+          this._clickExtendBtn(btn.key);
+          break;
+        default:
+          return;
+      }
+    },
+    _clickExtendBtn: function _clickExtendBtn(key) {
+      wx.showLoading({
+        title: '请稍候...'
+      });
+      var url = this._getHost().wmpHost + 'im/clickExtendBtn?' + this._getPublicRequestParams() + '&extendBtnKey=' + key;
+      wx.request({
+        url: url,
+        data: {},
+        method: 'POST',
+        success: function success(res) {
+          wx.hideLoading();
+          if (res && res.data && 200 == res.data.status) {
+            //成功
+          } else {
+            var msg = res && res.data && res.data.message ? res.data.message : '网络开小差了，请稍后再试';
+            wx.showModal({
+              title: '出错了',
+              content: msg
+            });
+          }
+        },
+        fail: function fail() {
+          wx.hideLoading();
+          wx.showModal({
+            title: '出错了',
+            content: '网络开小差了，请稍后再试'
+          });
+        }
+      });
     }
   }
 });

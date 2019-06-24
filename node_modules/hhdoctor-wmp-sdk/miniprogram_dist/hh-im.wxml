@@ -3,9 +3,9 @@
   <view class='btn-panel' style='height:{{wxMbb.top+(_request.callPage?102:38)}}px;'>
 
     <view class='topbtn-panel' style='background-color:{{uiStyle.navBarBg}};height:{{wxMbb.top+38}}px'>
-      <!-- <block wx:if='{{_request.personalPage}}'> -->
-      <view class='topbtn personal {{personalIconLight}}' catchtap='_viewPers' style='top:{{wxMbb.top+4}}px;'></view>
-      <!-- </block> -->
+      <block wx:if='{{_request.personalIconVisible}}'>
+        <view class='topbtn personal {{personalIconLight}}' catchtap='_viewPers' style='top:{{wxMbb.top+4}}px;'></view>
+      </block>
       <view class='topbtn-title' style='color:{{uiStyle.navBarFg}};top:{{wxMbb.top+4}}px;'>{{uiStyle.pageTitle}}</view>
     </view>
 
@@ -107,6 +107,16 @@
         <view class='util-text'>相册</view>
       </view>
     </view>
+
+    <!-- 扩展工具栏 -->
+    <view class='extend-panel' wx:if='{{extendBtns.length>0}}'>
+      <scroll-view class='extend-view' scroll-x>
+        <block wx:for='{{extendBtns}}' wx:for-item='extendBtn' wx:key=''>
+          <view class='extend-btn' catchtap='{{extendBtn.tap?extendBtn.tap:"_tapExtendBtn"}}' data-btn='{{extendBtn}}'>{{extendBtn.name}}</view>
+        </block>
+      </scroll-view>
+    </view>
+
   </view>
 </view>
 

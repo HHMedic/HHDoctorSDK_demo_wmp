@@ -1677,7 +1677,8 @@ module.exports = Behavior({
       //hh-im属性
       callPage: '',
       ehrPage: null,
-      personalPage: null,
+      personalPage: '',
+      personalIconVisible: true,
       medicinePage: null,
       addressPage: '',
       payPage: '',

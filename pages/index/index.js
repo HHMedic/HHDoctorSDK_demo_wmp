@@ -17,7 +17,12 @@ Page({
         sdkProductId: 9003,
         userToken: 'E6E6E880BB3AD4A1D8B31FE763B6ADEB3F0D04F68EA2608F6783B874E4F50EEF',
         openId: 'oirIW0Rc9lRBp3PyfCyxis123JR0',
-        callPage: '../call/call'
+        callPage: '../call/call',
+        style: {
+          navBarBg: '#ffffff', //标题栏背景色
+          navBarFg: '#000000', //标题栏字体颜色
+          pageTitle: '视频医生' //顶部标题
+        }
       }
     })
   },

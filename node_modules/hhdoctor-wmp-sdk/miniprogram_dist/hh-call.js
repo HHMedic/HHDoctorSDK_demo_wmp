@@ -1598,7 +1598,8 @@ module.exports = Behavior({
       //hh-im属性
       callPage: '',
       ehrPage: null,
-      personalPage: null,
+      personalPage: '',
+      personalIconVisible: true,
       medicinePage: null,
       addressPage: '',
       payPage: '',
@@ -2780,6 +2781,11 @@ Component({
       //检查用户麦克风和摄像头是否已授权
       that._checkAuthorize(function (success) {
         if (!success) {
+          wx.hideLoading();
+          if (timeOutHandler.weaknetwork) {
+            clearTimeout(timeOutHandler.weaknetwork);
+            timeOutHandler.weaknetwork = null;
+          }
           //麦克风或摄像头未授权 
           that.setData({
             showSettingBtn: true
