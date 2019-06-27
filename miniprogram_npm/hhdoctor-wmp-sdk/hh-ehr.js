@@ -1722,7 +1722,9 @@ module.exports = Behavior({
         showBuyProduct: false, //购买会员菜单
         showAddress: false, //地址管理菜单
         requestInvoice: false, //开发票菜单
-        expertServiceStatus: '' //专家宝服务状态
+        expertServiceStatus: '', //专家宝服务状态,
+        showAbout: true, //关于
+        showProductRight: true //查看权益
       },
       //其他属性
       hospitalId: null
@@ -1761,7 +1763,6 @@ module.exports = Behavior({
       var host = {};
       switch (this.data._request.profileName) {
         case 'prod':
-
           if (this.data._request.subDomain) {
             host.wmpHost = 'https://' + this.data._request.subDomain + '.hh-medic.com/wmp/';
             host.ehrHost = 'https://' + this.data._request.subDomain + '.hh-medic.com/ehrweb/';
@@ -1779,6 +1780,12 @@ module.exports = Behavior({
           host.ehrHost = 'https://test.hh-medic.com/ehrweb/';
           host.patHost = 'https://test.hh-medic.com/patient_web/';
           host.wsServer = 'wss://test.hh-medic.com/wmp/websocket';
+          break;
+        case 'dev':
+          host.wmpHost = 'http://10.1.0.99:8080/wmp/';
+          host.ehrHost = 'http://test.hh-medic.com/ehrweb/';
+          host.patHost = 'http://test.hh-medic.com/patient_web/';
+          host.wsServer = 'ws://10.1.0.99:8080/wmp/websocket';
           break;
         default:
           break;

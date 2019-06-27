@@ -48,5 +48,11 @@ Page({
     hhSdk.navigateTo({
       page: 'drugOrderList'
     })
+  },
+
+  viewPersonal() {
+    hhSdk.navigateTo({
+      page: 'personalPage'
+    })
   }
 })

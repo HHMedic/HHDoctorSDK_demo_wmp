@@ -39,7 +39,7 @@ page {
   width: 100%;
 }
 
-.card-image::after {
+/* .card-image::after {
   content: '';
   position: absolute;
   right: 0px;
@@ -54,7 +54,7 @@ page {
 
 .card-image.prime::after {
   background-image: url("https://imgs.hh-medic.com/icon/wmp/card-prime-mark.png");
-}
+} */
 
 .view-right {
   position: absolute;

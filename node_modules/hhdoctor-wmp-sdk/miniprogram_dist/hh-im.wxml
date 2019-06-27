@@ -1,8 +1,8 @@
 <view class='main-container' style='padding-top:{{sysInfo.statusBarHeight}}px' bindtap='_hideBtn'>
   <!-- 顶部按纽 -->
-  <view class='btn-panel' style='height:{{wxMbb.top+(_request.callPage?102:38)}}px;'>
+  <view class='btn-panel' style='height:{{msgPanelTop}}px;'>
 
-    <view class='topbtn-panel' style='background-color:{{uiStyle.navBarBg}};height:{{wxMbb.top+38}}px'>
+    <view class='topbtn-panel' style='background-color:{{uiStyle.navBarBg}};height:{{wxMbb.top+38}}px' wx:if='{{"custom"==navStyle}}'>
       <block wx:if='{{_request.personalIconVisible}}'>
         <view class='topbtn personal {{personalIconLight}}' catchtap='_viewPers' style='top:{{wxMbb.top+4}}px;'></view>
       </block>
@@ -11,7 +11,7 @@
 
     <block wx:if='{{_request.callPage}}'>
       <view class='mainbtn-panel'>
-        <view class='btn-main' catchtap='_showHideBtn' style='{{customStyle.mainBtn}}'>
+        <view class='btn-main' catchtap='_showHideBtn' style='{{customStyle.mainBtn?customStyle.mainBtn:""}}'>
           <text>呼叫医生</text>
         </view>
       </view>
@@ -22,7 +22,7 @@
 
   <!-- 呼叫按钮 -->
   <block wx:if='{{_request.callPage}}'>
-    <view class='callbtn-panel' animation="{{animationData}}">
+    <view class='callbtn-panel' style='top:{{callBtnTop}}px;' animation="{{animationData}}">
       <view class='call-doctor' catchtap='_callDoctor' data-dept='600002' style='{{customStyle.popBtn}}'>
         <image class='btn-call-img' src='https://imgs.hh-medic.com/icon/wmp/online-adult.png'></image>
         <text class='btn-call-text' style='{{customStyle.popBtnText}}'>成人</text>

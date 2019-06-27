@@ -1643,7 +1643,9 @@ module.exports = Behavior({
         showBuyProduct: false, //购买会员菜单
         showAddress: false, //地址管理菜单
         requestInvoice: false, //开发票菜单
-        expertServiceStatus: '' //专家宝服务状态
+        expertServiceStatus: '', //专家宝服务状态,
+        showAbout: true, //关于
+        showProductRight: true //查看权益
       },
       //其他属性
       hospitalId: null
@@ -1682,7 +1684,6 @@ module.exports = Behavior({
       var host = {};
       switch (this.data._request.profileName) {
         case 'prod':
-
           if (this.data._request.subDomain) {
             host.wmpHost = 'https://' + this.data._request.subDomain + '.hh-medic.com/wmp/';
             host.ehrHost = 'https://' + this.data._request.subDomain + '.hh-medic.com/ehrweb/';
@@ -1700,6 +1701,12 @@ module.exports = Behavior({
           host.ehrHost = 'https://test.hh-medic.com/ehrweb/';
           host.patHost = 'https://test.hh-medic.com/patient_web/';
           host.wsServer = 'wss://test.hh-medic.com/wmp/websocket';
+          break;
+        case 'dev':
+          host.wmpHost = 'http://10.1.0.99:8080/wmp/';
+          host.ehrHost = 'http://test.hh-medic.com/ehrweb/';
+          host.patHost = 'http://test.hh-medic.com/patient_web/';
+          host.wsServer = 'ws://10.1.0.99:8080/wmp/websocket';
           break;
         default:
           break;
@@ -2026,10 +2033,19 @@ Component({
       // })
       wx.getSystemInfo({
         success: function success(res) {
+          var styleName = 'custom';
+          var bTop = 35;
+          if (res.windowHeight < res.screenHeight) {
+            styleName = 'default';
+            bTop = -35;
+          }
+
           that._getSafeAreaHeight(res);
           that.setData({
             sysInfo: res,
-            wxMbb: rect
+            wxMbb: rect,
+            navStyle: styleName,
+            callBtnTop: bTop
             //msgPanelTop: (that.data._request.callPage ? 102 : 38) + rect.top,
             //msgPanelHeight: res.windowHeight - (that.data._request.callPage ? 152 : 88) - safeArea - rect.top
           });
@@ -2058,7 +2074,7 @@ Component({
     },
     hide: function hide() {
       pageIsShowing = false;
-      hhim.on('close', null);
+      if (hhim) hhim.on('close', null);
     }
   },
 
@@ -2069,10 +2085,13 @@ Component({
     _name: 'hh-im',
     url: '',
     host: {},
+    navStyle: 'custom',
     sysInfo: null, //小程序系统信息
     msgPanelTop: 120, //中部消息列表顶部
     msgPanelHeight: 100, //中部消息列表高度
     bottomHeight: 50, //底部输入和工具栏高度
+    callBtnTop: 35,
+    mainBtnHeight: 64,
     msgList: [], //消息列表数组
     lastMsgId: '', //最新消息id
     inputText: '', //用户输入的文字
@@ -2103,9 +2122,17 @@ Component({
   methods: {
     _requestComplete: function _requestComplete() {
       this._logInfo('初始化参数完成，准备启动IM...');
+      var mHeight = 64;
+
+      if ('custom' == this.data.navStyle) {
+        mHeight = this.data.wxMbb.top + (this.data._request.callPage ? 102 : 38);
+      } else if (!this.data._request.callPage) {
+        mHeight = 0;
+      }
+
       this.setData({
-        msgPanelTop: (this.data._request.callPage ? 102 : 38) + this.data.wxMbb.top,
-        msgPanelHeight: this.data.sysInfo.windowHeight - (this.data._request.callPage ? 152 : 88) - safeArea - this.data.wxMbb.top
+        msgPanelTop: mHeight,
+        msgPanelHeight: this.data.sysInfo.windowHeight - mHeight - safeArea - 50
       });
 
       that._addMonitor();
@@ -2321,7 +2348,7 @@ Component({
         timingFunction: 'ease-in-out'
       });
 
-      var topPx = visible ? 105 + that.data.sysInfo.statusBarHeight : 35;
+      var topPx = visible ? this.data.msgPanelTop : this.data.callBtnTop;
       animation.top(topPx).step();
       this.setData({
         callBtnsVisible: visible,

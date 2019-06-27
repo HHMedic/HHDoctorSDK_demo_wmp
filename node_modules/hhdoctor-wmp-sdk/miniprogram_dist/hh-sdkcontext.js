@@ -1643,7 +1643,9 @@ module.exports = Behavior({
         showBuyProduct: false, //购买会员菜单
         showAddress: false, //地址管理菜单
         requestInvoice: false, //开发票菜单
-        expertServiceStatus: '' //专家宝服务状态
+        expertServiceStatus: '', //专家宝服务状态,
+        showAbout: true, //关于
+        showProductRight: true //查看权益
       },
       //其他属性
       hospitalId: null
@@ -1682,7 +1684,6 @@ module.exports = Behavior({
       var host = {};
       switch (this.data._request.profileName) {
         case 'prod':
-
           if (this.data._request.subDomain) {
             host.wmpHost = 'https://' + this.data._request.subDomain + '.hh-medic.com/wmp/';
             host.ehrHost = 'https://' + this.data._request.subDomain + '.hh-medic.com/ehrweb/';
@@ -1700,6 +1701,12 @@ module.exports = Behavior({
           host.ehrHost = 'https://test.hh-medic.com/ehrweb/';
           host.patHost = 'https://test.hh-medic.com/patient_web/';
           host.wsServer = 'wss://test.hh-medic.com/wmp/websocket';
+          break;
+        case 'dev':
+          host.wmpHost = 'http://10.1.0.99:8080/wmp/';
+          host.ehrHost = 'http://test.hh-medic.com/ehrweb/';
+          host.patHost = 'http://test.hh-medic.com/patient_web/';
+          host.wsServer = 'ws://10.1.0.99:8080/wmp/websocket';
           break;
         default:
           break;
@@ -1993,7 +2000,7 @@ module.exports = Behavior({
 "use strict";
 
 
-// components/hh-sdkcontext.js
+var that;
 Component({
   behaviors: [__webpack_require__(2)],
   /**
@@ -2005,9 +2012,16 @@ Component({
    * 组件的初始数据
    */
   data: {
-    _name: 'hh-sdkcontext'
+    _name: 'hh-sdkcontext',
+    _requestComplete: false,
+    _timeOut: 3000
   },
-
+  lifetimes: {
+    attached: function attached() {
+      that = this;
+    },
+    ready: function ready() {}
+  },
   /**
    * 组件的方法列表
    */
@@ -2016,7 +2030,29 @@ Component({
       if (!options || !options.page) {
         return;
       }
+      var _t = 0;
+      var checkInterval = setInterval(function () {
+        if (!that.data._requestComplete) {
+          if (_t > that.data._timeOut) {
+            //超时
+            clearInterval(checkInterval);
+            console.error('执行navigateTo超时，可能是参数不足');
+          } else {
+            _t += 100;
+          }
+          return;
+        }
 
+        clearInterval(checkInterval);
+        that._doNaviTo(options);
+      }, 100);
+    },
+    _requestComplete: function _requestComplete() {
+      this.setData({
+        _requestComplete: true
+      });
+    },
+    _doNaviTo: function _doNaviTo(options) {
       switch (options.page) {
         case 'drugOrder':
           this._viewMedicine(options.drugOrderId, options.redirectPage);
@@ -2024,13 +2060,25 @@ Component({
         case 'drugOrderList':
           this._viewMedicineOrderList(options.redirectPage);
           break;
+        case 'personalPage':
+          this._viewPersonal();
+          break;
         case 'addressList':
           break;
         default:
           return;
       }
     },
-    _requestComplete: function _requestComplete() {}
+    _viewPersonal: function _viewPersonal() {
+      var pageUrl = this.data._request.personalPage ? this.data._request.personalPage : this.data.basePath + 'innerpages/my';
+      pageUrl += '?' + this._getPublicRequestParams();
+      if (!this.data._request.personalPage) {
+        pageUrl += '&addressPage=' + this.data._request.addressPage + '&payPage=' + this.data._request.payPage + '&autoAcl=true';
+      }
+      wx.navigateTo({
+        url: pageUrl
+      });
+    }
   }
 });
 

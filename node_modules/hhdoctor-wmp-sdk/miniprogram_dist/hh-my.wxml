@@ -3,7 +3,7 @@
   <view class='card'>
     <image class='card-image {{primeLevel}}' src='{{"prime"==primeLevel?"https://imgs.hh-medic.com/icon/wmp/card-prime-back.png":"https://imgs.hh-medic.com/icon/wmp/card-normal-back.png"}}' mode='widthFix'></image>
 
-    <view class='view-right {{primeLevel}}' catchtap='_viewRight' wx:if='{{product}}'>查看权益></view>
+    <view class='view-right {{primeLevel}}' catchtap='_viewRight' wx:if='{{product && _request.userAcl.showProductRight}}'>查看权益></view>
     <view class='info {{primeLevel}}'>
       <image class='head-image' src='{{user.photourl}}'></image>
       <view class='info-list'>
@@ -94,7 +94,7 @@
       <view class='menu-remark'></view>
       <view class='menu-arrow'></view>
     </view>
-    <view class='menu-item' catchtap='_viewAbout'>
+    <view class='menu-item' catchtap='_viewAbout' wx:if='{{_request.userAcl.showAbout}}'>
       <view class='menu-icon about'></view>
       <view class='menu-name'>关于</view>
       <view class='menu-remark'></view>
