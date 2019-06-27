@@ -1,2 +1,2 @@
-<hhIm request='{{hhRequest}}'>
+<hhIm request='{{hhRequest}}' bindlogin='onLogin' >
 </hhIm>

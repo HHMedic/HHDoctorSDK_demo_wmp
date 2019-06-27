@@ -74,5 +74,8 @@ Page({
    */
   onShareAppMessage: function() {
 
-  }
+  },
+  onLogin(e) {
+    console.log('登录事件,', JSON.stringify(e));
+  },
 })
