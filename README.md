@@ -1,4 +1,4 @@
-# 和缓视频医生微信小程序SDK使用指南（1.0.2）
+# 和缓视频医生微信小程序SDK使用指南（1.0.3）
 
 和缓视频医生微信小程序SDK（**本SDK**）为小程序自定义组件形式，使用npm方式发布。本文引导开发者从零开始，一步一步搭建起和缓视频医生基本功能框架。如果开发者是在现有项目中集成本SDK，可直接从第2步开始阅读。
 
@@ -138,6 +138,16 @@
   - **参数说明**： 
 
     - ***`request`*** :Object，请求参数，说明见下方。
+    
+  - **事件** 
+
+    - ***`login`***:用户登录事件，登录成功后方可与医助沟通，detail数据结构如下：
+
+    ```json
+    {
+      success:[true:false]  //是否登录成功 
+    }
+    ```
 
 ### 2.hh-call组件
   - **功能** ：呼叫视频医生
@@ -201,7 +211,7 @@
 
      ```json
      {
-       page:'',          //Enum，跳转页面名称，'drugOrder':购药订单详情页;   'drugOrderList':购药订单列表页
+       page:'',          //Enum，跳转页面名称，'drugOrder':购药订单详情页; 'drugOrderList':购药订单列表页; 'personalPage':个人主页
        drugOrderId:'',   //String,购药订单ID，当page='drugOrder'时必填。
        redirectPage:''   //String,支付完成后跳转页面，留空默认跳转至'pages/index/index'
      }
