@@ -14,9 +14,10 @@ Page({
   onLoad: function(options) {
     this.setData({
       hhRequest: {
-        sdkProductId: 9003,
-        userToken: 'E6E6E880BB3AD4A1D8B31FE763B6ADEB3F0D04F68EA2608F6783B874E4F50EEF',
-        openId: 'oirIW0Rc9lRBp3PyfCyxis123JR0',
+        profileName: 'test',   //test:测试环境,   prod:生产环境
+        sdkProductId: 9003,    //已分配的产品id
+        userToken: 'E6E6E880BB3AD4A1D8B31FE763B6ADEB3F0D04F68EA2608F6783B874E4F50EEF',   //服务器注册用户接口返回的userToken
+        openId: 'oirIW0Rc9lRBp3PyfCyxis123JR0',    //用户微信openId
         callPage: '../call/call',
         style: {
           navBarBg: '#ffffff', //标题栏背景色
