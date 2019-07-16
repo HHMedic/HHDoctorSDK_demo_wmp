@@ -589,43 +589,6 @@ function preCall(dept, callback, toUuid, appointedDoctorId, appointedOrderId, mr
     }, 500);
   }
 }
-//预呼叫
-/*function preCall(dept, callback) {
-  log('preCalling...');
-  if (isPrecall) {
-    return;
-  }
-  sendLog('1', 'preCall dept:' + dept);
-  isPrecall = true;
-  if (callback) {
-    _callbacks.preCall = callback;
-  }
-  var msg = {
-    action: 'PRECALL_REQUEST',
-    data: {
-      dept: dept,
-      debug: false
-    }
-  }
-  if (connected) {
-    //已连接
-    sendMessage(JSON.stringify(msg));
-  } else {
-    //处理页面打开但是没有连接到wss服务器的情况，尝试重连
-    connectToWss();
-    setTimeout(function() {
-      if (connected) {
-        sendMessage(JSON.stringify(msg));
-      } else {
-        //连接失败
-        var res = new Object();
-        res.success = false;
-        res.message = 'connectToWss连接到服务器失败';
-        _callbacks.preCall(res);
-      }
-    }, 500);
-  }
-}*/
 
 //呼叫
 function call(callback) {
@@ -739,29 +702,6 @@ function evaluate(orderId, value, text) {
   };
   sendMessage(JSON.stringify(msg));
 }
-/*function hangup(hangupType, callback) {
-  log('hangup...');
-  if (!doctorName || !doctorUuid) {
-    return;
-  }
-  sendLog('1', 'hangup');
-  if (callback) {
-    _callbacks.hangup = callback;
-  }
-  _callbacks.call = null;
-  var msg = {
-    action: 'HANGUP_REQUEST',
-    data: {
-      from: _options.uuid,
-      to: doctorUuid,
-      attach: {},
-      pushcontent: '',
-      debug: false,
-      type: hangupType
-    }
-  }
-  sendMessage(JSON.stringify(msg));
-}*/
 
 //Public events
 //事件统一回调接口，目前支持的事件包括：
@@ -1179,6 +1119,9 @@ function parseMsgResponse(msg) {
   //添加到缓存
   if (msg.data.success && sendingMsg[id]) {
     var msgData = sendingMsg[id];
+    if (msg.data.msgId) {
+      msgData.id = msg.data.msgId;
+    }
     if (!existMsg(msgData.id)) {
       _cacheMsgs.list.push(msgData);
       setCacheMsgs();
@@ -1614,7 +1557,7 @@ module.exports = Behavior({
       dept: '',
       logoImage: 'https://imgs.hh-medic.com/icon/wmp/logo-default.png',
       waittingText: '预计接通时间',
-      cameraTimeoutSeconds: 10,
+      cameraTimeoutSeconds: 6,
       cameraTimeoutMessage: '打开摄像头失败，请重启微信再呼叫',
       playTimeoutSeconds: 10,
       playTimeoutMessage: '播放视频失败，请重启微信再呼叫',
@@ -1807,7 +1750,7 @@ module.exports = Behavior({
       this._requestComplete();
     },
     _getPublicRequestParams: function _getPublicRequestParams() {
-      var params = 'profileName=' + this.data._request.profileName + '&sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
+      var params = 'profileName=' + this.data._request.profileName + '&subDomain=' + this.data._request.subDomain + '&sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
       return params;
     },
     _initHhImSdk: function _initHhImSdk(requestHis, hhImCallbacks, initCallback) {
@@ -2389,25 +2332,58 @@ Component({
       if (!this.data._request.callPage) {
         return;
       }
-      if (that.data.disConnected || !hhim || !hhim.loginStatus()) {
-        wx.showModal({
-          title: '网络不给力',
-          content: '建议切换网络或稍后呼叫医生',
-          showCancel: false,
-          success: function success() {
-            wx.navigateBack({
-              delta: 1
-            });
-          }
-        });
-        return;
-      }
-      //var pageUrl = this.data._request.callPage + '?' + this._getPublicRequestParams() + '&dept=' + e.currentTarget.dataset.dept;
-      var pageUrl = this.data._request.callPage + '?' + this._getPublicRequestParams();
-      console.log(pageUrl);
-      wx.navigateTo({
-        url: pageUrl
+      wx.showLoading({
+        title: '连接中...'
       });
+      var callTimeout = 0;
+      var callInterval = setInterval(function () {
+        if (callTimeout >= 5000) {
+          //超时，显示提示信息
+          clearInterval(callInterval);
+          wx.showModal({
+            title: '网络不给力',
+            content: '建议切换网络或稍后呼叫医生',
+            showCancel: false,
+            success: function success() {
+              wx.navigateBack({
+                delta: 1
+              });
+            }
+          });
+          return;
+        }
+        if (!that.data.disConnected && hhim && hhim.loginStatus()) {
+          //登录成功，可以呼叫
+          wx.hideLoading();
+          clearInterval(callInterval);
+          var pageUrl = that.data._request.callPage + '?' + that._getPublicRequestParams() + '&dept=' + e.currentTarget.dataset.dept;
+          console.log(pageUrl);
+          wx.navigateTo({
+            url: pageUrl
+          });
+          return;
+        }
+        callTimeout += 100;
+      }, 100);
+
+      // if (that.data.disConnected || !hhim || !hhim.loginStatus()) {
+      //   wx.showModal({
+      //     title: '网络不给力',
+      //     content: '建议切换网络或稍后呼叫医生',
+      //     showCancel: false,
+      //     success: function() {
+      //       wx.navigateBack({
+      //         delta: 1
+      //       })
+      //     }
+      //   })
+      //   return;
+      // }
+      // var pageUrl = this.data._request.callPage + '?' + this._getPublicRequestParams() + '&dept=' + e.currentTarget.dataset.dept;
+      // console.log(pageUrl);
+      // wx.navigateTo({
+      //   url: pageUrl
+      // })
     },
 
 
@@ -2690,13 +2666,7 @@ Component({
       hhim.getHisMsg(true);
     },
     _getSafeAreaHeight: function _getSafeAreaHeight(info) {
-      // if (info.safeArea) {
-      //   safeArea = info.screenHeight - info.safeArea.bottom
-      // } else {
-      //   if (info.model.toLowerCase().indexOf('iphone x') >= 0) {
-      //     safeArea = 34;
-      //   }
-      // }
+
       if (info.model.toLowerCase().indexOf('iphone x') >= 0) {
         safeArea = 34;
       } else {

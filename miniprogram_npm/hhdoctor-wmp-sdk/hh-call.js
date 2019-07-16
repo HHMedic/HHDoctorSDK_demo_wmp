@@ -589,43 +589,6 @@ function preCall(dept, callback, toUuid, appointedDoctorId, appointedOrderId, mr
     }, 500);
   }
 }
-//预呼叫
-/*function preCall(dept, callback) {
-  log('preCalling...');
-  if (isPrecall) {
-    return;
-  }
-  sendLog('1', 'preCall dept:' + dept);
-  isPrecall = true;
-  if (callback) {
-    _callbacks.preCall = callback;
-  }
-  var msg = {
-    action: 'PRECALL_REQUEST',
-    data: {
-      dept: dept,
-      debug: false
-    }
-  }
-  if (connected) {
-    //已连接
-    sendMessage(JSON.stringify(msg));
-  } else {
-    //处理页面打开但是没有连接到wss服务器的情况，尝试重连
-    connectToWss();
-    setTimeout(function() {
-      if (connected) {
-        sendMessage(JSON.stringify(msg));
-      } else {
-        //连接失败
-        var res = new Object();
-        res.success = false;
-        res.message = 'connectToWss连接到服务器失败';
-        _callbacks.preCall(res);
-      }
-    }, 500);
-  }
-}*/
 
 //呼叫
 function call(callback) {
@@ -739,29 +702,6 @@ function evaluate(orderId, value, text) {
   };
   sendMessage(JSON.stringify(msg));
 }
-/*function hangup(hangupType, callback) {
-  log('hangup...');
-  if (!doctorName || !doctorUuid) {
-    return;
-  }
-  sendLog('1', 'hangup');
-  if (callback) {
-    _callbacks.hangup = callback;
-  }
-  _callbacks.call = null;
-  var msg = {
-    action: 'HANGUP_REQUEST',
-    data: {
-      from: _options.uuid,
-      to: doctorUuid,
-      attach: {},
-      pushcontent: '',
-      debug: false,
-      type: hangupType
-    }
-  }
-  sendMessage(JSON.stringify(msg));
-}*/
 
 //Public events
 //事件统一回调接口，目前支持的事件包括：
@@ -1179,6 +1119,9 @@ function parseMsgResponse(msg) {
   //添加到缓存
   if (msg.data.success && sendingMsg[id]) {
     var msgData = sendingMsg[id];
+    if (msg.data.msgId) {
+      msgData.id = msg.data.msgId;
+    }
     if (!existMsg(msgData.id)) {
       _cacheMsgs.list.push(msgData);
       setCacheMsgs();
@@ -1614,7 +1557,7 @@ module.exports = Behavior({
       dept: '',
       logoImage: 'https://imgs.hh-medic.com/icon/wmp/logo-default.png',
       waittingText: '预计接通时间',
-      cameraTimeoutSeconds: 10,
+      cameraTimeoutSeconds: 6,
       cameraTimeoutMessage: '打开摄像头失败，请重启微信再呼叫',
       playTimeoutSeconds: 10,
       playTimeoutMessage: '播放视频失败，请重启微信再呼叫',
@@ -1807,7 +1750,7 @@ module.exports = Behavior({
       this._requestComplete();
     },
     _getPublicRequestParams: function _getPublicRequestParams() {
-      var params = 'profileName=' + this.data._request.profileName + '&sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
+      var params = 'profileName=' + this.data._request.profileName + '&subDomain=' + this.data._request.subDomain + '&sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
       return params;
     },
     _initHhImSdk: function _initHhImSdk(requestHis, hhImCallbacks, initCallback) {
@@ -2647,7 +2590,7 @@ Component({
 
     _onLivePusherError: function _onLivePusherError(e) {
       that._sendLog('2', 'error:' + e.detail.errCode);
-      if (10001 == e.detail.errCode || 10002 == e.detail.errCode) {
+      if ((10001 == e.detail.errCode || 10002 == e.detail.errCode) && this.data.status > 0) {
         //启动摄像头或麦克风失败
         that._hangup({
           initiative: true,
@@ -2677,10 +2620,10 @@ Component({
 
     _onLivePusherChange: function _onLivePusherChange(e) {
       that._processPusherCode(e.detail.code);
-      if (0 < that.data.status) {
-        that._sendLog('2', 'status:' + e.detail.code);
-        that._triggerEvent('pusherstatechange', e);
-      }
+      //if (0 < that.data.status) {
+      that._sendLog('2', 'status:' + e.detail.code);
+      that._triggerEvent('pusherstatechange', e);
+      //}
     },
 
     /** 处理推流状态码 */
@@ -2800,6 +2743,27 @@ Component({
           return;
         }
         that._sendLog('1', 'authorize successs ');
+
+        //that._showPusher();
+        //新增代码
+        /*that.data.pusher.startPreview({
+          success: function() {
+            callStatus.openCamera = true;
+            callStatus.preCallStart = new Date().getTime();
+            getApp().globalData._hhim.preCall(dept, callback,
+              that.data._request.to,
+              that.data._request.appointedDoctorId,
+              that.data._request.appointedOrderId,
+              that.data._request.medicRecordId,
+              that.data._request.patient,
+              that.data._request.hospitalId);
+          },
+          fail: function() {
+            console.log('#########that.data.pusher.startPreview fail');
+          }
+        })*/
+        //新增代码结束==========
+
         callStatus.preCallStart = new Date().getTime();
         getApp().globalData._hhim.preCall(dept, callback, that.data._request.to, that.data._request.appointedDoctorId, that.data._request.appointedOrderId, that.data._request.medicRecordId, that.data._request.patient, that.data._request.hospitalId);
       });
@@ -2893,7 +2857,14 @@ Component({
       getApp().globalData._hhim.on('error', that._hhImError);
 
       pushStart = false;
-      that.data.pusher.start();
+
+      setTimeout(function () {
+        that.data.pusher.stop();
+      }, 500);
+
+      setTimeout(function () {
+        that.data.pusher.start();
+      }, 1000);
 
       ring.play();
       ring.onTimeUpdate(function () {
@@ -2939,6 +2910,7 @@ Component({
         //拒绝或错误
         that._hangup({
           initiative: false,
+          hangupType: 'HANGUP',
           source: '_callCb'
         });
       }
@@ -2964,7 +2936,7 @@ Component({
         that._hangup({
           initiative: true,
           hangupType: 'HANGUP',
-          stayInpage: false,
+          stayInpage: true,
           source: '_checkCameraIsOpen'
         });
         wx.showModal({
@@ -3177,9 +3149,9 @@ Component({
       //清除计时器
       that._clearCountDown();
       that._stopVideo();
+      callStatus.preCallStart = -1;
       getApp().globalData._hhim.on('transfer', null);
       getApp().globalData._hhim.on('error', null);
-
       that.setData({
         countdown: that.data.t301Timeout,
         status: 0,
@@ -3509,6 +3481,7 @@ Component({
     },
 
     _navBack: function _navBack() {
+      this._stopVideo();
       wx.navigateBack({
         delta: 1
       });
@@ -3563,7 +3536,7 @@ Component({
       if (showModal) return;
       showModal = true;
       wx.showModal({
-        title: '网络不给力',
+        title: '网络不给力(-1)',
         content: '建议切换网络或稍后呼叫医生',
         showCancel: false,
         success: function success() {

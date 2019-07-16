@@ -4,7 +4,7 @@
 		"ignore": []
 	},
 	"setting": {
-		"urlCheck": false,
+		"urlCheck": true,
 		"es6": true,
 		"postcss": true,
 		"minified": true,
@@ -22,8 +22,8 @@
 		}
 	},
 	"compileType": "miniprogram",
-	"libVersion": "2.6.0",
-	"appid": "",
+	"libVersion": "2.7.0",
+	"appid": "wx4cb4b02322574f52",
 	"projectname": "HHDoctorSDK.Demo.Wmp",
 	"debugOptions": {
 		"hidedInDevtools": []

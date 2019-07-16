@@ -3,7 +3,8 @@
     "pages/index/index",
     "pages/call/call",
     "pages/ehr/ehr",
-    "pages/index/custom"
+    "pages/index/custom",
+    "pages/index/im"
   ],
   "window": {
     "backgroundTextStyle": "light",
