@@ -20,9 +20,12 @@ Page({
         openId: 'oirIW0Rc9lRBp3PyfCyxis123JR0',    //用户微信openId
         callPage: '../call/call',
         style: {
-          navBarBg: '#ffffff', //标题栏背景色
-          navBarFg: '#000000', //标题栏字体颜色
-          pageTitle: '视频医生' //顶部标题
+          logoImage:'',  //通话时左上角logo
+          navicationBar:{
+            bColor:'#ffffff',  //标题栏背景色
+            fColor:'#000000',  //标题栏字体颜色
+            text:'视频医生'     //顶部标题
+          }
         }
       }
     })
