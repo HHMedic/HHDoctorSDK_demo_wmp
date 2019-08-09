@@ -250,6 +250,6 @@
 | ------------ | ------- | ---- | ------ | ---- | ------------------------------------------------------------ |
 | logoImage  | String    | hh-call| 无   | 否   | 与医生对话界面左上角的logo图片url，留空不显示logo。建议图片大小：470 * 120 px，png格式，背景透明 |
 | waittingText | String | hh-call| 预计接通时间:   | 否   | 在响铃界面倒计时秒数前方显示的文字    |
-| navigationBar  | Object    | hh-call| 无     | 否   | **`bcolor`** :标题栏背景色; **`fcolor`** :标题栏文字颜色; **`text`** :标题栏文字                             |
+| navigationBar  | Object    | hh-call| 无     | 否   | **`bColor`** :标题栏背景色; **`fColor`** :标题栏文字颜色; **`text`** :标题栏文字                             |
 
 
