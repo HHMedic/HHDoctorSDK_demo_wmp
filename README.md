@@ -1,4 +1,4 @@
-# 和缓视频医生微信小程序SDK使用指南（1.0.6）
+# 和缓视频医生微信小程序SDK使用指南（1.0.7）
 
 和缓视频医生微信小程序SDK（**本SDK**）为小程序自定义组件形式，使用npm方式发布。本文引导开发者从零开始，一步一步搭建起和缓视频医生基本功能框架。如果开发者是在现有项目中集成本SDK，可直接从第2步开始阅读。
 
@@ -233,7 +233,7 @@
 | personalPage  | String | hh-im | 无 | 否 | 点击左上角图标跳转页面，例如“/pages/my/my”，不设置该属性，或该属性值为空字符串，则点击图标跳转到默认的个人页面。 |
 | personalIconVisible  | Boolen | hh-im | true | 否 | 是否显示左上角图标。 |
 | dept  | Enum | hh-call | 无 | 是 | **`600002`**：呼叫医生咨询成人问题<br />**`600000`**：呼叫医生咨询儿童问题 |
-| logoImage | String | hh-call | 无 | 否 | 与医生对话界面左上角的logo图片url，留空不显示logo。建议图片大小：470 * 120 px，png格式，背景透明 |
+| style | Object | hh-call | 无 | 否 | 界面样式，详见下方“style参数说明” |
 | waittingText    | String | hh-call | 预计接通时间 | 否 | 呼叫等待界面显示的提示语 |
 | cameraTimeoutSeconds       | Integer | hh-call | 10 | 否 | 启动摄像头超时(单位：秒)，当因某些原因导致微信无法启动摄像头时，会提示用户，并退出呼叫 |
 | cameraTimeoutMessage        | String | hh-call | 打开摄像头失败，请重启微信再呼叫 | 否 | 启动摄像头超时后提示用户的信息内容 |
@@ -244,4 +244,13 @@
 | addMember | Boolen | hh-ehr |  true | 否 | 家庭成员列表下方是否显示添加新成员按钮 |
 | patient    | String | hh-ehr | 无        | 否 | 需要查看健康档案的实际患者的userToken值 |
 | medicRecordId | String | hh-ehr | 无    | 否 | 需要查看健康档案的id值 |
+
+
+## style参数说明
+| 属性         | 类型    | 组件 | 默认值 | 必填 | 说明                                                         |
+| ------------ | ------- | ---- | ------ | ---- | ------------------------------------------------------------ |
+| logoImage  | String    | hh-call| 无   | 否   | 与医生对话界面左上角的logo图片url，留空不显示logo。建议图片大小：470 * 120 px，png格式，背景透明 |
+| waittingText | String | hh-call| 预计接通时间:   | 否   | 在响铃界面倒计时秒数前方显示的文字    |
+| navigationBar  | Object    | hh-call| 无     | 否   | **`bcolor`** :标题栏背景色; **`fcolor`** :标题栏文字颜色; **`text`** :标题栏文字                             |
+
 
