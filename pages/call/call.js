@@ -14,7 +14,7 @@ Page({
   onLoad: function(options) {
     if (options) {
       options.style = {
-        logoImage: 'http://efamily-pic.gfarmsh.com/fullLogo.png', //视频通话时左上角logo
+        logoImage: '', //视频通话时左上角logo，支持本地图片和网络图片，如使用网络图片请确保小程序后台已添加图片url域名
         navicationBar: {
           bColor: '#ffffff', //视频界面标题栏背景色
           fColor: '#000000', //视频界面标题栏字体颜色
