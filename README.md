@@ -234,7 +234,6 @@
 | personalIconVisible  | Boolen | hh-im | true | 否 | 是否显示左上角图标。 |
 | dept  | Enum | hh-call | 无 | 是 | **`600002`**：呼叫医生咨询成人问题<br />**`600000`**：呼叫医生咨询儿童问题 |
 | style | Object | hh-call | 无 | 否 | 界面样式，详见下方“style参数说明” |
-| waittingText    | String | hh-call | 预计接通时间 | 否 | 呼叫等待界面显示的提示语 |
 | cameraTimeoutSeconds       | Integer | hh-call | 10 | 否 | 启动摄像头超时(单位：秒)，当因某些原因导致微信无法启动摄像头时，会提示用户，并退出呼叫 |
 | cameraTimeoutMessage        | String | hh-call | 打开摄像头失败，请重启微信再呼叫 | 否 | 启动摄像头超时后提示用户的信息内容 |
 | playTimeoutSeconds        | Integer | hh-call | 10 | 否 | 播放医生画面超时(单位：秒)，当因某些原因导致微信无法播放医生画面时，会提示用户，并退出呼叫 |
