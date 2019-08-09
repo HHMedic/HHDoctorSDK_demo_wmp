@@ -348,6 +348,7 @@ var _options = {
   uuid: null,
   token: null,
   openId: null,
+  wxAppId: null,
   userToken: null
 };
 
@@ -366,6 +367,7 @@ var _callbacks = {
   onHangupRequest: null,
   onTransferCall: null,
   onUpdateUrl: null,
+  onCommand: null,
   login: null,
   sendMsg: [],
   addAttatch: null,
@@ -405,7 +407,7 @@ function init(option) {
 
 //登录
 //function login(sdkProductId, uuid, token, openId, withHisMsg, callback) {
-function login(sdkProductId, userToken, openId, withHisMsg, callback) {
+function login(sdkProductId, userToken, openId, wxAppId, withHisMsg, callback) {
   log('login');
   if ('undefined' != typeof withHisMsg) {
     loginWithHisMsg = withHisMsg;
@@ -418,6 +420,7 @@ function login(sdkProductId, userToken, openId, withHisMsg, callback) {
   //_options.token = token;
   _options.userToken = userToken;
   _options.openId = openId;
+  _options.wxAppId = wxAppId;
   connectToWss();
 };
 
@@ -737,6 +740,9 @@ function on(event, callback) {
     case 'transfer':
       _callbacks.onTransferCall = callback;
       break;
+    case 'command':
+      _callbacks.onCommand = callback;
+      break;
     default:
       break;
   }
@@ -797,6 +803,7 @@ function startLogin() {
       sdkProductId: _options.sdkProductId,
       userToken: _options.userToken,
       openId: _options.openId,
+      wxAppId: _options.wxAppId,
       withHisMsg: loginWithHisMsg
     }
   };
@@ -1075,8 +1082,18 @@ function parseSocketMessage(data) {
       sendLog('1', 'call transfer:' + data);
       parseTransfer(msg);
       break;
+    case 'COMMAND_REQUEST':
+      sendLog('1', 'command:' + data);
+      parseCommand(msg);
+      break;
     default:
       break;
+  }
+}
+
+function parseCommand(msg) {
+  if (_callbacks.onCommand) {
+    _callbacks.onCommand(msg.data);
   }
 }
 
@@ -1529,7 +1546,7 @@ module.exports = Behavior({
     }
   },
   data: {
-    _sdkVersion: '1.0.1',
+    _sdkVersion: '1.0.6',
     _request: {
       //公共属性
       subDomain: '',
@@ -1770,6 +1787,9 @@ module.exports = Behavior({
         if (hhImCallbacks.onClose) {
           getApp().globalData._hhim.on('close', hhImCallbacks.onClose);
         }
+        if (hhImCallbacks.onCommand) {
+          getApp().globalData._hhim.on('command', hhImCallbacks.onCommand);
+        }
         if (requestHis) {
           getApp().globalData._hhim.getHisMsg();
         }
@@ -1805,15 +1825,22 @@ module.exports = Behavior({
       if (hhImCallbacks.onClose) {
         hhim.on('close', hhImCallbacks.onClose);
       }
+      if (hhImCallbacks.onCommand) {
+        hhim.on('command', hhImCallbacks.onCommand);
+      }
+
+      var account = wx.getAccountInfoSync();
 
       //hhim登录
       this._logInfo('开始登录...');
-      hhim.login(this.data._request.sdkProductId, this.data._request.userToken, this.data._request.openId, requestHis, function (res) {
+      hhim.login(this.data._request.sdkProductId, this.data._request.userToken, this.data._request.openId, account.miniProgram.appId, requestHis, function (res) {
         if (res) {
           that._logInfo('登录成功');
           //登录成功
           hhim.sendLog('1', 'login success');
-          hhim.sendLog('1', JSON.stringify(that.data.sysInfo));
+          if (that.data.sysInfo) {
+            hhim.sendLog('1', JSON.stringify(that.data.sysInfo));
+          }
           getApp().globalData._hhim = hhim;
           if (initCallback) {
             initCallback({
@@ -1958,6 +1985,7 @@ var reloadMsg = false;
 var safeArea = 0;
 var pageIsShowing = false;
 var voicePlaying = false;
+var calling = false;
 
 Component({
   behaviors: [hhBehaviors],
@@ -1969,31 +1997,26 @@ Component({
   lifetimes: {
     attached: function attached() {
       that = this;
-      var rect = wx.getMenuButtonBoundingClientRect();
 
-      // this.setData({
-      //   wxMbb: rect
+      // var rect = wx.getMenuButtonBoundingClientRect();
+      // var res = wx.getSystemInfoSync();
+
+      // var styleName = 'custom';
+      // var bTop = 35;
+      // if (res.windowHeight < res.screenHeight) {
+      //   styleName = 'default';
+      //   bTop = -35;
+      // }
+      // console.log('acctached', res.windowHeight, res.screenHeight, styleName);
+
+      // that._getSafeAreaHeight(res);
+      // that.setData({
+      //   sysInfo: res,
+      //   wxMbb: rect,
+      //   navStyle: styleName,
+      //   callBtnTop: bTop
       // })
-      wx.getSystemInfo({
-        success: function success(res) {
-          var styleName = 'custom';
-          var bTop = 35;
-          if (res.windowHeight < res.screenHeight) {
-            styleName = 'default';
-            bTop = -35;
-          }
 
-          that._getSafeAreaHeight(res);
-          that.setData({
-            sysInfo: res,
-            wxMbb: rect,
-            navStyle: styleName,
-            callBtnTop: bTop
-            //msgPanelTop: (that.data._request.callPage ? 102 : 38) + rect.top,
-            //msgPanelHeight: res.windowHeight - (that.data._request.callPage ? 152 : 88) - safeArea - rect.top
-          });
-        }
-      });
       rm.onStop(that._onRecordStop);
       pageIsShowing = true;
     },
@@ -2006,10 +2029,12 @@ Component({
   pageLifetimes: {
     show: function show() {
       pageIsShowing = true;
+
       if (!hhim) {
         return;
       }
-      hhim.on('close', that._onWsClose);
+
+      if (hhim) hhim.on('close', that._onWsClose);
       if (!hhim.loginStatus()) {
         getApp().globalData._hhim = null;
         that._viewIm();
@@ -2065,6 +2090,7 @@ Component({
   methods: {
     _requestComplete: function _requestComplete() {
       this._logInfo('初始化参数完成，准备启动IM...');
+      this._resize();
       var mHeight = 64;
 
       if ('custom' == this.data.navStyle) {
@@ -2081,6 +2107,25 @@ Component({
       that._addMonitor();
       that._applyStyle();
       that._viewIm();
+    },
+    _resize: function _resize() {
+      var rect = wx.getMenuButtonBoundingClientRect();
+      var res = wx.getSystemInfoSync();
+
+      var styleName = 'custom';
+      var bTop = 35;
+      if (res.windowHeight < res.screenHeight) {
+        styleName = 'default';
+        bTop = -35;
+      }
+
+      that._getSafeAreaHeight(res);
+      that.setData({
+        sysInfo: res,
+        wxMbb: rect,
+        navStyle: styleName,
+        callBtnTop: bTop
+      });
     },
     _viewIm: function _viewIm() {
       this._initHhImSdk(true, {
@@ -2332,6 +2377,10 @@ Component({
       if (!this.data._request.callPage) {
         return;
       }
+      if (calling) {
+        return;
+      }
+      calling = true;
       wx.showLoading({
         title: '连接中...'
       });
@@ -2339,15 +2388,18 @@ Component({
       var callInterval = setInterval(function () {
         if (callTimeout >= 5000) {
           //超时，显示提示信息
+          wx.hideLoading();
+          calling = false;
           clearInterval(callInterval);
           wx.showModal({
             title: '网络不给力',
             content: '建议切换网络或稍后呼叫医生',
             showCancel: false,
             success: function success() {
-              wx.navigateBack({
-                delta: 1
-              });
+              that._onWsClose();
+              // wx.navigateBack({
+              //   delta: 1
+              // })
             }
           });
           return;
@@ -2357,10 +2409,10 @@ Component({
           wx.hideLoading();
           clearInterval(callInterval);
           var pageUrl = that.data._request.callPage + '?' + that._getPublicRequestParams() + '&dept=' + e.currentTarget.dataset.dept;
-          console.log(pageUrl);
           wx.navigateTo({
             url: pageUrl
           });
+          calling = false;
           return;
         }
         callTimeout += 100;

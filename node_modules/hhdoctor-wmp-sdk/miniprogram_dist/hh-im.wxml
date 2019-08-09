@@ -274,7 +274,7 @@
               </view>
             </block>
           </view>
-          <view class='msg-card-foot'>
+          <view class='msg-card-foot' wx:if='{{bodyContent.trans}}'>
             <view class='show-more'>
               <view class='show-more-btn {{bodyContent.trans?"":"disabled"}}' style='{{bodyContent.trans?btnStyle:""}};' catchtap='_buyMedicine' data-drugid='{{bodyContent.drugOrderId}}' data-trans='{{bodyContent.trans}}'>{{bodyContent.trans?bodyContent.buttonName:'本单不支持配送'}}</view>
             </view>

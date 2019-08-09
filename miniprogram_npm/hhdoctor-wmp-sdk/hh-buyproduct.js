@@ -350,6 +350,7 @@ var _options = {
   uuid: null,
   token: null,
   openId: null,
+  wxAppId: null,
   userToken: null
 };
 
@@ -368,6 +369,7 @@ var _callbacks = {
   onHangupRequest: null,
   onTransferCall: null,
   onUpdateUrl: null,
+  onCommand: null,
   login: null,
   sendMsg: [],
   addAttatch: null,
@@ -407,7 +409,7 @@ function init(option) {
 
 //登录
 //function login(sdkProductId, uuid, token, openId, withHisMsg, callback) {
-function login(sdkProductId, userToken, openId, withHisMsg, callback) {
+function login(sdkProductId, userToken, openId, wxAppId, withHisMsg, callback) {
   log('login');
   if ('undefined' != typeof withHisMsg) {
     loginWithHisMsg = withHisMsg;
@@ -420,6 +422,7 @@ function login(sdkProductId, userToken, openId, withHisMsg, callback) {
   //_options.token = token;
   _options.userToken = userToken;
   _options.openId = openId;
+  _options.wxAppId = wxAppId;
   connectToWss();
 };
 
@@ -739,6 +742,9 @@ function on(event, callback) {
     case 'transfer':
       _callbacks.onTransferCall = callback;
       break;
+    case 'command':
+      _callbacks.onCommand = callback;
+      break;
     default:
       break;
   }
@@ -799,6 +805,7 @@ function startLogin() {
       sdkProductId: _options.sdkProductId,
       userToken: _options.userToken,
       openId: _options.openId,
+      wxAppId: _options.wxAppId,
       withHisMsg: loginWithHisMsg
     }
   };
@@ -1077,8 +1084,18 @@ function parseSocketMessage(data) {
       sendLog('1', 'call transfer:' + data);
       parseTransfer(msg);
       break;
+    case 'COMMAND_REQUEST':
+      sendLog('1', 'command:' + data);
+      parseCommand(msg);
+      break;
     default:
       break;
+  }
+}
+
+function parseCommand(msg) {
+  if (_callbacks.onCommand) {
+    _callbacks.onCommand(msg.data);
   }
 }
 
@@ -1613,7 +1630,7 @@ module.exports = Behavior({
     }
   },
   data: {
-    _sdkVersion: '1.0.1',
+    _sdkVersion: '1.0.6',
     _request: {
       //公共属性
       subDomain: '',
@@ -1854,6 +1871,9 @@ module.exports = Behavior({
         if (hhImCallbacks.onClose) {
           getApp().globalData._hhim.on('close', hhImCallbacks.onClose);
         }
+        if (hhImCallbacks.onCommand) {
+          getApp().globalData._hhim.on('command', hhImCallbacks.onCommand);
+        }
         if (requestHis) {
           getApp().globalData._hhim.getHisMsg();
         }
@@ -1889,15 +1909,22 @@ module.exports = Behavior({
       if (hhImCallbacks.onClose) {
         hhim.on('close', hhImCallbacks.onClose);
       }
+      if (hhImCallbacks.onCommand) {
+        hhim.on('command', hhImCallbacks.onCommand);
+      }
+
+      var account = wx.getAccountInfoSync();
 
       //hhim登录
       this._logInfo('开始登录...');
-      hhim.login(this.data._request.sdkProductId, this.data._request.userToken, this.data._request.openId, requestHis, function (res) {
+      hhim.login(this.data._request.sdkProductId, this.data._request.userToken, this.data._request.openId, account.miniProgram.appId, requestHis, function (res) {
         if (res) {
           that._logInfo('登录成功');
           //登录成功
           hhim.sendLog('1', 'login success');
-          hhim.sendLog('1', JSON.stringify(that.data.sysInfo));
+          if (that.data.sysInfo) {
+            hhim.sendLog('1', JSON.stringify(that.data.sysInfo));
+          }
           getApp().globalData._hhim = hhim;
           if (initCallback) {
             initCallback({

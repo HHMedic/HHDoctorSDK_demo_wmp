@@ -13,6 +13,14 @@ Page({
    */
   onLoad: function(options) {
     if (options) {
+      options.style = {
+        logoImage: 'http://efamily-pic.gfarmsh.com/fullLogo.png', //视频通话时左上角logo
+        navicationBar: {
+          bColor: '#ffffff', //视频界面标题栏背景色
+          fColor: '#000000', //视频界面标题栏字体颜色
+          text: '视频医生' //视频界面顶部标题
+        }
+      }
       this.setData({
         hhRequest: options
       })

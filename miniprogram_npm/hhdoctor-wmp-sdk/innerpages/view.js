@@ -1,10 +1,13 @@
 // components/view.js
+var that;
+var url;
 Page({
 
   /**
    * 页面的初始数据
    */
   data: {
+    //viewSrc: ''
     url: ''
   },
 
@@ -12,13 +15,9 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad: function(options) {
-
+    that = this;
     if (options.url) {
-
-      this.setData({
-        url: decodeURIComponent(options.url)
-      })
-      console.log(this.data.url);
+      url = decodeURIComponent(options.url);
     } else {
       wx.navigateBack({
         delta: 1
@@ -37,7 +36,9 @@ Page({
    * 生命周期函数--监听页面显示
    */
   onShow: function() {
-
+    this.setData({
+      viewSrc: url
+    })
   },
 
   /**

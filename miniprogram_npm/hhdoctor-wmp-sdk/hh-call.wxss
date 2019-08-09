@@ -912,3 +912,14 @@ button::after {
 .city-list {
   z-index: 53;
 }
+
+.error-msg {
+  width: 100%;
+  position: fixed;
+  font-size: 15px;
+  text-align: center;
+  color: #f00;
+  left: 0px;
+  bottom: 180px;
+  z-index: 9;
+}

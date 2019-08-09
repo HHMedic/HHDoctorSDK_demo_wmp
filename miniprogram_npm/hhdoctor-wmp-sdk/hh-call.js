@@ -348,6 +348,7 @@ var _options = {
   uuid: null,
   token: null,
   openId: null,
+  wxAppId: null,
   userToken: null
 };
 
@@ -366,6 +367,7 @@ var _callbacks = {
   onHangupRequest: null,
   onTransferCall: null,
   onUpdateUrl: null,
+  onCommand: null,
   login: null,
   sendMsg: [],
   addAttatch: null,
@@ -405,7 +407,7 @@ function init(option) {
 
 //登录
 //function login(sdkProductId, uuid, token, openId, withHisMsg, callback) {
-function login(sdkProductId, userToken, openId, withHisMsg, callback) {
+function login(sdkProductId, userToken, openId, wxAppId, withHisMsg, callback) {
   log('login');
   if ('undefined' != typeof withHisMsg) {
     loginWithHisMsg = withHisMsg;
@@ -418,6 +420,7 @@ function login(sdkProductId, userToken, openId, withHisMsg, callback) {
   //_options.token = token;
   _options.userToken = userToken;
   _options.openId = openId;
+  _options.wxAppId = wxAppId;
   connectToWss();
 };
 
@@ -737,6 +740,9 @@ function on(event, callback) {
     case 'transfer':
       _callbacks.onTransferCall = callback;
       break;
+    case 'command':
+      _callbacks.onCommand = callback;
+      break;
     default:
       break;
   }
@@ -797,6 +803,7 @@ function startLogin() {
       sdkProductId: _options.sdkProductId,
       userToken: _options.userToken,
       openId: _options.openId,
+      wxAppId: _options.wxAppId,
       withHisMsg: loginWithHisMsg
     }
   };
@@ -1075,8 +1082,18 @@ function parseSocketMessage(data) {
       sendLog('1', 'call transfer:' + data);
       parseTransfer(msg);
       break;
+    case 'COMMAND_REQUEST':
+      sendLog('1', 'command:' + data);
+      parseCommand(msg);
+      break;
     default:
       break;
+  }
+}
+
+function parseCommand(msg) {
+  if (_callbacks.onCommand) {
+    _callbacks.onCommand(msg.data);
   }
 }
 
@@ -1529,7 +1546,7 @@ module.exports = Behavior({
     }
   },
   data: {
-    _sdkVersion: '1.0.1',
+    _sdkVersion: '1.0.6',
     _request: {
       //公共属性
       subDomain: '',
@@ -1770,6 +1787,9 @@ module.exports = Behavior({
         if (hhImCallbacks.onClose) {
           getApp().globalData._hhim.on('close', hhImCallbacks.onClose);
         }
+        if (hhImCallbacks.onCommand) {
+          getApp().globalData._hhim.on('command', hhImCallbacks.onCommand);
+        }
         if (requestHis) {
           getApp().globalData._hhim.getHisMsg();
         }
@@ -1805,15 +1825,22 @@ module.exports = Behavior({
       if (hhImCallbacks.onClose) {
         hhim.on('close', hhImCallbacks.onClose);
       }
+      if (hhImCallbacks.onCommand) {
+        hhim.on('command', hhImCallbacks.onCommand);
+      }
+
+      var account = wx.getAccountInfoSync();
 
       //hhim登录
       this._logInfo('开始登录...');
-      hhim.login(this.data._request.sdkProductId, this.data._request.userToken, this.data._request.openId, requestHis, function (res) {
+      hhim.login(this.data._request.sdkProductId, this.data._request.userToken, this.data._request.openId, account.miniProgram.appId, requestHis, function (res) {
         if (res) {
           that._logInfo('登录成功');
           //登录成功
           hhim.sendLog('1', 'login success');
-          hhim.sendLog('1', JSON.stringify(that.data.sysInfo));
+          if (that.data.sysInfo) {
+            hhim.sendLog('1', JSON.stringify(that.data.sysInfo));
+          }
           getApp().globalData._hhim = hhim;
           if (initCallback) {
             initCallback({
@@ -2106,12 +2133,13 @@ module.exports = {
 "use strict";
 
 
+var _data;
+
 //const hhim = require('./utils/HH_WMP_SDK.js');
 var eventOption = {};
 var dateUtil = __webpack_require__(3);
 var commonUtil = __webpack_require__(0);
 var log = __webpack_require__(4);
-var ring = wx.createInnerAudioContext();
 var that = undefined;
 var livePlayUrl;
 var playStart = false,
@@ -2127,11 +2155,28 @@ var callStatus = {
   openCamera: false,
   playVideo: false,
   preCallStart: -1,
-  preCallFinish: -1
+  preCallFinish: -1,
+  weakNetwork: false,
+  waitSetting: false,
+  pushSpeed: 1,
+  playSpeed: 1,
+  pushSpeedCount: 1,
+  playSpeedCount: 1
 };
+
+var callOptions = {
+  zeroImageTip: true
+};
+
 var timeOutHandler = {
   weaknetwork: null
 };
+var intervalHandler = {
+  speed: null,
+  ring: null
+};
+
+var ringFile = '';
 var disConnected = false;
 var showModal = false;
 
@@ -2145,10 +2190,10 @@ Component({
   /**
    * 组件的初始数据
    */
-  data: {
+  data: (_data = {
     _name: 'hh-call',
     callImmediate: false,
-    status: 0, //状态码。1:接入中，显示logo，2:显示视频画面，3:拍照，4:专家侧呼叫用户，5:用户侧专家呼叫
+    status: -1, //状态码。1:接入中，显示logo，2:显示视频画面，3:拍照，4:专家侧呼叫用户，5:用户侧专家呼叫
     pushUrl: '', //本地视频推流地址
     playUrl: '', //播放地址
     pusher: null, //推流对象
@@ -2203,8 +2248,16 @@ Component({
     locCity: '',
     curCity: '北京',
     animationSearch: null,
-    animationCity: null
-  },
+    animationCity: null,
+    playerMode: 'RTC',
+    playerMinCache: 0.5,
+    playerMaxCache: 1.0,
+    pusherMode: 'RTC',
+    pusherMinBitrate: 20,
+    pusherMaxBitrate: 200,
+    errorMsgVisible: false,
+    errorMsg: '网络不佳，请挂断重拨'
+  }, _data['enableCamera'] = true, _data),
 
   lifetimes: {
     attached: function attached() {
@@ -2224,22 +2277,15 @@ Component({
         that._showPusher();
       }
 
-      ring.autoplay = false;
-      ring.loop = true;
-      ring.volume = 1;
-      ring.src = 'https://imgs.hh-medic.com/icon/ring.mp3';
-      // wx.setInnerAudioOption({
-      //   mixWithOther: true,
-      //   obeyMuteSwitch: false
-      // })
       _attached = true;
       onLoading = true;
 
-      that._weakNetworkMonitor();
+      //that._weakNetworkMonitor();
       var info = wx.getSystemInfoSync();
       this.setData({
         sysInfo: info
       });
+      that._getRing();
     },
     ready: function ready() {
       wx.setNavigationBarColor({
@@ -2249,22 +2295,22 @@ Component({
     },
     detached: function detached() {
       pageIsShowing = false;
-      ring.stop();
+      that._stopRing();
+      that._stopSpeedStat();
+      that._clearCountDown();
       if (getApp().globalData._hhim) {
         that._logInfo('页面返回挂机，当前状态码：' + that.data.status);
         switch (parseInt(that.data.status)) {
           case 0:
-            //if (callStatus.preCallStart > 0 && callStatus.preCallFinish < 0) {
-            if (callStatus.preCallStart > 0) {
-              setTimeout(function () {
-                ring.stop();
+            setTimeout(function () {
+              if (callStatus.preCallStart > 0) {
                 that._hangup({
                   hangupType: 'CANCEl',
                   stayInpage: true,
                   source: 'lifetimes.detached,status:0'
                 });
-              }, 500);
-            }
+              }
+            }, 500);
             break;
           case 2: //通话中
           case 3:
@@ -2300,17 +2346,27 @@ Component({
       });
       code1101 = 0;
       if (!onLoading) {
-        if (getApp().globalData._hhim.loginStatus()) {
+        if (getApp().globalData._hhim && getApp().globalData._hhim.loginStatus()) {
           that._sendLog('1', 'hh-call onShow');
           if (1 == that.data.status) {
             setTimeout(function () {
-              ring.play();
+              that._playRing();
             }, 500);
           } else {
-            ring.stop();
+            that._stopRing();
+          }
+
+          if (callStatus.waitSetting) {
+            that.setData({
+              showSettingBtn: false
+            });
+            callStatus.waitSetting = false;
+            wx.navigateBack({
+              delta: 1
+            });
           }
         } else {
-          ring.stop();
+          that._stopRing();
           wx.navigateBack({
             delta: 1
           });
@@ -2318,10 +2374,9 @@ Component({
       }
     },
     hide: function hide() {
-      this._logInfo('>>>>>>>>>>page hide');
       // 页面被隐藏
       pageIsShowing = false;
-      ring.stop();
+      that._stopRing();
       if (getApp().globalData._hhim.loginStatus()) {
         that._sendLog('1', 'hh-call onHide');
       }
@@ -2333,10 +2388,10 @@ Component({
    */
   methods: {
     _requestComplete: function _requestComplete() {
-
       this._logInfo('初始化参数完成，准备启动CALL...');
       this._initHhImSdk(false, {
-        onClose: that._onWsClose
+        onClose: that._onWsClose,
+        onCommand: that._commandHandler
       }, function (res) {
         onLoading = false;
         that._triggerEvent('login', {
@@ -2346,8 +2401,9 @@ Component({
           disConnected = false;
           that._applyStyle();
           that._logInfo('loginStatus:' + getApp().globalData._hhim.loginStatus());
-
+          that._getCallOptions();
           that._addMonitorLog();
+          //that._weakNetworkMonitor();
           if (that.data._request.status) {
             that.setData({
               status: that.data._request.status,
@@ -2365,6 +2421,9 @@ Component({
               that._queryCallInfo();
             }
           } else {
+            that.setData({
+              status: 0
+            });
             that._prepareCall();
           }
         } else {
@@ -2411,7 +2470,6 @@ Component({
       });
     },
     _resetTop: function _resetTop(res) {
-
       if (res && res.screenHeight && res.windowHeight && res.screenHeight == res.windowHeight) {
         this._logInfo('重新调整高度');
         var rect = wx.getMenuButtonBoundingClientRect();
@@ -2491,7 +2549,7 @@ Component({
 
     /** 启动推流和播放 */
     _startVideo: function _startVideo() {
-      ring.stop();
+      that._stopRing();
       if (!that.data.pushUrl || !that.data.playUrl) {
         return;
       }
@@ -2510,12 +2568,13 @@ Component({
         that.data.player.requestFullScreen();
       }
       that._startVideoTimer();
+      //that._startSpeedStat();
     },
 
 
     /** 停止推流和播放 */
     _stopVideo: function _stopVideo() {
-      ring.stop();
+      that._stopRing();
       if (that.data.pusher) {
         that.data.pusher.stop();
       }
@@ -2526,11 +2585,11 @@ Component({
       that._hidePusher();
       that._hidePlayer();
       that.setData({
-        videoTimeStart: null,
         showExtControls: true,
         demoVideoVisible: 'hidden'
       });
       that._tapFolding();
+      that._stopSpeedStat();
     },
 
 
@@ -2551,7 +2610,7 @@ Component({
       }
     },
     _statechangePlayer: function _statechangePlayer(e) {
-      if (0 == that.data.status) {
+      if (0 == that.data.status || 2005 == e.detail.code) {
         return;
       }
       if (2004 == e.detail.code) {
@@ -2565,7 +2624,8 @@ Component({
         that.data.player.play();
         that._playerMonitor();
       }
-      that._sendLog('3', 'status:' + e.detail.code);
+      //that._sendLog('3', 'status:' + e.detail.code);
+      that._sendLog('3', 'statusCode:' + e.detail.code + '(' + e.detail.message + ')');
       that._triggerEvent('playerstatechange', e);
     },
     _netChangedPlayer: function _netChangedPlayer(e) {
@@ -2581,6 +2641,8 @@ Component({
         vw: e.detail.info.videoWidth,
         vh: e.detail.info.videoHeight
       };
+      callStatus.playSpeed += e.detail.info.netSpeed;
+      callStatus.playSpeedCount++;
       that._sendLog('3', 'netinfo:' + JSON.stringify(nInfo));
     },
     _errorPlayer: function _errorPlayer(e) {
@@ -2589,15 +2651,20 @@ Component({
 
 
     _onLivePusherError: function _onLivePusherError(e) {
-      that._sendLog('2', 'error:' + e.detail.errCode);
-      if ((10001 == e.detail.errCode || 10002 == e.detail.errCode) && this.data.status > 0) {
-        //启动摄像头或麦克风失败
-        that._hangup({
-          initiative: true,
-          hangupType: 'HANGUP',
-          stayInpage: false,
-          source: '_onLivePusherError'
-        });
+      if (e && e.detail && e.detail.errCode) {
+        if (10004 == e.detail.errCode) {
+          return;
+        }
+        that._sendLog('2', 'error:' + e.detail.errCode);
+        if ((10001 == e.detail.errCode || 10002 == e.detail.errCode) && this.data.status > 0) {
+          //启动摄像头或麦克风失败
+          that._hangup({
+            initiative: true,
+            hangupType: 'HANGUP',
+            stayInpage: false,
+            source: '_onLivePusherError'
+          });
+        }
       }
     },
 
@@ -2614,6 +2681,8 @@ Component({
         vw: e.detail.info.videoWidth,
         vh: e.detail.info.videoHeight
       };
+      callStatus.pushSpeed += e.detail.info.netSpeed;
+      callStatus.pushSpeedCount++;
       that._sendLog('2', 'netinfo:' + JSON.stringify(nInfo));
     },
 
@@ -2621,7 +2690,8 @@ Component({
     _onLivePusherChange: function _onLivePusherChange(e) {
       that._processPusherCode(e.detail.code);
       //if (0 < that.data.status) {
-      that._sendLog('2', 'status:' + e.detail.code);
+      //that._sendLog('2', 'status:' + e.detail.code);
+      that._sendLog('2', 'statusCode:' + e.detail.code + '(' + e.detail.message + ')');
       that._triggerEvent('pusherstatechange', e);
       //}
     },
@@ -2728,14 +2798,18 @@ Component({
     },
     _doCall: function _doCall(callback, dept) {
       that._sendLog('1', 'authorize check start');
+      if (that.data.t301) {
+        clearInterval(that.data.t301);
+        that.setData({
+          t301: null
+        });
+      }
+
       //检查用户麦克风和摄像头是否已授权
       that._checkAuthorize(function (success) {
         if (!success) {
           wx.hideLoading();
-          if (timeOutHandler.weaknetwork) {
-            clearTimeout(timeOutHandler.weaknetwork);
-            timeOutHandler.weaknetwork = null;
-          }
+          that._stopWeakNetworkMonitor();
           //麦克风或摄像头未授权 
           that.setData({
             showSettingBtn: true
@@ -2763,6 +2837,16 @@ Component({
           }
         })*/
         //新增代码结束==========
+        if (!getApp().globalData._hhim || !getApp().globalData._hhim.loginStatus()) {
+          that._logInfo('未登录无法进行预呼叫...');
+          getApp().globalData._hhim = null;
+          setTimeout(function () {
+            that._requestComplete();
+          }, 500);
+          return;
+        }
+
+        that._weakNetworkMonitor();
 
         callStatus.preCallStart = new Date().getTime();
         getApp().globalData._hhim.preCall(dept, callback, that.data._request.to, that.data._request.appointedDoctorId, that.data._request.appointedOrderId, that.data._request.medicRecordId, that.data._request.patient, that.data._request.hospitalId);
@@ -2770,8 +2854,12 @@ Component({
     },
     _preCallCb: function _preCallCb(data) {
       callStatus.preCallFinish = new Date().getTime();
-      //判断当前页面是否已卸载
-      if (!pageIsShowing) {
+      if (!getApp().globalData._hhim.loginStatus()) {
+        return;
+      }
+
+      //判断当前页面是否已卸载，或当前为弱网
+      if (!pageIsShowing || callStatus.weakNetwork) {
         that._hangup({
           initiative: true,
           hangupType: 'CANCEL',
@@ -2780,14 +2868,24 @@ Component({
         });
         return;
       }
+      wx.hideLoading();
+      var eventDetail = Object.assign({
+        playerMode: 'RTC',
+        playerMinCache: 0.5,
+        playerMaxCache: 1.5,
+        pusherMode: 'RTC',
+        pusherMinBitrate: 20,
+        pusherMaxBitrate: 200
+      }, data);
 
-      var eventDetail = Object.assign({}, data);
       eventDetail.livePlayUrl = '';
       eventDetail.livePushUrl = '';
+
       that._triggerEvent('precallstatechange', eventDetail);
 
       that._sendLog('1', 'push:' + (data.livePushUrl ? data.livePushUrl : ''));
       that._sendLog('1', 'play:' + (data.livePlayUrl ? data.livePlayUrl : ''));
+
       if (!data.success) {
         that.setData({
           status: 0,
@@ -2795,7 +2893,6 @@ Component({
           playUrl: ''
         });
         var msg = data.message ? data.message : '医生繁忙，请稍后再拨';
-        wx.hideLoading();
         wx.showModal({
           title: '错误',
           content: msg,
@@ -2810,7 +2907,6 @@ Component({
       }
       callStatus.openCamera = false;
       that._showPusher();
-
       //图片
       var photoUrl = 'https://imgs.hh-medic.com/photo/D2017081615094714624/98A8RC.jpg?x-oss-process=image/resize,m_fixed,w_750';
       if (data.doctor.photourl) {
@@ -2837,6 +2933,16 @@ Component({
       if (data.orderId) {
         famOrderId = data.orderId;
       }
+
+      /*var eventDetail = Object.assign({
+        playerMode: 'RTC',
+        playerMinCache: 0.5,
+        playerMaxCache: 1.5,
+        pusherMode: 'RTC',
+        pusherMinBitrate: 50,
+        pusherMaxBitrate: 500
+      }, data);*/
+
       //显示详情
       that.setData({
         countdown: that.data.t301Timeout,
@@ -2847,8 +2953,15 @@ Component({
         pusherHeight: 140,
         pusherWidth: 100,
         showCancelBtn: true,
-        showCalledPanel: false
+        showCalledPanel: false,
+        playerMode: eventDetail.playerMode,
+        playerMinCache: eventDetail.playerMinCache,
+        playerMaxCache: eventDetail.playerMaxCache,
+        pusherMode: eventDetail.pusherMode,
+        pusherMinBitrate: eventDetail.pusherMinBitrate,
+        pusherMaxBitrate: eventDetail.pusherMaxBitrate
       });
+      that._sendLog('1', 'pusher bitrate:' + that.data.pusherMinBitrate + '-' + that.data.pusherMaxBitrate);
       livePlayUrl = data.livePlayUrl;
 
       that._countDown();
@@ -2860,19 +2973,12 @@ Component({
 
       setTimeout(function () {
         that.data.pusher.stop();
-      }, 500);
+      }, 100);
 
       setTimeout(function () {
         that.data.pusher.start();
+        that._playRing();
       }, 1000);
-
-      ring.play();
-      ring.onTimeUpdate(function () {
-        ring.offTimeUpdate();
-        pushStart = false;
-        that.data.pusher.start();
-        that._pusherMonitor();
-      });
 
       setTimeout(function () {
         if (0 == that.data.status) {
@@ -2884,8 +2990,8 @@ Component({
       that._checkCameraIsOpen();
     },
     _callCb: function _callCb(data) {
-      ring.stop();
-      that.data.pusher.stopBGM();
+      that._stopRing();
+
       if (that.data.t301) {
         clearInterval(that.data.t301);
         that.setData({
@@ -2900,7 +3006,8 @@ Component({
           playUrl: livePlayUrl,
           status: 2
         });
-        wx.vibrateLong();
+        that._hideErrorMsg();
+        //wx.vibrateLong();
         //接听，开始推流。重要！！！必须加延时，否则可能导致无规律的拉流失败
         setTimeout(function () {
           that._startVideo();
@@ -2995,15 +3102,20 @@ Component({
       if (!that.data.license) {
         return;
       }
-      that._sendLog('1', 'tapShowLicense');
+      //that._stopSpeedStat();
+      that._sendLog('1', 'tapShowLicense start');
       wx.previewImage({
-        urls: [that.data.license]
+        urls: [that.data.license],
+        complete: function complete() {
+          that._sendLog('1', 'tapShowLicense complete');
+        }
       });
     },
     _tapShowUploaded: function _tapShowUploaded() {
       if (0 == that.data.uploadedImages.length) {
         return;
       }
+      //that._stopSpeedStat();
       that._sendLog('1', 'tapShowUploaded');
       wx.previewImage({
         urls: that.data.uploadedImages,
@@ -3072,7 +3184,13 @@ Component({
     _selectImage: function _selectImage() {
       that._sendLog('1', 'selectImage start');
       getApp().globalData._hhim.switchMode('AUDIO');
-      that.data.pusher.pause();
+      /*that.data.pusher.pause();
+      that.data.player.pause();*/
+
+      //that.setData({
+      //  enableCamera: false
+      //})
+      //that._stopSpeedStat();
       wx.chooseImage({
         count: 1,
         sizeType: ['original'],
@@ -3080,14 +3198,15 @@ Component({
         success: function success(res) {
           // 返回选定照片的本地文件路径列表，tempFilePath可以作为img标签的src属性显示图片
           var tempFilePaths = res.tempFilePaths;
+          that._sendLog('1', 'selectImage count:' + tempFilePaths.length);
           getApp().globalData._hhim.uploadFile(tempFilePaths[0], function (e) {
-            console.log(e);
             e = JSON.parse(e);
             if (200 == e.status) {
               //成功
               var fileUrl = e.data;
+              that._sendLog('1', 'upload image success:' + fileUrl);
               getApp().globalData._hhim.addAttatch(fileUrl, function (e) {
-                console.log(e);
+                that._sendLog('1', 'add attatch success:' + fileUrl);
               });
               var uploaded = that.data.uploadedImages;
               uploaded.push(fileUrl);
@@ -3095,22 +3214,31 @@ Component({
                 uploadedImages: uploaded
               });
             } else {
+              that._sendLog('1', 'upload image fail');
               wx.showToast({
                 title: '发送失败！'
               });
             }
           });
         },
+        fail: function fail() {
+          that._sendLog('1', 'selectImage fail');
+        },
         complete: function complete() {
           that._sendLog('1', 'selectImage complete');
           getApp().globalData._hhim.switchMode('VIDEO');
-          that.data.pusher.resume();
-          that._resumeVideo();
+          /*that.data.pusher.resume();
+          that.data.player.resume();*/
+
+          //that.setData({
+          //  enableCamera: true
+          //})
+          //that._resumeVideo();  
         }
       });
     },
     _cancelInitiative: function _cancelInitiative(e) {
-      ring.stop();
+      that._stopRing();
       wx.vibrateLong();
       that._sendLog('1', 'cancelInitiative type:' + e.target.dataset.hanguptype);
       that._hangup({
@@ -3121,6 +3249,11 @@ Component({
       });
     },
     _hangup: function _hangup(options) {
+      //清除计时器
+      that._clearCountDown();
+      that._stopVideo();
+      that._stopWeakNetworkMonitor();
+
       var _options = {
         initiative: true,
         hangupType: 'HANGUP',
@@ -3144,11 +3277,8 @@ Component({
       that._showLoading({
         title: '正在结束...'
       });
-
+      that._stopSpeedStat();
       var videoTimeSeconds = this.data.videoTimeStart ? parseInt((new Date().getTime() - that.data.videoTimeStart) / 1000) : 0;
-      //清除计时器
-      that._clearCountDown();
-      that._stopVideo();
       callStatus.preCallStart = -1;
       getApp().globalData._hhim.on('transfer', null);
       getApp().globalData._hhim.on('error', null);
@@ -3156,7 +3286,8 @@ Component({
         countdown: that.data.t301Timeout,
         status: 0,
         pushUrl: '',
-        playUrl: ''
+        playUrl: '',
+        videoTimeStart: null
       });
 
       that._triggerEvent('hangup', {
@@ -3304,7 +3435,7 @@ Component({
         return;
       }
       secondes = that.data.t301Timeout;
-      ring.stop();
+      that._stopRing();
       clearInterval(that.data.t301);
       that.setData({
         t301: null,
@@ -3312,6 +3443,7 @@ Component({
       });
     },
     _transfer: function _transfer(res) {
+      that._stopVideo();
       that._sendLog('1', 'transfe play:' + res.data.livePlayUrl);
       that.setData({
         countdown: that.data.t301Timeout,
@@ -3325,7 +3457,6 @@ Component({
       });
       livePlayUrl = res.data.livePlayUrl;
 
-      that._stopVideo();
       that.setData({
         status: 1
       });
@@ -3333,13 +3464,11 @@ Component({
       that._showPusher();
       that._countDown();
       getApp().globalData._hhim.call(that._callCb, false);
-      ring.play();
-      ring.onPlay(function () {
-        ring.offPlay();
-        pushStart = false;
+
+      setTimeout(function () {
         that.data.pusher.start();
-        that._pusherMonitor();
-      });
+        that._playRing();
+      }, 1000);
     },
     _resumeVideo: function _resumeVideo() {
       playStart = false;
@@ -3415,23 +3544,19 @@ Component({
         showAcceptBtn: true
       });
       that._showPusher();
-
-      ring.play();
-      ring.onPlay(function () {
-        ring.offPlay();
-        pushStart = false;
+      setTimeout(function () {
         that.data.pusher.start();
-        that._pusherMonitor();
-      });
-
+        that._playRing();
+      }, 1000);
+      //that._playRing();
       wx.hideLoading();
     },
 
 
     /** 接听或拒绝 */
     _answerCall: function _answerCall(e) {
-      ring.stop();
-      wx.vibrateLong();
+      that._stopRing();
+      //wx.vibrateLong();
       getApp().globalData._hhim.callResponse(famOrderId, e.currentTarget.dataset.answer);
       if (1 == parseInt(e.currentTarget.dataset.answer)) {
         //接听
@@ -3472,11 +3597,18 @@ Component({
 
     _hhImError: function _hhImError(e) {
       that._clearCountDown();
-      that._hangup({
-        initiative: false,
-        hangupType: 'HANGUP',
-        stayInpage: false,
-        source: 'hhImError'
+      wx.showModal({
+        title: '网络不给力',
+        content: '正在结束视频，请切换网络再试',
+        showCancel: false,
+        success: function success() {
+          that._hangup({
+            initiative: false,
+            hangupType: 'HANGUP',
+            stayInpage: false,
+            source: 'hhImError'
+          });
+        }
       });
     },
 
@@ -3532,35 +3664,87 @@ Component({
       });
     },
     _onWsClose: function _onWsClose() {
-      that._logInfo('与服务器连接断开，即将返回...');
-      if (showModal) return;
+      that._logInfo('与服务器连接断开...');
+      /*wx.navigateBack({
+        delta: 1
+      })*/
+      getApp().globalData._hhim = null;
+      var closeTime = new Date().getTime();
+
+      setTimeout(function () {
+        that._initHhImSdk(false, {
+          onClose: that._onWsClose,
+          onCall: that._callCb,
+          onCommand: that._commandHandler
+        }, function (res) {
+          if (200 == res.status) {
+            var timeSpan = new Date().getTime() - closeTime;
+            that._logInfo('与服务器重连耗时：' + timeSpan + ' ms');
+            if (timeSpan >= 5000) {
+              //重连接登录超时，服务器已清理挂断通话
+              wx.showModal({
+                title: '网络不给力',
+                content: '正在结束视频，请切换网络再试',
+                showCancel: false,
+                success: function success() {
+                  that._navBack();
+                }
+              });
+            }
+          } else {
+            //重连接或登录失败
+            wx.showModal({
+              title: '网络不给力',
+              content: '正在结束视频，请切换网络再试',
+              showCancel: false,
+              success: function success() {
+                that._navBack();
+              }
+            });
+          }
+        });
+      }, 500);
+
+      /*if (showModal) return;
       showModal = true;
       wx.showModal({
         title: '网络不给力(-1)',
         content: '建议切换网络或稍后呼叫医生',
         showCancel: false,
-        success: function success() {
+        success: function() {
           showModal = false;
           wx.navigateBack({
             delta: 1
-          });
+          })
         }
-      });
+      })*/
     },
 
     //弱网监控
     _weakNetworkMonitor: function _weakNetworkMonitor() {
-      callStatus.preCallStart = -1;
-      callStatus.preCallFinish = -1;
-      if (timeOutHandler.weaknetwork) {
-        clearTimeout(timeOutHandler.weaknetwork);
-      }
+      that._stopWeakNetworkMonitor();
       timeOutHandler.weaknetwork = setTimeout(function () {
         if (!pageIsShowing) {
           return;
         }
-        that._logInfo('>>>>>>weaknetwork:' + callStatus.preCallStart + ',' + callStatus.preCallFinish);
-        if (callStatus.preCallStart < 0 || callStatus.preCallFinish < 0) {
+
+        if (callStatus.preCallStart > 0 && callStatus.preCallFinish > 0) {
+          that._logInfo('预呼叫往返耗时:' + (callStatus.preCallFinish - callStatus.preCallStart) + ' ms');
+        } else {
+          that._logInfo('预呼叫超时,请求时间:' + callStatus.preCallFinish + ',响应时间:' + callStatus.preCallStart);
+          callStatus.weakNetwork = true;
+          wx.showModal({
+            title: '错误',
+            content: '网络不给力，请切换网络后重拨',
+            showCancel: false,
+            success: function success() {
+              wx.navigateBack({
+                delta: -1
+              });
+            }
+          });
+        }
+        /*if (callStatus.preCallStart < 0 || callStatus.preCallFinish < 0) {
           if (getApp().globalData._hhim) {
             that._logInfo('weaknetwork,hhim logout');
             getApp().globalData._hhim.logout();
@@ -3568,8 +3752,27 @@ Component({
             that._logInfo('weaknetwork,_onWsClose');
             that._onWsClose();
           }
-        }
+          wx.showModal({
+            title: '错误',
+            content: '网络不给力，请切换网络后重拨',
+            showCancel: false,
+            success: function() {
+              wx.navigateBack({
+                delta: -1
+              })
+            }
+          })
+        }*/
       }, that.data._request.weakNetworkTimeout * 1000);
+    },
+    _stopWeakNetworkMonitor: function _stopWeakNetworkMonitor() {
+      callStatus.preCallStart = -1;
+      callStatus.preCallFinish = -1;
+      callStatus.weakNetwork = false;
+      if (timeOutHandler.weaknetwork) {
+        clearTimeout(timeOutHandler.weaknetwork);
+        timeOutHandler.weaknetwork = null;
+      }
     },
     _showAddress: function _showAddress() {
       var _req = this.data._request;
@@ -3608,7 +3811,6 @@ Component({
       });
     },
     _editAddress: function _editAddress(e) {
-      console.log('_editAddress:' + e.detail.addressId);
       var _req = this.data._request;
       _req.editType = 'update';
       _req.addressId = e.detail.addressId;
@@ -3626,6 +3828,10 @@ Component({
       });
     },
     _addAddress: function _addAddress() {
+      getApp().globalData._hhim.switchMode('AUDIO');
+      that.data.pusher.stop();
+      that.data.player.stop();
+      that._stopSpeedStat();
       var _req = this.data._request;
       _req.editType = 'create';
       this._hidePlayer();
@@ -3640,6 +3846,9 @@ Component({
       if (this.data.editStatus > 1) {
         this._changeEditStatus(this.data.editStatus - 1);
       } else {
+        getApp().globalData._hhim.switchMode('VIDEO');
+        that.data.pusher.start();
+        that.data.player.play();
         var hhAdd = this.selectComponent('#hhAddress');
         if (hhAdd) {
           hhAdd.refresh();
@@ -3647,6 +3856,7 @@ Component({
 
         this._showPlayer();
         this._showPusher();
+        //that._startSpeedStat();
         this.setData({
           showAddressEdit: false
         });
@@ -3735,6 +3945,155 @@ Component({
           content: '保存失败，请稍后再试',
           showCancel: false
         });
+      }
+    },
+    _navToSetting: function _navToSetting() {
+      callStatus.waitSetting = true;
+    },
+    _getCallOptions: function _getCallOptions() {
+      var key = this.data._request.userToken + '_options';
+      var value = wx.getStorageSync(key);
+      if (value) {
+        callOptions = JSON.parse(value);
+      }
+    },
+    _setCallOptions: function _setCallOptions(options) {
+      var key = this.data._request.userToken + '_options';
+      wx.setStorage({
+        key: key,
+        data: JSON.stringify(options)
+      });
+    },
+    _showErrorMsg: function _showErrorMsg(content) {
+      if (content) {
+        this.setData({
+          errorMsg: content,
+          errorMsgVisible: true
+        });
+        return;
+      }
+      this.setData({
+        errorMsgVisible: true
+      });
+    },
+    _hideErrorMsg: function _hideErrorMsg() {
+      this.setData({
+        errorMsgVisible: false
+      });
+    },
+    _startSpeedStat: function _startSpeedStat() {
+      this._stopSpeedStat();
+      this._hideErrorMsg();
+      intervalHandler.speed = setInterval(function () {
+        if (2 != that.data.status && 4 != that.data.status && 5 != that.data.status) {
+          return;
+        }
+        if (callStatus.pushSpeed == 0 || callStatus.playSpeed == 0 || callStatus.pushSpeedCount == 0 || callStatus.playSpeedCount == 0) {
+          that._showErrorMsg('网络断开，请挂断重拨');
+          that._sendLog('1', 'bad network');
+        } else {
+          var pushSpeedAvg = Math.trunc(callStatus.pushSpeed / callStatus.pushSpeedCount),
+              playSpeedAvg = Math.trunc(callStatus.playSpeed / callStatus.playSpeedCount);
+
+          if (pushSpeedAvg <= 50 || playSpeedAvg <= 50) {
+            that._showErrorMsg('网络较差，请切换网络后重拨');
+            that._sendLog('1', 'low speed network:' + pushSpeedAvg + ',' + playSpeedAvg);
+          } else {
+            that._hideErrorMsg();
+            that._sendLog('1', 'network speed avg:' + pushSpeedAvg + ',' + playSpeedAvg);
+          }
+        }
+
+        that._resetSpeedStat();
+      }, 5000);
+    },
+    _stopSpeedStat: function _stopSpeedStat() {
+      if (intervalHandler.speed) {
+        clearInterval(intervalHandler.speed);
+        intervalHandler.speed = null;
+      }
+      that._resetSpeedStat();
+    },
+    _resetSpeedStat: function _resetSpeedStat() {
+      callStatus.pushSpeed = 0;
+      callStatus.playSpeed = 0;
+      callStatus.pushSpeedCount = 0;
+      callStatus.playSpeedCount = 0;
+    },
+    _commandHandler: function _commandHandler(cmd) {
+      if (!cmd || !cmd.action) {
+        return;
+      }
+      switch (cmd.action) {
+        case 'hangup':
+          that._hangup({
+            hangupType: 'HANGUP',
+            stayInpage: false,
+            source: '_commandHandler'
+          });
+          break;
+        case 'showErrorMsg':
+          that._showErrorMsg(cmd.value);
+          break;
+        case 'hideErrorMsg':
+          that._hideErrorMsg();
+          break;
+        default:
+          break;
+      }
+    },
+
+
+    //预下载铃声
+    _getRing: function _getRing() {
+      var key = 'ringFile';
+      wx.getStorage({
+        key: key,
+        success: function success(res) {
+          ringFile = res.data;
+        },
+        fail: function fail() {
+          wx.downloadFile({
+            url: 'https://imgs.hh-medic.com/icon/ring.mp3',
+            success: function success(res1) {
+              wx.saveFile({
+                tempFilePath: res1.tempFilePath,
+                success: function success(res2) {
+                  ringFile = res2.savedFilePath;
+                  wx.setStorage({
+                    key: key,
+                    data: ringFile
+                  });
+                }
+              });
+            }
+          });
+        }
+      });
+    },
+    _playRing: function _playRing() {
+      this._stopRing();
+      if (!this.data.pusher) {
+        return;
+      }
+      if (!ringFile) {
+        ringFile = 'https://imgs.hh-medic.com/icon/ring.mp3';
+      }
+
+      intervalHandler.ring = setInterval(function () {
+        that.data.pusher.stopBGM();
+        that.data.pusher.playBGM({
+          url: ringFile
+        });
+      }, 3500);
+    },
+    _stopRing: function _stopRing() {
+      if (this.data.pusher) {
+        this.data.pusher.stopBGM();
+      }
+      if (intervalHandler.ring) {
+        clearInterval(intervalHandler.ring);
+        intervalHandler.ring = null;
       }
     }
   }

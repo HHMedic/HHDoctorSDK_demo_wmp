@@ -28,12 +28,12 @@
         <text class='waitting-text waitting-doctorname'>{{name}}</text>
         <text class='waitting-text waitting-countdown'>正在向您发起一次视频...</text>
         <view class='waitting-text waitting-control-items'>
-          <view class='waitting-items-btn' bindtap='_answerCall' data-answer='0'>
-            <image class="waitting-hangup-btn" src='https://imgs.hh-medic.com/icon/wmp/hangup.png'></image>
+          <view class='waitting-items-btn'>
+            <image class="waitting-hangup-btn" src='https://imgs.hh-medic.com/icon/wmp/hangup.png' catchtap='_answerCall' data-answer='0'></image>
             <view class='waitting-hangup-btn-text'>取消</view>
           </view>
-          <view class='waitting-items-btn' catchtap='_answerCall' data-answer='1'>
-            <image class="waitting-hangup-btn" src='https://imgs.hh-medic.com/icon/wmp/accept.png'></image>
+          <view class='waitting-items-btn'>
+            <image class="waitting-hangup-btn" src='https://imgs.hh-medic.com/icon/wmp/accept.png' catchtap='_answerCall' data-answer='1'></image>
             <view class='waitting-hangup-btn-text'>接听</view>
           </view>
         </view>
@@ -78,8 +78,8 @@
 </block>
 
 <view class='full-screen {{playerVisible}}'>
-  <live-player id="livePlayer" class="live-player" autoplay="false" src="{{playUrl}}" mode="RTC" min-cache="0.2" max-cache="0.8" object-fit="{{uiStyle.objFit}}" muted="{{uiStyle.muted}}" background-mute="true" bindstatechange="_statechangePlayer" bindnetstatus="_netChangedPlayer"
-    binderror="_errorPlayer">
+  <live-player id="livePlayer" class="live-player" autoplay="false" src="{{playUrl}}" mode="{{playerMode}}" min-cache="{playerMinCache}" max-cache="{playerMaxCache}" object-fit="{{uiStyle.objFit}}" muted="{{uiStyle.muted}}" background-mute="true" bindstatechange="_statechangePlayer"
+    bindnetstatus="_netChangedPlayer" binderror="_errorPlayer">
     <block wx:if='{{!expertCalling}}'>
       <cover-view class='logo' style='width:{{logoWidth}}px;'>
         <cover-image class='logo-img' mode='widthFix' src='{{_request.logoImage}}'></cover-image>
@@ -129,7 +129,7 @@
       </cover-view>
     </block>
 
-    <cover-view class='location' catchtap='_showAddress'>
+    <!-- <cover-view class='location' catchtap='_showAddress' wx:if='{{!expertCalling}}'>
       <cover-image class='location-image' src='https://imgs.hh-medic.com/icon/wmp/location.png'></cover-image>
       <cover-view class='location-text'>地址</cover-view>
     </cover-view>
@@ -163,13 +163,16 @@
       <cover-view class='address-confirm-btnpanel'>
         <cover-view class='address-confirm-btn' catchtap='_confirmAddress'>确认</cover-view>
       </cover-view>
-    </cover-view>
+    </cover-view> -->
 
+    <cover-view class='error-msg' wx:if="{{errorMsgVisible}}">
+      {{errorMsg}}
+    </cover-view>
   </live-player>
 </view>
 
-<live-pusher class="live-pusher {{pusherVisible}}" style="width:{{pusherWidth}}px;height:{{pusherHeight}}px;top:{{pusherTop}}px;" url="{{pushUrl}}" mode="RTC" beauty="1" whiteness="1" bindstatechange="_onLivePusherChange" binderror="_onLivePusherError"
-  bindnetstatus="_onLivePusherNetInfo" />
+<live-pusher class="live-pusher {{pusherVisible}}" style="width:{{pusherWidth}}px;height:{{pusherHeight}}px;top:{{pusherTop}}px;" url="{{pushUrl}}" min-bitrate="{{pusherMinBitrate}}" max-bitrate="{{pusherMaxBitrate}}" mode="{{pusherMode}}" beauty="1"
+  whiteness="1" bindstatechange="_onLivePusherChange" binderror="_onLivePusherError" bindnetstatus="_onLivePusherNetInfo" />
 
 <block wx:if="{{3==status}}">
   <view class='full-screen'>
@@ -192,7 +195,7 @@
   <view class="setting-mask"></view>
   <view class="setting-panel">
     <text class='setting-text'>您未授权小程序使用您的麦克风或摄像头，无法使用相应功能</text>
-    <button open-type='openSetting' type='primary' class='setting-btn'>现在去授权</button>
+    <button catchtap='_navToSetting' open-type='openSetting' type='primary' class='setting-btn'>现在去授权</button>
   </view>
 </block>
 

@@ -117,6 +117,7 @@ var _options = {
   uuid: null,
   token: null,
   openId: null,
+  wxAppId: null,
   userToken: null
 };
 
@@ -135,6 +136,7 @@ var _callbacks = {
   onHangupRequest: null,
   onTransferCall: null,
   onUpdateUrl: null,
+  onCommand: null,
   login: null,
   sendMsg: [],
   addAttatch: null,
@@ -174,7 +176,7 @@ function init(option) {
 
 //登录
 //function login(sdkProductId, uuid, token, openId, withHisMsg, callback) {
-function login(sdkProductId, userToken, openId, withHisMsg, callback) {
+function login(sdkProductId, userToken, openId, wxAppId, withHisMsg, callback) {
   log('login');
   if ('undefined' != typeof withHisMsg) {
     loginWithHisMsg = withHisMsg;
@@ -187,6 +189,7 @@ function login(sdkProductId, userToken, openId, withHisMsg, callback) {
   //_options.token = token;
   _options.userToken = userToken;
   _options.openId = openId;
+  _options.wxAppId = wxAppId;
   connectToWss();
 };
 
@@ -506,6 +509,9 @@ function on(event, callback) {
     case 'transfer':
       _callbacks.onTransferCall = callback;
       break;
+    case 'command':
+      _callbacks.onCommand = callback;
+      break;
     default:
       break;
   }
@@ -566,6 +572,7 @@ function startLogin() {
       sdkProductId: _options.sdkProductId,
       userToken: _options.userToken,
       openId: _options.openId,
+      wxAppId: _options.wxAppId,
       withHisMsg: loginWithHisMsg
     }
   };
@@ -844,8 +851,18 @@ function parseSocketMessage(data) {
       sendLog('1', 'call transfer:' + data);
       parseTransfer(msg);
       break;
+    case 'COMMAND_REQUEST':
+      sendLog('1', 'command:' + data);
+      parseCommand(msg);
+      break;
     default:
       break;
+  }
+}
+
+function parseCommand(msg) {
+  if (_callbacks.onCommand) {
+    _callbacks.onCommand(msg.data);
   }
 }
 

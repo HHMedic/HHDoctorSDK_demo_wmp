@@ -14,18 +14,15 @@ Page({
   onLoad: function(options) {
     this.setData({
       hhRequest: {
-        profileName: 'test',   //test:测试环境,   prod:生产环境
-        sdkProductId: 9003,    //已分配的产品id
-        userToken: 'E6E6E880BB3AD4A1D8B31FE763B6ADEB3F0D04F68EA2608F6783B874E4F50EEF',   //服务器注册用户接口返回的userToken
-        openId: 'oirIW0Rc9lRBp3PyfCyxis123JR0',    //用户微信openId
+        profileName: 'test', //test:测试环境,   prod:生产环境
+        sdkProductId: 9003, //已分配的产品id
+        userToken: 'E6E6E880BB3AD4A1D8B31FE763B6ADEB3F0D04F68EA2608F6783B874E4F50EEF', //服务器注册用户接口返回的userToken
+        openId: 'oirIW0Rc9lRBp3PyfCyxis123JR0', //用户微信openId
         callPage: '../call/call',
         style: {
-          logoImage:'',  //通话时左上角logo
-          navicationBar:{
-            bColor:'#ffffff',  //标题栏背景色
-            fColor:'#000000',  //标题栏字体颜色
-            text:'视频医生'     //顶部标题
-          }
+          navBarBg: '#ffffff', //信息流界面标题栏背景颜色
+          navBarFg: '#000000', //信息流界面标题栏文字颜色
+          pageTitle: '视频医生' //信息流界面标题栏文字
         }
       }
     })
