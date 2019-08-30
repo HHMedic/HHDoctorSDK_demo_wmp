@@ -20,6 +20,9 @@ Page({
       title: '选择会员方案',
     })
     if (options) {
+      if (options.payPage) {
+        options.payPage = decodeURIComponent(options.payPage);
+      }
       this.setData({
         hhRequest: options
       })
@@ -30,7 +33,7 @@ Page({
    * 生命周期函数--监听页面初次渲染完成
    */
   onReady: function() {
-
+    wx.hideShareMenu();
   },
 
   /**

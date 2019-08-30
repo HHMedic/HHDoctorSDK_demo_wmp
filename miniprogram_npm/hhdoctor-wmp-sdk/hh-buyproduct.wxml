@@ -4,7 +4,7 @@
   <view class='panel'>
     <view class='panel-card-list'>
       <block wx:for='{{productList}}' wx:for-item='product' wx:key='{{pid}}'>
-        <template is='{{product.canOrderExpert?"productPrime":"product"}}' data='{{...product,selectedPid:selectedPid}}'></template>
+        <template is='{{product.canOrderExpert?"productPrime":"product"}}' data='{{...product,selectedPid:selectedPid,sdkProductId:_request.sdkProductId}}'></template>
       </block>
 
     </view>
@@ -20,7 +20,7 @@
 <!-- 普通套餐卡片模版 -->
 <template name='product'>
   <view class='card-info' catchtap='_selectProduct' data-pid='{{productServiceId}}'>
-    <image class='card-image {{selectedPid==productServiceId?"selected":""}}' src='https://imgs.hh-medic.com/icon/wmp/card.png' mode='widthFix'></image>
+    <image class='card-image {{selectedPid==productServiceId?"selected":""}}' src='{{3009==sdkProductId?"https://imgs.hh-medic.com/icon/wmp/card-hh.png":"https://imgs.hh-medic.com/icon/wmp/card.png"}}' mode='widthFix'></image>
     <view class='card-title'>{{productServiceName}}</view>
     <!-- 描述信息 -->
     <view class='card-desc-list'>
@@ -45,7 +45,7 @@
 <!-- 高级套餐卡片模版 -->
 <template name='productPrime'>
   <view class='card-info prime' catchtap='_selectProduct' data-pid='{{productServiceId}}'>
-    <image class='card-image prime {{selectedPid==productServiceId?"selected":""}}' src='https://imgs.hh-medic.com/icon/wmp/card-prime.png' mode='widthFix'></image>
+    <image class='card-image prime {{selectedPid==productServiceId?"selected":""}}' src='{{3009==sdkProductId?"https://imgs.hh-medic.com/icon/wmp/card-prime-hh.png":"https://imgs.hh-medic.com/icon/wmp/card-prime.png"}}' mode='widthFix'></image>
     <view class='card-title prime'>{{productServiceName}}</view>
     <view class='card-desc-list'>
       <view class='card-desc prime'>7×24小时视频看医生</view>

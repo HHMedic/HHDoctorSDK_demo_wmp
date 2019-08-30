@@ -15,14 +15,16 @@ Page({
     this.setData({
       hhRequest: {
         profileName: 'test', //test:测试环境,   prod:生产环境
-        sdkProductId: 9003, //已分配的产品id
+        sdkProductId: 9003, //已分配的产品sdkProductId
         userToken: 'E6E6E880BB3AD4A1D8B31FE763B6ADEB3F0D04F68EA2608F6783B874E4F50EEF', //服务器注册用户接口返回的userToken
         openId: 'oirIW0Rc9lRBp3PyfCyxis123JR0', //用户微信openId
         callPage: '../call/call',
         style: {
-          navBarBg: '#ffffff', //信息流界面标题栏背景颜色
-          navBarFg: '#000000', //信息流界面标题栏文字颜色
-          pageTitle: '视频医生' //信息流界面标题栏文字
+          navigationBar: {
+            bColor: '#ffffff', //标题栏背景色，默认:#000000
+            fColor: '#000000', //标题栏前景色，默认:#ffffff
+            text: '视频医生DEMO' //标题栏文字，默认：视频医生
+          }
         }
       }
     })

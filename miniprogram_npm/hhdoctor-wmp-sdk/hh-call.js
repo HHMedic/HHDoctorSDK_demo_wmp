@@ -324,6 +324,51 @@ module.exports = {
 "use strict";
 
 
+function getHost(profileName, subDomain) {
+  var host = {};
+  switch (profileName) {
+    case 'prod':
+      if (subDomain) {
+        host.wmpHost = 'https://' + subDomain + '.hh-medic.com/wmp/';
+        host.ehrHost = 'https://' + subDomain + '.hh-medic.com/ehrweb/';
+        host.patHost = 'https://' + subDomain + '.hh-medic.com/patient_web/';
+        host.wsServer = 'wss://' + subDomain + '.hh-medic.com/wmp/websocket';
+      } else {
+        host.wmpHost = 'https://wmp.hh-medic.com/wmp/';
+        host.ehrHost = 'https://e.hh-medic.com/ehrweb/';
+        host.patHost = 'https://sec.hh-medic.com/patient_web/';
+        host.wsServer = 'wss://wmp.hh-medic.com/wmp/websocket';
+      }
+      break;
+    case 'test':
+      host.wmpHost = 'https://test.hh-medic.com/wmp/';
+      host.ehrHost = 'https://test.hh-medic.com/ehrweb/';
+      host.patHost = 'https://test.hh-medic.com/patient_web/';
+      host.wsServer = 'wss://test.hh-medic.com/wmp/websocket';
+      break;
+    case 'dev':
+      host.wmpHost = 'http://10.1.0.99:8080/wmp/';
+      host.ehrHost = 'http://test.hh-medic.com/ehrweb/';
+      host.patHost = 'http://test.hh-medic.com/patient_web/';
+      host.wsServer = 'ws://10.1.0.99:8080/wmp/websocket';
+      break;
+    default:
+      break;
+  }
+  return host;
+}
+
+module.exports = {
+  getHost: getHost
+};
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 /**HH-MEDIC VideoDoctor IM SDK 1.0.0
  ***ALL RIGHTS RESERVED
  ***Author:HH-MYL
@@ -641,12 +686,12 @@ function callResponse(famOrderId, accept) {
 }
 
 //挂断视频
-function hangup(callback, debug, hangupType, videoTime) {
+function hangup(callback, debug, hangupType, videoTime, hangupSource) {
   log('hangup...');
   if (!doctorName || !doctorUuid) {
     return;
   }
-  sendLog('1', 'hangup');
+  sendLog('1', 'hangup(' + hangupSource + ')');
   if (callback) {
     _callbacks.hangup = callback;
   }
@@ -1198,7 +1243,7 @@ function parseMsgReceive(msg) {
       //卡片消息
       var attach = JSON.parse(msg.data.attach);
       var content = JSON.parse(attach.content);
-      if ('summaryByFam' != content.command && 'buyDrugInformation' != content.command && 'buyService' != content.command) {
+      if ('summaryByFam' != content.command && 'buyDrugInformation' != content.command && 'buyService' != content.command && 'commandProductTips' != content.command) {
         return;
       }
 
@@ -1283,7 +1328,7 @@ function parseHistory(msgHis) {
       case 9999:
         //卡片消息
         var content = JSON.parse(msg.body.content);
-        if ('summaryByFam' == content.command || 'buyDrugInformation' == content.command || 'buyService' == content.command) {
+        if ('summaryByFam' == content.command || 'buyDrugInformation' == content.command || 'buyService' == content.command || 'commandProductTips' == content.command) {
           msgs.push({
             id: msg.msgid,
             type: 'card',
@@ -1323,7 +1368,12 @@ function clearCache() {
     endTime: null,
     list: []
   };
-  wx.clearStorage();
+  if (_options && _options.uuid) {
+    var key = 'msgCache_' + _options.uuid;
+    wx.removeStorageSync(key);
+  } else {
+    wx.clearStorage();
+  }
 }
 
 function getCacheMsgs() {
@@ -1520,7 +1570,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1528,8 +1578,9 @@ module.exports = {
 
 var common = __webpack_require__(0);
 //var hhim = require('./utils/HH_IM_SDK_DEV.js');
+var hostUtil = __webpack_require__(1);
 var eventOption = {};
-var that;
+var that, app;
 module.exports = Behavior({
   behaviors: [],
   properties: {
@@ -1614,6 +1665,7 @@ module.exports = Behavior({
 
   attached: function attached() {
     that = this;
+    app = getApp();
   },
 
   methods: {
@@ -1639,51 +1691,19 @@ module.exports = Behavior({
       }
     },
     _getHost: function _getHost() {
-      //wsServer: 'wss://wmp.hh-medic.com/wmp/websocket',
-      //fileServer: 'https://dev.hh-medic.com/miniprogramweb_master/wmp/im/upload/'
-      var host = {};
-      switch (this.data._request.profileName) {
-        case 'prod':
-          if (this.data._request.subDomain) {
-            host.wmpHost = 'https://' + this.data._request.subDomain + '.hh-medic.com/wmp/';
-            host.ehrHost = 'https://' + this.data._request.subDomain + '.hh-medic.com/ehrweb/';
-            host.patHost = 'https://' + this.data._request.subDomain + '.hh-medic.com/patient_web/';
-            host.wsServer = 'wss://' + this.data._request.subDomain + '.hh-medic.com/wmp/websocket';
-          } else {
-            host.wmpHost = 'https://wmp.hh-medic.com/wmp/';
-            host.ehrHost = 'https://e.hh-medic.com/ehrweb/';
-            host.patHost = 'https://sec.hh-medic.com/patient_web/';
-            host.wsServer = 'wss://wmp.hh-medic.com/wmp/websocket';
-          }
-          break;
-        case 'test':
-          host.wmpHost = 'https://test.hh-medic.com/wmp/';
-          host.ehrHost = 'https://test.hh-medic.com/ehrweb/';
-          host.patHost = 'https://test.hh-medic.com/patient_web/';
-          host.wsServer = 'wss://test.hh-medic.com/wmp/websocket';
-          break;
-        case 'dev':
-          host.wmpHost = 'http://10.1.0.99:8080/wmp/';
-          host.ehrHost = 'http://test.hh-medic.com/ehrweb/';
-          host.patHost = 'http://test.hh-medic.com/patient_web/';
-          host.wsServer = 'ws://10.1.0.99:8080/wmp/websocket';
-          break;
-        default:
-          break;
-      }
-      return host;
+      return hostUtil.getHost(this.data._request.profileName, this.data._request.subDomain);
     },
     _logInfo: function _logInfo(content) {
       if (!this.data._request || 'prod' == this.data._request.profileName) {
         return;
       }
-      console.log('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK:' + this.data._name + ']]' + content);
+      console.log('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK:' + this.data._name + '] ' + content);
     },
     _logError: function _logError(content) {
       if (!this.data._request || 'prod' == this.data._request.profileName) {
         return;
       }
-      console.error('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK:' + this.data._name + ']]' + content);
+      console.error('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK:' + this.data._name + '] ' + content);
     },
     _triggerEvent: function _triggerEvent(name, detail) {
       this.triggerEvent(name, detail, eventOption);
@@ -1802,7 +1822,7 @@ module.exports = Behavior({
       }
 
       this._logInfo(this.data._name + '初始化...');
-      var hhim = __webpack_require__(1);
+      var hhim = __webpack_require__(2);
       hhim.init({
         debug: false,
         wsServer: this.data._host.wsServer,
@@ -1881,10 +1901,20 @@ module.exports = Behavior({
       var url = this.data._host.patHost + 'drug/order-list.html?' + 'sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
       this._viewUrl(url);
     },
+    _viewAddressList: function _viewAddressList() {
+      var url = this.data._host.patHost + 'drug/addr-list.html?' + 'sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
+      this._viewUrl(url);
+    },
     _viewPersonal: function _viewPersonal(personalModule) {
       var vParam = this.data._host.wmpHost + 'view/?' + 'module=' + (personalModule ? personalModule : this.data._request.personalModule) + '&appId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion;
 
       var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(vParam);
+      wx.navigateTo({
+        url: pageUrl
+      });
+    },
+    _viewRight: function _viewRight() {
+      var pageUrl = this.data.basePath + 'innerpages/right?' + this._getPublicRequestParams();
       wx.navigateTo({
         url: pageUrl
       });
@@ -1962,7 +1992,7 @@ module.exports = Behavior({
 });
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2083,42 +2113,6 @@ module.exports = {
 };
 
 /***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-//输出日志
-function info(content) {
-  console.log('[' + formatTime() + '][HH_IM_SDK] ' + content);
-};
-
-//格式化日期时间
-function formatTime(date) {
-  if (!date) {
-    date = new Date();
-  }
-  var year = date.getFullYear();
-  var month = date.getMonth() + 1;
-  var day = date.getDate();
-  var hour = date.getHours();
-  var minute = date.getMinutes();
-  var second = date.getSeconds();
-  return [year, month, day].map(formatNumber).join('-') + ' ' + [hour, minute, second].map(formatNumber).join(':');
-};
-
-//格式化数字
-function formatNumber(n) {
-  n = n.toString();
-  return n[1] ? n : '0' + n;
-}
-
-module.exports = {
-  info: info
-};
-
-/***/ }),
 /* 5 */,
 /* 6 */,
 /* 7 */,
@@ -2137,9 +2131,9 @@ var _data;
 
 //const hhim = require('./utils/HH_WMP_SDK.js');
 var eventOption = {};
-var dateUtil = __webpack_require__(3);
+var dateUtil = __webpack_require__(4);
 var commonUtil = __webpack_require__(0);
-var log = __webpack_require__(4);
+//const log = require('./utils/logUtil.js');
 var that = undefined;
 var livePlayUrl;
 var playStart = false,
@@ -2178,10 +2172,11 @@ var intervalHandler = {
 
 var ringFile = '';
 var disConnected = false;
+var reConnectCount = 0;
 var showModal = false;
 
 Component({
-  behaviors: [__webpack_require__(2)],
+  behaviors: [__webpack_require__(3)],
   /**
    * 组件的属性列表
    */
@@ -2257,7 +2252,7 @@ Component({
     pusherMaxBitrate: 200,
     errorMsgVisible: false,
     errorMsg: '网络不佳，请挂断重拨'
-  }, _data['enableCamera'] = true, _data),
+  }, _data['enableCamera'] = true, _data.orientation = 'vertical', _data),
 
   lifetimes: {
     attached: function attached() {
@@ -2352,6 +2347,9 @@ Component({
             setTimeout(function () {
               that._playRing();
             }, 500);
+          } else if (2 == that.data.status) {
+            //视频中显示，切换到视频模式
+            getApp().globalData._hhim.switchMode('VIDEO');
           } else {
             that._stopRing();
           }
@@ -2379,6 +2377,10 @@ Component({
       that._stopRing();
       if (getApp().globalData._hhim.loginStatus()) {
         that._sendLog('1', 'hh-call onHide');
+        if (2 == that.data.status) {
+          //视频中显示，切换到视频模式
+          getApp().globalData._hhim.switchMode('AUDIO');
+        }
       }
     }
   },
@@ -2398,6 +2400,7 @@ Component({
           login: 200 == res.status
         });
         if (200 == res.status) {
+          reConnectCount = 0;
           disConnected = false;
           that._applyStyle();
           that._logInfo('loginStatus:' + getApp().globalData._hhim.loginStatus());
@@ -2445,6 +2448,12 @@ Component({
         success: function success(res) {
           that._resetTop(res);
           that._sendLog('1', JSON.stringify(res));
+          if (res.deviceOrientation && 'portrait' != res.deviceOrientation) {
+            //设备不是垂直方向
+            that.setData({
+              orientation: 'horizontal'
+            });
+          }
         }
       });
       wx.getNetworkType({
@@ -2894,7 +2903,7 @@ Component({
         });
         var msg = data.message ? data.message : '医生繁忙，请稍后再拨';
         wx.showModal({
-          title: '错误',
+          title: '提示',
           content: msg,
           showCancel: false,
           success: function success() {
@@ -3183,7 +3192,7 @@ Component({
      */
     _selectImage: function _selectImage() {
       that._sendLog('1', 'selectImage start');
-      getApp().globalData._hhim.switchMode('AUDIO');
+      //getApp().globalData._hhim.switchMode('AUDIO');
       /*that.data.pusher.pause();
       that.data.player.pause();*/
 
@@ -3226,7 +3235,7 @@ Component({
         },
         complete: function complete() {
           that._sendLog('1', 'selectImage complete');
-          getApp().globalData._hhim.switchMode('VIDEO');
+          //getApp().globalData._hhim.switchMode('VIDEO');
           /*that.data.pusher.resume();
           that.data.player.resume();*/
 
@@ -3263,7 +3272,7 @@ Component({
         _options = Object.assign(_options, options);
       }
       if (_options.source) {
-        that._logInfo('关机来源:' + _options.source);
+        that._logInfo('挂机来源:' + _options.source);
       }
 
       if (!getApp().globalData._hhim || !getApp().globalData._hhim.loginStatus() || 'hhImError' == _options.source) {
@@ -3310,7 +3319,7 @@ Component({
         } else {
           that._feedback(_options.stayInpage, data);
         }
-      }, false, _options.hangupType, videoTimeSeconds);
+      }, false, _options.hangupType, videoTimeSeconds, _options.source ? _options.source : '');
       // } else {
       //   if (that.data._request.famOrderId) {
       //     wx.hideLoading();
@@ -3537,12 +3546,18 @@ Component({
 
       var pusher = wx.createLivePusherContext(this);
       that.setData({
-        status: 1,
         pusher: pusher,
         showCancelBtn: false,
         showCalledPanel: true,
         showAcceptBtn: true
       });
+
+      if (0 == that.data.status) {
+        that.setData({
+          status: 1
+        });
+      }
+
       that._showPusher();
       setTimeout(function () {
         that.data.pusher.start();
@@ -3597,19 +3612,19 @@ Component({
 
     _hhImError: function _hhImError(e) {
       that._clearCountDown();
-      wx.showModal({
+      /*wx.showModal({
         title: '网络不给力',
         content: '正在结束视频，请切换网络再试',
         showCancel: false,
-        success: function success() {
+        success: function() {
           that._hangup({
             initiative: false,
             hangupType: 'HANGUP',
             stayInpage: false,
             source: 'hhImError'
-          });
+          })
         }
-      });
+      })*/
     },
 
     _navBack: function _navBack() {
@@ -3668,6 +3683,21 @@ Component({
       /*wx.navigateBack({
         delta: 1
       })*/
+      reConnectCount++;
+      if (reConnectCount > 5) {
+        //如果重连尝试次数大于5次，说明网络中断或极差，则显示错误消息并退出
+        wx.showModal({
+          title: '网络不给力',
+          content: '正在结束视频，请切换网络再试',
+          showCancel: false,
+          success: function success() {
+            wx.navigateBack({
+              delta: 1
+            });
+          }
+        });
+        return;
+      }
       getApp().globalData._hhim = null;
       var closeTime = new Date().getTime();
 
@@ -3678,6 +3708,7 @@ Component({
           onCommand: that._commandHandler
         }, function (res) {
           if (200 == res.status) {
+            reConnectCount = 0;
             var timeSpan = new Date().getTime() - closeTime;
             that._logInfo('与服务器重连耗时：' + timeSpan + ' ms');
             if (timeSpan >= 5000) {

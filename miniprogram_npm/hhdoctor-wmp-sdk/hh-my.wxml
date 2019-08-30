@@ -40,7 +40,7 @@
   <view class='menu-group'>
     <view class='menu-item' catchtap='_viewEhr' wx:if='{{_request.userAcl.showEhr}}'>
       <view class='menu-icon ehr'></view>
-      <view class='menu-name'>病历档案</view>
+      <view class='menu-name'>档案库</view>
       <view class='menu-remark'></view>
       <view class='menu-arrow'></view>
     </view>

@@ -53,7 +53,7 @@
     </view>
     <view class='exp-bottom'>
       <view class='exp-bottom-panel'>
-        <image class="waitting-hangup-btn" src='../../../resources/image/hangup.png'></image>
+        <image class="waitting-hangup-btn" src='https://imgs.hh-medic.com/icon/wmp/hangup.png'></image>
         <view class='waitting-hangup-btn-text'>取消</view>
         <button class='launch-app-btn' app-parameter="wechat" open-type="launchApp" catchtap='_cancelInitiative' data-hanguptype='CANCEL'></button>
       </view>
@@ -70,7 +70,7 @@
     </view>
     <block wx:if="{{showAcceptBtn}}">
       <view class='exp-bottom'>
-        <image class="waitting-hangup-btn" bindtap='_acceptCall' src='../../../resources/image/accept.png'></image>
+        <image class="waitting-hangup-btn" bindtap='_acceptCall' src='https://imgs.hh-medic.com/icon/wmp/accept.png'></image>
         <view class='waitting-hangup-btn-text'>接听</view>
       </view>
     </block>
@@ -172,7 +172,7 @@
 </view>
 
 <live-pusher class="live-pusher {{pusherVisible}}" style="width:{{pusherWidth}}px;height:{{pusherHeight}}px;top:{{pusherTop}}px;" url="{{pushUrl}}" min-bitrate="{{pusherMinBitrate}}" max-bitrate="{{pusherMaxBitrate}}" mode="{{pusherMode}}" beauty="1"
-  whiteness="1" bindstatechange="_onLivePusherChange" binderror="_onLivePusherError" bindnetstatus="_onLivePusherNetInfo" />
+  orientation="{{orientation}}" whiteness="1" bindstatechange="_onLivePusherChange" binderror="_onLivePusherError" bindnetstatus="_onLivePusherNetInfo" />
 
 <block wx:if="{{3==status}}">
   <view class='full-screen'>

@@ -82,12 +82,12 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
-/******/ ([
-/* 0 */,
-/* 1 */
+/******/ ({
+
+/***/ 2:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -410,12 +410,12 @@ function callResponse(famOrderId, accept) {
 }
 
 //挂断视频
-function hangup(callback, debug, hangupType, videoTime) {
+function hangup(callback, debug, hangupType, videoTime, hangupSource) {
   log('hangup...');
   if (!doctorName || !doctorUuid) {
     return;
   }
-  sendLog('1', 'hangup');
+  sendLog('1', 'hangup(' + hangupSource + ')');
   if (callback) {
     _callbacks.hangup = callback;
   }
@@ -967,7 +967,7 @@ function parseMsgReceive(msg) {
       //卡片消息
       var attach = JSON.parse(msg.data.attach);
       var content = JSON.parse(attach.content);
-      if ('summaryByFam' != content.command && 'buyDrugInformation' != content.command && 'buyService' != content.command) {
+      if ('summaryByFam' != content.command && 'buyDrugInformation' != content.command && 'buyService' != content.command && 'commandProductTips' != content.command) {
         return;
       }
 
@@ -1052,7 +1052,7 @@ function parseHistory(msgHis) {
       case 9999:
         //卡片消息
         var content = JSON.parse(msg.body.content);
-        if ('summaryByFam' == content.command || 'buyDrugInformation' == content.command || 'buyService' == content.command) {
+        if ('summaryByFam' == content.command || 'buyDrugInformation' == content.command || 'buyService' == content.command || 'commandProductTips' == content.command) {
           msgs.push({
             id: msg.msgid,
             type: 'card',
@@ -1092,7 +1092,12 @@ function clearCache() {
     endTime: null,
     list: []
   };
-  wx.clearStorage();
+  if (_options && _options.uuid) {
+    var key = 'msgCache_' + _options.uuid;
+    wx.removeStorageSync(key);
+  } else {
+    wx.clearStorage();
+  }
 }
 
 function getCacheMsgs() {
@@ -1289,4 +1294,5 @@ module.exports = {
 };
 
 /***/ })
-/******/ ]);
+
+/******/ });

@@ -14,10 +14,8 @@ Page({
       hhRequest: {
         profileName: 'test',
         sdkProductId: 9003,
-        //userToken: 'D63D59446748D9CA1C96264FA7DA17C73F0D04F68EA2608F6783B874E4F50EEF',
-        //openId: 'oSNYc5PotGld1r5JYUKiyKXmHRhs',
-        userToken: 'D39F766DEF30F91D7A141E60522E78B0CCCB578FFE9820E7F43A1807648A85D9',
-        openId: 'oirIW0Rc9lRBp3PyfCyxis455JR0',
+        userToken: 'E6E6E880BB3AD4A1D8B31FE763B6ADEB3F0D04F68EA2608F6783B874E4F50EEF',
+        openId: 'oSNYc5PotGld1r5JYUKiyKXmHRhs'
       }
     })
     hhSdk = this.selectComponent('#hhSdk');
@@ -51,10 +49,16 @@ Page({
       page: 'drugOrderList'
     })
   },
-
+  //查看个人页面
   viewPersonal() {
     hhSdk.navigateTo({
       page: 'personalPage'
+    })
+  },
+  //查看地址列表
+  viewAddrList() {
+    hhSdk.navigateTo({
+      page: 'addressList'
     })
   },
 

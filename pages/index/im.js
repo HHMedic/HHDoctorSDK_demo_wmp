@@ -14,6 +14,13 @@ Page({
   onLoad: function(options) {
     console.log(options);
     if (options) {
+      options.style = {
+        navigationBar: {
+          bColor: '#0592f5', //标题栏背景色
+          fColor: '#ffffff', //标题栏前景色
+          text: '信息流' //标题栏文字
+        }
+      }
       this.setData({
         hhRequest: options
       })

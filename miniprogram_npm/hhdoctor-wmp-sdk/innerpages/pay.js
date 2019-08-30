@@ -1,5 +1,5 @@
-const wxPayUtil = require('../utils/wxPayUtil.js');
-
+const hostUtil = require('../utils/hostUtil.js');
+const app = getApp();
 var that;
 var initTimeout = 0;
 var checkHandler;
@@ -10,6 +10,8 @@ Page({
    * 页面的初始数据
    */
   data: {
+    profileName: '',
+    subDomain: '',
     name: '',
     desc: '',
     price: -1,
@@ -85,6 +87,16 @@ Page({
         nextPage: options.nextPage
       })
     }
+    if ('undefined' != typeof(options.profileName)) {
+      this.setData({
+        profileName: options.profileName
+      })
+    }
+    if ('undefined' != typeof(options.subDomain)) {
+      this.setData({
+        subDomain: options.subDomain
+      })
+    }
 
     checkHandler = setInterval(function() {
       //未登录用户
@@ -129,6 +141,12 @@ Page({
 
     if (!this.data.openId) {
       return false;
+    }
+    if (!app.globalData._hhSdkOptions) {
+      var sdkOptions = {
+        _host: hostUtil.getHost(this.data.profileName, this.data.subDomain)
+      };
+      app.globalData._hhSdkOptions = sdkOptions;
     }
 
     if (this.data.name &&
@@ -186,7 +204,7 @@ Page({
   },
 
   pay() {
-    var url = getApp().globalData._hhSdkOptions._host.wmpHost + 'pay/buyProduct' +
+    var url = app.globalData._hhSdkOptions._host.wmpHost + 'pay/buyProduct' +
       '?famPid=' + this.data.famPid +
       '&wxAppId=' + this.data.wxAppId +
       '&openId=' + this.data.openId;
@@ -211,6 +229,7 @@ Page({
       success: function(res) {
         if (res && res.data && 200 == res.data.status) {
           //成功
+          console.log('data:', res.data.data);
           if (!res.data.data ||
             !res.data.data.result ||
             !res.data.data.result.tn) {
@@ -273,19 +292,18 @@ Page({
   },
 
   doWxPay(tn) {
-    wxPayUtil.pay({
-      prePayId: tn.prepayid,
-      nonce: tn.nonceStr,
-      //host: '',
-      data: {
-        appId: this.data.wxAppId
-      },
+    wx.hideLoading();
+    wx.requestPayment({
+      timeStamp: tn.timeStamp,
+      nonceStr: tn.nonceStr,
+      "package": tn.package,
+      signType: tn.signType,
+      paySign: tn.paySign,
       success: function(res) {
         console.log('pay success');
         that.naviToNextPage(true);
       },
-      fail: function() {
-        wx.hideLoading();
+      fail: function(res) {
         wx.showModal({
           title: '支付失败',
           content: '支付出现问题或已取消，请稍后再试',
@@ -295,7 +313,7 @@ Page({
           }
         })
       }
-    })
+    });
   },
 
   naviToNextPage(paySuccess) {

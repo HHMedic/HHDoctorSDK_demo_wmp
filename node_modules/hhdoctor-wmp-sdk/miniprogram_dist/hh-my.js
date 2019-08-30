@@ -326,6 +326,293 @@ module.exports = {
 "use strict";
 
 
+function getHost(profileName, subDomain) {
+  var host = {};
+  switch (profileName) {
+    case 'prod':
+      if (subDomain) {
+        host.wmpHost = 'https://' + subDomain + '.hh-medic.com/wmp/';
+        host.ehrHost = 'https://' + subDomain + '.hh-medic.com/ehrweb/';
+        host.patHost = 'https://' + subDomain + '.hh-medic.com/patient_web/';
+        host.wsServer = 'wss://' + subDomain + '.hh-medic.com/wmp/websocket';
+      } else {
+        host.wmpHost = 'https://wmp.hh-medic.com/wmp/';
+        host.ehrHost = 'https://e.hh-medic.com/ehrweb/';
+        host.patHost = 'https://sec.hh-medic.com/patient_web/';
+        host.wsServer = 'wss://wmp.hh-medic.com/wmp/websocket';
+      }
+      break;
+    case 'test':
+      host.wmpHost = 'https://test.hh-medic.com/wmp/';
+      host.ehrHost = 'https://test.hh-medic.com/ehrweb/';
+      host.patHost = 'https://test.hh-medic.com/patient_web/';
+      host.wsServer = 'wss://test.hh-medic.com/wmp/websocket';
+      break;
+    case 'dev':
+      host.wmpHost = 'http://10.1.0.99:8080/wmp/';
+      host.ehrHost = 'http://test.hh-medic.com/ehrweb/';
+      host.patHost = 'http://test.hh-medic.com/patient_web/';
+      host.wsServer = 'ws://10.1.0.99:8080/wmp/websocket';
+      break;
+    default:
+      break;
+  }
+  return host;
+}
+
+module.exports = {
+  getHost: getHost
+};
+
+/***/ }),
+
+/***/ 17:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var that;
+Component({
+  behaviors: [__webpack_require__(3)],
+  /**
+   * 组件的属性列表
+   */
+  properties: {},
+
+  /**
+   * 组件的初始数据
+   */
+  data: {
+    _name: 'hh-my',
+    primeLevel: 'prime',
+    showBeanTip: false,
+    user: null,
+    product: null,
+    productDesc: '',
+    vMoney: -1
+  },
+  lifetimes: {
+    attached: function attached() {
+      that = this;
+    },
+    ready: function ready() {
+      wx.showLoading({
+        title: '加载中...',
+        mask: true
+      });
+      setTimeout(function () {
+        wx.hideLoading();
+      }, 3000);
+      var info = wx.getSystemInfoSync();
+      this.setData({
+        sysInfo: info
+      });
+    }
+  },
+  /**
+   * 组件的方法列表
+   */
+  methods: {
+    _requestComplete: function _requestComplete() {
+      this._getProductInfo();
+      if (this.data._request.autoAcl) {
+        this._getUserAcl();
+      }
+    },
+    _showBeanTip: function _showBeanTip() {
+      this.setData({
+        showBeanTip: true
+      });
+    },
+    _hideBeanTip: function _hideBeanTip() {
+      this.setData({
+        showBeanTip: false
+      });
+    },
+
+    // _viewRight() {
+    //   var pageUrl = this.data.basePath + 'innerpages/right?' + this._getPublicRequestParams();
+    //   wx.navigateTo({
+    //     url: pageUrl,
+    //   })
+    // },
+    _getUserAcl: function _getUserAcl() {
+      var url = this._getHost().wmpHost + 'wmp/personalAcl?userToken=' + this.data._request.userToken + '&sdkProductId=' + this.data._request.sdkProductId + '&source=wmpSdk';
+      wx.request({
+        url: url,
+        data: {},
+        method: 'POST',
+        success: function success(res) {
+          if (res && res.data && 200 == res.data.status) {
+            //成功
+            var _acl = Object.assign(that.data._request.userAcl, res.data.data);
+            var _request = that.data._request;
+            _request.userAcl = _acl;
+            that.setData({
+              _request: _request
+            });
+          }
+        }
+      });
+    },
+    _getProductInfo: function _getProductInfo() {
+      var url = this._getHost().wmpHost + 'my/product' + '?userToken=' + this.data._request.userToken + '&sdkProductId=' + this.data._request.sdkProductId;
+
+      wx.request({
+        url: url,
+        data: {},
+        method: 'POST',
+        success: function success(res) {
+          if (res && res.data && 200 == res.data.status) {
+            //成功
+            that.setData({
+              user: res.data.data.user,
+              vMoney: 'undefined' != typeof res.data.data.vMoney ? res.data.data.vMoney : -1
+            });
+            if (res.data.data.product) {
+              that.setData({
+                productDesc: res.data.data.product.productStatusDescn
+              });
+              if ('normal' == res.data.data.product.productStatusEnum) {
+                that.setData({
+                  product: res.data.data.product,
+                  primeLevel: res.data.data.product.canOrderExpert ? 'prime' : ''
+                });
+              }
+            } else {
+              that.setData({
+                productDesc: '暂未开通会员'
+              });
+            }
+          } else {}
+        },
+        complete: function complete() {
+          wx.hideLoading();
+        }
+      });
+    },
+    _changePhone: function _changePhone() {
+      wx.showModal({
+        title: '',
+        content: '请在首页联系您的助理，帮您修改手机号',
+        showCancel: false,
+        confirmText: '我知道了'
+      });
+    },
+    _viewAbout: function _viewAbout() {
+      var url = this._getHost().wmpHost + 'wmp/about?appId=' + this.data._request.sdkProductId;
+      this._viewUrl(url);
+    },
+    _viewAddress: function _viewAddress() {
+      //老版本地址管理
+      // wx.navigateTo({
+      //   url: this.data._request.addressPage + '?' + this._getPublicRequestParams(),
+      // })
+      //新版本地址管理
+      this._viewAddressList();
+    },
+    _requestInvocie: function _requestInvocie() {
+      var url = this._getHost().wmpHost + 'pay/list?' + this._getPublicRequestParams() + '&buyPage=' + encodeURIComponent(this.data.basePath + 'innerpages/buyProduct') + '&payPage=' + encodeURIComponent(this.data._request.payPage);
+      this._viewUrl(url);
+    },
+    _viewInvoice: function _viewInvoice() {
+      var url = this._getHost().wmpHost + 'invoice/list?' + this._getPublicRequestParams();
+      this._viewUrl(url);
+    },
+    _userExpertService: function _userExpertService() {
+      if (this.data._request.userAcl.expertServiceStatus) {
+        wx.showModal({
+          title: '提示',
+          content: this.data._request.userAcl.expertServiceStatus,
+          showCancel: false
+        });
+        return;
+      }
+      wx.showLoading({
+        title: '处理中...'
+      });
+      var url = this._getHost().wmpHost + 'wmp/useExpertService?=' + this._getPublicRequestParams();
+      wx.request({
+        url: url,
+        data: {},
+        method: 'POST',
+        success: function success(res) {
+          wx.hideLoading();
+          if (res && res.data && 200 == res.data.status) {
+            wx.navigateBack({
+              delta: 1
+            });
+          } else {
+            wx.showModal({
+              title: '错误',
+              content: res.data.message,
+              showCancel: false
+            });
+          }
+        },
+        complete: function complete() {
+          wx.hideLoading();
+        }
+      });
+    },
+    _buyProduct: function _buyProduct() {
+      var pageUrl = this.data.basePath + 'innerpages/buyProduct?' + this._getPublicRequestParams() + '&payPage=' + this.data._request.payPage;
+      wx.navigateTo({
+        url: pageUrl
+      });
+    },
+    _logoutConfirm: function _logoutConfirm() {
+      wx.showModal({
+        title: '确认',
+        content: '是否立即退出登录',
+        success: function success(e) {
+          if (e.confirm) {
+            that._logout();
+          }
+        }
+      });
+    },
+    _logout: function _logout() {
+      var url = this._getHost().wmpHost + 'wmp/logoutWmp?=' + this._getPublicRequestParams();
+      wx.request({
+        url: url,
+        data: {},
+        method: 'POST',
+        success: function success(res) {
+          //if (res && res.data && 200 == res.data.status) {
+          //成功
+          //清理本地缓存
+          if (getApp().globalData._hhim) {
+            getApp().globalData._hhim.clearCache();
+            if (getApp().globalData._hhim.loginStatus()) {
+              getApp().globalData._hhim.logout();
+            }
+          }
+          getApp().globalData._hhim = null;
+
+          that._triggerEvent('logout', res.data.data);
+          /*} else {
+            wx.showModal({
+              title: '错误',
+              content: '暂时无法注销，请稍后再试',
+              showCancel: false
+            })
+          }*/
+        }
+      });
+    }
+  }
+});
+
+/***/ }),
+
+/***/ 2:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 /**HH-MEDIC VideoDoctor IM SDK 1.0.0
  ***ALL RIGHTS RESERVED
  ***Author:HH-MYL
@@ -643,12 +930,12 @@ function callResponse(famOrderId, accept) {
 }
 
 //挂断视频
-function hangup(callback, debug, hangupType, videoTime) {
+function hangup(callback, debug, hangupType, videoTime, hangupSource) {
   log('hangup...');
   if (!doctorName || !doctorUuid) {
     return;
   }
-  sendLog('1', 'hangup');
+  sendLog('1', 'hangup(' + hangupSource + ')');
   if (callback) {
     _callbacks.hangup = callback;
   }
@@ -1200,7 +1487,7 @@ function parseMsgReceive(msg) {
       //卡片消息
       var attach = JSON.parse(msg.data.attach);
       var content = JSON.parse(attach.content);
-      if ('summaryByFam' != content.command && 'buyDrugInformation' != content.command && 'buyService' != content.command) {
+      if ('summaryByFam' != content.command && 'buyDrugInformation' != content.command && 'buyService' != content.command && 'commandProductTips' != content.command) {
         return;
       }
 
@@ -1285,7 +1572,7 @@ function parseHistory(msgHis) {
       case 9999:
         //卡片消息
         var content = JSON.parse(msg.body.content);
-        if ('summaryByFam' == content.command || 'buyDrugInformation' == content.command || 'buyService' == content.command) {
+        if ('summaryByFam' == content.command || 'buyDrugInformation' == content.command || 'buyService' == content.command || 'commandProductTips' == content.command) {
           msgs.push({
             id: msg.msgid,
             type: 'card',
@@ -1325,7 +1612,12 @@ function clearCache() {
     endTime: null,
     list: []
   };
-  wx.clearStorage();
+  if (_options && _options.uuid) {
+    var key = 'msgCache_' + _options.uuid;
+    wx.removeStorageSync(key);
+  } else {
+    wx.clearStorage();
+  }
 }
 
 function getCacheMsgs() {
@@ -1523,245 +1815,7 @@ module.exports = {
 
 /***/ }),
 
-/***/ 17:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var that;
-Component({
-  behaviors: [__webpack_require__(2)],
-  /**
-   * 组件的属性列表
-   */
-  properties: {},
-
-  /**
-   * 组件的初始数据
-   */
-  data: {
-    _name: 'hh-my',
-    primeLevel: 'prime',
-    showBeanTip: false,
-    user: null,
-    product: null,
-    productDesc: '',
-    vMoney: -1
-  },
-  lifetimes: {
-    attached: function attached() {
-      that = this;
-    },
-    ready: function ready() {
-      wx.showLoading({
-        title: '加载中...',
-        mask: true
-      });
-      setTimeout(function () {
-        wx.hideLoading();
-      }, 3000);
-      var info = wx.getSystemInfoSync();
-      this.setData({
-        sysInfo: info
-      });
-    }
-  },
-  /**
-   * 组件的方法列表
-   */
-  methods: {
-    _requestComplete: function _requestComplete() {
-      this._getProductInfo();
-      if (this.data._request.autoAcl) {
-        this._getUserAcl();
-      }
-    },
-    _showBeanTip: function _showBeanTip() {
-      this.setData({
-        showBeanTip: true
-      });
-    },
-    _hideBeanTip: function _hideBeanTip() {
-      this.setData({
-        showBeanTip: false
-      });
-    },
-    _viewRight: function _viewRight() {
-      var pageUrl = this.data.basePath + 'innerpages/right?' + this._getPublicRequestParams();
-      wx.navigateTo({
-        url: pageUrl
-      });
-    },
-    _getUserAcl: function _getUserAcl() {
-      var url = this._getHost().wmpHost + 'wmp/personalAcl?userToken=' + this.data._request.userToken + '&sdkProductId=' + this.data._request.sdkProductId + '&source=wmpSdk';
-      wx.request({
-        url: url,
-        data: {},
-        method: 'POST',
-        success: function success(res) {
-          if (res && res.data && 200 == res.data.status) {
-            //成功
-            var _acl = Object.assign(that.data._request.userAcl, res.data.data);
-            var _request = that.data._request;
-            _request.userAcl = _acl;
-            that.setData({
-              _request: _request
-            });
-          }
-        }
-      });
-    },
-    _getProductInfo: function _getProductInfo() {
-      var url = this._getHost().wmpHost + 'my/product' + '?userToken=' + this.data._request.userToken + '&sdkProductId=' + this.data._request.sdkProductId;
-
-      wx.request({
-        url: url,
-        data: {},
-        method: 'POST',
-        success: function success(res) {
-          if (res && res.data && 200 == res.data.status) {
-            //成功
-            that.setData({
-              user: res.data.data.user,
-              vMoney: 'undefined' != typeof res.data.data.vMoney ? res.data.data.vMoney : -1
-            });
-            if (res.data.data.product) {
-              that.setData({
-                productDesc: res.data.data.product.productStatusDescn
-              });
-              if ('normal' == res.data.data.product.productStatusEnum) {
-                that.setData({
-                  product: res.data.data.product,
-                  primeLevel: res.data.data.product.canOrderExpert ? 'prime' : ''
-                });
-              }
-            } else {
-              that.setData({
-                productDesc: '暂未开通会员'
-              });
-            }
-          } else {}
-        },
-        complete: function complete() {
-          wx.hideLoading();
-        }
-      });
-    },
-    _changePhone: function _changePhone() {
-      wx.showModal({
-        title: '',
-        content: '请在首页联系您的助理，帮您修改手机号',
-        showCancel: false,
-        confirmText: '我知道了'
-      });
-    },
-    _viewAbout: function _viewAbout() {
-      var url = this._getHost().wmpHost + 'wmp/about?appId=' + this.data._request.sdkProductId;
-      this._viewUrl(url);
-    },
-    _viewAddress: function _viewAddress() {
-      console.log(this._getPublicRequestParams());
-      wx.navigateTo({
-        url: this.data._request.addressPage + '?' + this._getPublicRequestParams()
-      });
-    },
-    _requestInvocie: function _requestInvocie() {
-      var url = this._getHost().wmpHost + 'pay/list?' + this._getPublicRequestParams();
-      this._viewUrl(url);
-    },
-    _viewInvoice: function _viewInvoice() {
-      var url = this._getHost().wmpHost + 'invoice/list?' + this._getPublicRequestParams();
-      this._viewUrl(url);
-    },
-    _userExpertService: function _userExpertService() {
-      if (this.data._request.userAcl.expertServiceStatus) {
-        wx.showModal({
-          title: '提示',
-          content: this.data._request.userAcl.expertServiceStatus,
-          showCancel: false
-        });
-        return;
-      }
-      wx.showLoading({
-        title: '处理中...'
-      });
-      var url = this._getHost().wmpHost + 'wmp/useExpertService?=' + this._getPublicRequestParams();
-      wx.request({
-        url: url,
-        data: {},
-        method: 'POST',
-        success: function success(res) {
-          wx.hideLoading();
-          if (res && res.data && 200 == res.data.status) {
-            wx.navigateBack({
-              delta: 1
-            });
-          } else {
-            wx.showModal({
-              title: '错误',
-              content: res.data.message,
-              showCancel: false
-            });
-          }
-        },
-        complete: function complete() {
-          wx.hideLoading();
-        }
-      });
-    },
-    _buyProduct: function _buyProduct() {
-      var pageUrl = this.data.basePath + 'innerpages/buyProduct?' + this._getPublicRequestParams() + '&payPage=' + this.data._request.payPage;
-      wx.navigateTo({
-        url: pageUrl
-      });
-    },
-    _logoutConfirm: function _logoutConfirm() {
-      wx.showModal({
-        title: '确认',
-        content: '是否立即退出登录',
-        success: function success(e) {
-          if (e.confirm) {
-            that._logout();
-          }
-        }
-      });
-    },
-    _logout: function _logout() {
-      var url = this._getHost().wmpHost + 'wmp/logoutWmp?=' + this._getPublicRequestParams();
-      wx.request({
-        url: url,
-        data: {},
-        method: 'POST',
-        success: function success(res) {
-          //if (res && res.data && 200 == res.data.status) {
-          //成功
-          //清理本地缓存
-          if (getApp().globalData._hhim) {
-            getApp().globalData._hhim.clearCache();
-            if (getApp().globalData._hhim.loginStatus()) {
-              getApp().globalData._hhim.logout();
-            }
-          }
-          getApp().globalData._hhim = null;
-
-          that._triggerEvent('logout', res.data.data);
-          /*} else {
-            wx.showModal({
-              title: '错误',
-              content: '暂时无法注销，请稍后再试',
-              showCancel: false
-            })
-          }*/
-        }
-      });
-    }
-  }
-});
-
-/***/ }),
-
-/***/ 2:
+/***/ 3:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1769,8 +1823,9 @@ Component({
 
 var common = __webpack_require__(0);
 //var hhim = require('./utils/HH_IM_SDK_DEV.js');
+var hostUtil = __webpack_require__(1);
 var eventOption = {};
-var that;
+var that, app;
 module.exports = Behavior({
   behaviors: [],
   properties: {
@@ -1855,6 +1910,7 @@ module.exports = Behavior({
 
   attached: function attached() {
     that = this;
+    app = getApp();
   },
 
   methods: {
@@ -1880,51 +1936,19 @@ module.exports = Behavior({
       }
     },
     _getHost: function _getHost() {
-      //wsServer: 'wss://wmp.hh-medic.com/wmp/websocket',
-      //fileServer: 'https://dev.hh-medic.com/miniprogramweb_master/wmp/im/upload/'
-      var host = {};
-      switch (this.data._request.profileName) {
-        case 'prod':
-          if (this.data._request.subDomain) {
-            host.wmpHost = 'https://' + this.data._request.subDomain + '.hh-medic.com/wmp/';
-            host.ehrHost = 'https://' + this.data._request.subDomain + '.hh-medic.com/ehrweb/';
-            host.patHost = 'https://' + this.data._request.subDomain + '.hh-medic.com/patient_web/';
-            host.wsServer = 'wss://' + this.data._request.subDomain + '.hh-medic.com/wmp/websocket';
-          } else {
-            host.wmpHost = 'https://wmp.hh-medic.com/wmp/';
-            host.ehrHost = 'https://e.hh-medic.com/ehrweb/';
-            host.patHost = 'https://sec.hh-medic.com/patient_web/';
-            host.wsServer = 'wss://wmp.hh-medic.com/wmp/websocket';
-          }
-          break;
-        case 'test':
-          host.wmpHost = 'https://test.hh-medic.com/wmp/';
-          host.ehrHost = 'https://test.hh-medic.com/ehrweb/';
-          host.patHost = 'https://test.hh-medic.com/patient_web/';
-          host.wsServer = 'wss://test.hh-medic.com/wmp/websocket';
-          break;
-        case 'dev':
-          host.wmpHost = 'http://10.1.0.99:8080/wmp/';
-          host.ehrHost = 'http://test.hh-medic.com/ehrweb/';
-          host.patHost = 'http://test.hh-medic.com/patient_web/';
-          host.wsServer = 'ws://10.1.0.99:8080/wmp/websocket';
-          break;
-        default:
-          break;
-      }
-      return host;
+      return hostUtil.getHost(this.data._request.profileName, this.data._request.subDomain);
     },
     _logInfo: function _logInfo(content) {
       if (!this.data._request || 'prod' == this.data._request.profileName) {
         return;
       }
-      console.log('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK:' + this.data._name + ']]' + content);
+      console.log('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK:' + this.data._name + '] ' + content);
     },
     _logError: function _logError(content) {
       if (!this.data._request || 'prod' == this.data._request.profileName) {
         return;
       }
-      console.error('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK:' + this.data._name + ']]' + content);
+      console.error('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK:' + this.data._name + '] ' + content);
     },
     _triggerEvent: function _triggerEvent(name, detail) {
       this.triggerEvent(name, detail, eventOption);
@@ -2043,7 +2067,7 @@ module.exports = Behavior({
       }
 
       this._logInfo(this.data._name + '初始化...');
-      var hhim = __webpack_require__(1);
+      var hhim = __webpack_require__(2);
       hhim.init({
         debug: false,
         wsServer: this.data._host.wsServer,
@@ -2122,10 +2146,20 @@ module.exports = Behavior({
       var url = this.data._host.patHost + 'drug/order-list.html?' + 'sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
       this._viewUrl(url);
     },
+    _viewAddressList: function _viewAddressList() {
+      var url = this.data._host.patHost + 'drug/addr-list.html?' + 'sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
+      this._viewUrl(url);
+    },
     _viewPersonal: function _viewPersonal(personalModule) {
       var vParam = this.data._host.wmpHost + 'view/?' + 'module=' + (personalModule ? personalModule : this.data._request.personalModule) + '&appId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion;
 
       var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(vParam);
+      wx.navigateTo({
+        url: pageUrl
+      });
+    },
+    _viewRight: function _viewRight() {
+      var pageUrl = this.data.basePath + 'innerpages/right?' + this._getPublicRequestParams();
       wx.navigateTo({
         url: pageUrl
       });

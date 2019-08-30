@@ -85,9 +85,8 @@ module.exports =
 /******/ 	return __webpack_require__(__webpack_require__.s = 12);
 /******/ })
 /************************************************************************/
-/******/ ({
-
-/***/ 0:
+/******/ ([
+/* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -319,8 +318,52 @@ module.exports = {
 };
 
 /***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
 
-/***/ 1:
+"use strict";
+
+
+function getHost(profileName, subDomain) {
+  var host = {};
+  switch (profileName) {
+    case 'prod':
+      if (subDomain) {
+        host.wmpHost = 'https://' + subDomain + '.hh-medic.com/wmp/';
+        host.ehrHost = 'https://' + subDomain + '.hh-medic.com/ehrweb/';
+        host.patHost = 'https://' + subDomain + '.hh-medic.com/patient_web/';
+        host.wsServer = 'wss://' + subDomain + '.hh-medic.com/wmp/websocket';
+      } else {
+        host.wmpHost = 'https://wmp.hh-medic.com/wmp/';
+        host.ehrHost = 'https://e.hh-medic.com/ehrweb/';
+        host.patHost = 'https://sec.hh-medic.com/patient_web/';
+        host.wsServer = 'wss://wmp.hh-medic.com/wmp/websocket';
+      }
+      break;
+    case 'test':
+      host.wmpHost = 'https://test.hh-medic.com/wmp/';
+      host.ehrHost = 'https://test.hh-medic.com/ehrweb/';
+      host.patHost = 'https://test.hh-medic.com/patient_web/';
+      host.wsServer = 'wss://test.hh-medic.com/wmp/websocket';
+      break;
+    case 'dev':
+      host.wmpHost = 'http://10.1.0.99:8080/wmp/';
+      host.ehrHost = 'http://test.hh-medic.com/ehrweb/';
+      host.patHost = 'http://test.hh-medic.com/patient_web/';
+      host.wsServer = 'ws://10.1.0.99:8080/wmp/websocket';
+      break;
+    default:
+      break;
+  }
+  return host;
+}
+
+module.exports = {
+  getHost: getHost
+};
+
+/***/ }),
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -643,12 +686,12 @@ function callResponse(famOrderId, accept) {
 }
 
 //挂断视频
-function hangup(callback, debug, hangupType, videoTime) {
+function hangup(callback, debug, hangupType, videoTime, hangupSource) {
   log('hangup...');
   if (!doctorName || !doctorUuid) {
     return;
   }
-  sendLog('1', 'hangup');
+  sendLog('1', 'hangup(' + hangupSource + ')');
   if (callback) {
     _callbacks.hangup = callback;
   }
@@ -1200,7 +1243,7 @@ function parseMsgReceive(msg) {
       //卡片消息
       var attach = JSON.parse(msg.data.attach);
       var content = JSON.parse(attach.content);
-      if ('summaryByFam' != content.command && 'buyDrugInformation' != content.command && 'buyService' != content.command) {
+      if ('summaryByFam' != content.command && 'buyDrugInformation' != content.command && 'buyService' != content.command && 'commandProductTips' != content.command) {
         return;
       }
 
@@ -1285,7 +1328,7 @@ function parseHistory(msgHis) {
       case 9999:
         //卡片消息
         var content = JSON.parse(msg.body.content);
-        if ('summaryByFam' == content.command || 'buyDrugInformation' == content.command || 'buyService' == content.command) {
+        if ('summaryByFam' == content.command || 'buyDrugInformation' == content.command || 'buyService' == content.command || 'commandProductTips' == content.command) {
           msgs.push({
             id: msg.msgid,
             type: 'card',
@@ -1325,7 +1368,12 @@ function clearCache() {
     endTime: null,
     list: []
   };
-  wx.clearStorage();
+  if (_options && _options.uuid) {
+    var key = 'msgCache_' + _options.uuid;
+    wx.removeStorageSync(key);
+  } else {
+    wx.clearStorage();
+  }
 }
 
 function getCacheMsgs() {
@@ -1522,8 +1570,437 @@ module.exports = {
 };
 
 /***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
 
-/***/ 12:
+"use strict";
+
+
+var common = __webpack_require__(0);
+//var hhim = require('./utils/HH_IM_SDK_DEV.js');
+var hostUtil = __webpack_require__(1);
+var eventOption = {};
+var that, app;
+module.exports = Behavior({
+  behaviors: [],
+  properties: {
+    request: {
+      type: Object,
+      value: {},
+      observer: function observer(newVal, oldVal, changedPath) {
+        this.propertyChanged(newVal, oldVal, changedPath);
+      }
+    },
+    basePath: {
+      type: String,
+      value: '/miniprogram_npm/hhdoctor-wmp-sdk/'
+    }
+  },
+  data: {
+    _sdkVersion: '1.0.6',
+    _request: {
+      //公共属性
+      subDomain: '',
+      profileName: 'test',
+      sdkProductId: null,
+      userToken: null,
+      openId: null,
+      style: null,
+      //hh-im属性
+      callPage: '',
+      ehrPage: null,
+      personalPage: '',
+      personalIconVisible: true,
+      medicinePage: null,
+      addressPage: '',
+      payPage: '',
+      //hh-ehr属性
+      viewModule: 'memberList',
+      addMember: true,
+      patient: '',
+      medicRecordId: '',
+      appointedDoctorId: '',
+      appointedOrderId: '',
+      //hh-call属性
+      dept: '',
+      logoImage: 'https://imgs.hh-medic.com/icon/wmp/logo-default.png',
+      waittingText: '预计接通时间',
+      cameraTimeoutSeconds: 6,
+      cameraTimeoutMessage: '打开摄像头失败，请重启微信再呼叫',
+      playTimeoutSeconds: 10,
+      playTimeoutMessage: '播放视频失败，请重启微信再呼叫',
+      weakNetworkTimeout: 6,
+      //hh-personal属性
+      personalModule: 'personal',
+      //hh-addresslist属性
+      enableDelete: true,
+      //hh-addressedit属性
+      editType: 'create',
+      addressId: null,
+      //hh-medicine属性
+      drugOrderId: null,
+      //hh-productright属性
+      productId: null,
+      //hh-my属性
+      autoAcl: false,
+      userAcl: {
+        showActiveCode: true, //激活码菜单
+        changePhone: true, //修改手机号
+        showEhr: true, //显示病历档案
+        showExpertService: false, //是否显示专家宝菜单
+        showLogout: false, //注销菜单
+        showInvoice: false, //发票管理菜单
+        orderList: false, //订单列表
+        showBuyProduct: false, //购买会员菜单
+        showAddress: false, //地址管理菜单
+        requestInvoice: false, //开发票菜单
+        expertServiceStatus: '', //专家宝服务状态,
+        showAbout: true, //关于
+        showProductRight: true //查看权益
+      },
+      //其他属性
+      hospitalId: null
+    }
+  },
+
+  attached: function attached() {
+    that = this;
+    app = getApp();
+  },
+
+  methods: {
+    propertyChanged: function propertyChanged(newVal, oldVal, changedPath) {
+      if (!newVal) {
+        return;
+      }
+
+      var _req = Object.assign(this.data._request, newVal);
+      this.setData({
+        _request: _req
+      });
+
+      var _host = this._getHost();
+      this.setData({
+        _host: _host
+      });
+
+      if (!this.data._request.userToken && this.data._request.uuid && this.data._request.token) {
+        this._getUserToken();
+      } else {
+        this._checkRequest();
+      }
+    },
+    _getHost: function _getHost() {
+      return hostUtil.getHost(this.data._request.profileName, this.data._request.subDomain);
+    },
+    _logInfo: function _logInfo(content) {
+      if (!this.data._request || 'prod' == this.data._request.profileName) {
+        return;
+      }
+      console.log('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK:' + this.data._name + '] ' + content);
+    },
+    _logError: function _logError(content) {
+      if (!this.data._request || 'prod' == this.data._request.profileName) {
+        return;
+      }
+      console.error('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK:' + this.data._name + '] ' + content);
+    },
+    _triggerEvent: function _triggerEvent(name, detail) {
+      this.triggerEvent(name, detail, eventOption);
+      //this.triggerEvent(name, detail, eventOption)
+    },
+    _getUserToken: function _getUserToken() {
+      var url = this.data._host.wmpHost + 'im/getUserToken?sdkProductId=' + this.data._request.sdkProductId + '&uuid=' + this.data._request.uuid + '&token=' + this.data._request.token;
+      console.log(url);
+      wx.request({
+        url: url,
+        data: {},
+        method: 'POST',
+        header: {
+          'content-type': 'application/json' // 默认值
+        },
+        success: function success(res) {
+          if (res && res.data && 200 == res.data.status) {
+            var _req = that.data._request;
+            _req.userToken = res.data.data;
+            that.setData({
+              _request: _req
+            });
+          } else {
+            that._logInfo('>>>>>>_getUserToken failed!');
+          }
+          that._checkRequest();
+        }
+      });
+    },
+    _checkRequest: function _checkRequest() {
+      if (!this.data._request.sdkProductId || !this.data._request.userToken || !this.data._request.openId) {
+        return;
+      }
+      //this._logInfo('当前组件:' + this.data._name);
+      switch (this.data._name) {
+        case 'hh-im':
+        case 'hh-head':
+        case 'hh-ehr':
+        case 'hh-personal':
+        case 'hh-my':
+        case 'hh-addresslist':
+        case 'hh-addresssearch':
+        case 'hh-right':
+        case 'hh-buyproduct':
+        case 'hh-sdkcontext':
+
+          break;
+        case 'hh-call':
+          if (!this.data._request.dept && (this.data._request.appointedDoctorId || this.data._request.appointedOrderId) && !this.data._request.medicRecordId) {
+            this._logError('缺少必要参数:dept');
+            return;
+          }
+          break;
+        case 'hh-addressedit':
+          if ('update' == this.data._request.editType && !this.data._request.addressId) {
+            this._logError('editType为update时，需传入addressId');
+            return;
+          }
+          break;
+        case 'hh-medicine':
+          if (!this.data._request.drugOrderId) {
+            this._logError('缺少必要参数:drugOrderId');
+            return;
+          }
+          break;
+        case 'hh-productright':
+          if (!this.data._request.productId) {
+            this._logError('缺少必要参数:productId');
+            return;
+          }
+          break;
+        default:
+          return;
+      }
+      this._logInfo('检查request参数完成');
+      var sdkOptions = {
+        _host: this.data._host
+      };
+      getApp().globalData._hhSdkOptions = sdkOptions;
+
+      this._requestComplete();
+    },
+    _getPublicRequestParams: function _getPublicRequestParams() {
+      var params = 'profileName=' + this.data._request.profileName + '&subDomain=' + this.data._request.subDomain + '&sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
+      return params;
+    },
+    _initHhImSdk: function _initHhImSdk(requestHis, hhImCallbacks, initCallback) {
+      if (getApp().globalData._hhim) {
+        if (hhImCallbacks.onHistory) {
+          getApp().globalData._hhim.on('history', hhImCallbacks.onHistory);
+        }
+        if (hhImCallbacks.onMsg) {
+          getApp().globalData._hhim.on('msg', hhImCallbacks.onMsg);
+        }
+        if (hhImCallbacks.onCall) {
+          getApp().globalData._hhim.on('call', hhImCallbacks.onCall);
+        }
+        if (hhImCallbacks.onError) {
+          getApp().globalData._hhim.on('error', hhImCallbacks.onError);
+        }
+        if (hhImCallbacks.onClose) {
+          getApp().globalData._hhim.on('close', hhImCallbacks.onClose);
+        }
+        if (hhImCallbacks.onCommand) {
+          getApp().globalData._hhim.on('command', hhImCallbacks.onCommand);
+        }
+        if (requestHis) {
+          getApp().globalData._hhim.getHisMsg();
+        }
+        if (initCallback) {
+          initCallback({
+            status: 200
+          });
+        }
+        return;
+      }
+
+      this._logInfo(this.data._name + '初始化...');
+      var hhim = __webpack_require__(2);
+      hhim.init({
+        debug: false,
+        wsServer: this.data._host.wsServer,
+        fileServer: this.data._host.wmpHost + 'im/upload/'
+      });
+
+      //注册消息回调
+      if (hhImCallbacks.onHistory) {
+        hhim.on('history', hhImCallbacks.onHistory);
+      }
+      if (hhImCallbacks.onMsg) {
+        hhim.on('msg', hhImCallbacks.onMsg);
+      }
+      if (hhImCallbacks.onCall) {
+        hhim.on('call', hhImCallbacks.onCall);
+      }
+      if (hhImCallbacks.onError) {
+        hhim.on('error', hhImCallbacks.onError);
+      }
+      if (hhImCallbacks.onClose) {
+        hhim.on('close', hhImCallbacks.onClose);
+      }
+      if (hhImCallbacks.onCommand) {
+        hhim.on('command', hhImCallbacks.onCommand);
+      }
+
+      var account = wx.getAccountInfoSync();
+
+      //hhim登录
+      this._logInfo('开始登录...');
+      hhim.login(this.data._request.sdkProductId, this.data._request.userToken, this.data._request.openId, account.miniProgram.appId, requestHis, function (res) {
+        if (res) {
+          that._logInfo('登录成功');
+          //登录成功
+          hhim.sendLog('1', 'login success');
+          if (that.data.sysInfo) {
+            hhim.sendLog('1', JSON.stringify(that.data.sysInfo));
+          }
+          getApp().globalData._hhim = hhim;
+          if (initCallback) {
+            initCallback({
+              status: 200
+            });
+          }
+        } else {
+          //登录失败
+          that._logError('登录失败，请检查request中的公共参数，注意区分测试、生产环境');
+          if (initCallback) {
+            initCallback({
+              status: 400
+            });
+          }
+        }
+      });
+    },
+    _sendLog: function _sendLog(logType, logContent) {
+      var im = getApp().globalData._hhim;
+      if (!im || !im.loginStatus()) {
+        return;
+      }
+      im.sendLog(logType, logContent);
+    },
+    _viewMedicine: function _viewMedicine(drugOrderId, redirectPage) {
+      getApp().globalData._hhSdkOptions.drugOrderId = drugOrderId;
+      getApp().globalData._hhSdkOptions.redirectPage = redirectPage;
+
+      var vParam = this.data._host.patHost + 'drug/order.html?' + 'drugOrderId=' + drugOrderId + '&sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&payPage=' + encodeURIComponent(this.data.basePath + 'innerpages/pay') + '&redirectPage=' + encodeURIComponent(redirectPage ? redirectPage : '/pages/newIndex/newIndex') + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
+      var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(vParam);
+      wx.navigateTo({
+        url: pageUrl
+      });
+    },
+    _viewMedicineOrderList: function _viewMedicineOrderList(redirectPage) {
+      getApp().globalData._hhSdkOptions.redirectPage = redirectPage;
+
+      var url = this.data._host.patHost + 'drug/order-list.html?' + 'sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
+      this._viewUrl(url);
+    },
+    _viewAddressList: function _viewAddressList() {
+      var url = this.data._host.patHost + 'drug/addr-list.html?' + 'sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
+      this._viewUrl(url);
+    },
+    _viewPersonal: function _viewPersonal(personalModule) {
+      var vParam = this.data._host.wmpHost + 'view/?' + 'module=' + (personalModule ? personalModule : this.data._request.personalModule) + '&appId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion;
+
+      var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(vParam);
+      wx.navigateTo({
+        url: pageUrl
+      });
+    },
+    _viewRight: function _viewRight() {
+      var pageUrl = this.data.basePath + 'innerpages/right?' + this._getPublicRequestParams();
+      wx.navigateTo({
+        url: pageUrl
+      });
+    },
+    _viewEhr: function _viewEhr(options) {
+      var _options = Object.assign({
+        viewModule: 'memberList',
+        addMember: true,
+        patient: null,
+        medicRecordId: null,
+        appointedDoctorId: null,
+        appointedOrderId: null
+      }, options);
+
+      var vParam = 'module=' + _options.viewModule + '&appId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId;
+
+      if (_options.appointedOrderId) {
+        vParam += '&orderId=' + _options.appointedOrderId;
+      }
+      if (_options.appointedDoctorId) {
+        vParam += '&doctorId=' + _options.appointedDoctorId;
+      }
+      if ('false' == _options.addMember) {
+        vParam += '&hideAddBtn=true';
+      }
+
+      if (_options.patient) {
+        var p = Number(_options.patient);
+        if (isNaN(p)) {
+          vParam += '&patientUserToken=';
+        } else {
+          vParam += '&patient=';
+        }
+        vParam += _options.patient;
+      }
+      if (_options.medicRecordId) {
+        vParam += '&mrid=' + _options.medicRecordId;
+      }
+      vParam + '&source=wmpSdk&version=' + this.data._sdkVersion;
+      var s = this.data._host.ehrHost + 'view/?' + vParam;
+
+      var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(s);
+      wx.navigateTo({
+        url: pageUrl
+      });
+    },
+    _viewBeanList: function _viewBeanList() {
+      var vParam = this.data._host.patHost + 'drug/account.html?' + 'sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
+      var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(vParam);
+      wx.navigateTo({
+        url: pageUrl
+      });
+    },
+    _viewUrl: function _viewUrl(url) {
+      console.log(url);
+      var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(url);
+      wx.navigateTo({
+        url: pageUrl
+      });
+    },
+    _buyProduct: function _buyProduct(productId) {
+      if (!this.data._request.payPage) {
+        return;
+      }
+      var pageUrl = this.data._request.payPage + '?' + this._getPublicRequestParams() + '&name=购买套餐&price=9999&pid=' + productId;
+      wx.navigateTo({
+        url: pageUrl
+      });
+    },
+    _viewActiveCode: function _viewActiveCode() {
+      var url = this.data._host.wmpHost + 'wmp/activationCode?' + 'sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
+      this._viewUrl(url);
+    }
+  }
+});
+
+/***/ }),
+/* 4 */,
+/* 5 */,
+/* 6 */,
+/* 7 */,
+/* 8 */,
+/* 9 */,
+/* 10 */,
+/* 11 */,
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1531,7 +2008,7 @@ module.exports = {
 
 var that;
 Component({
-  behaviors: [__webpack_require__(2)],
+  behaviors: [__webpack_require__(3)],
   /**
    * 组件的属性列表
    */
@@ -1664,449 +2141,5 @@ Component({
   }
 });
 
-/***/ }),
-
-/***/ 2:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var common = __webpack_require__(0);
-//var hhim = require('./utils/HH_IM_SDK_DEV.js');
-var eventOption = {};
-var that;
-module.exports = Behavior({
-  behaviors: [],
-  properties: {
-    request: {
-      type: Object,
-      value: {},
-      observer: function observer(newVal, oldVal, changedPath) {
-        this.propertyChanged(newVal, oldVal, changedPath);
-      }
-    },
-    basePath: {
-      type: String,
-      value: '/miniprogram_npm/hhdoctor-wmp-sdk/'
-    }
-  },
-  data: {
-    _sdkVersion: '1.0.6',
-    _request: {
-      //公共属性
-      subDomain: '',
-      profileName: 'test',
-      sdkProductId: null,
-      userToken: null,
-      openId: null,
-      style: null,
-      //hh-im属性
-      callPage: '',
-      ehrPage: null,
-      personalPage: '',
-      personalIconVisible: true,
-      medicinePage: null,
-      addressPage: '',
-      payPage: '',
-      //hh-ehr属性
-      viewModule: 'memberList',
-      addMember: true,
-      patient: '',
-      medicRecordId: '',
-      appointedDoctorId: '',
-      appointedOrderId: '',
-      //hh-call属性
-      dept: '',
-      logoImage: 'https://imgs.hh-medic.com/icon/wmp/logo-default.png',
-      waittingText: '预计接通时间',
-      cameraTimeoutSeconds: 6,
-      cameraTimeoutMessage: '打开摄像头失败，请重启微信再呼叫',
-      playTimeoutSeconds: 10,
-      playTimeoutMessage: '播放视频失败，请重启微信再呼叫',
-      weakNetworkTimeout: 6,
-      //hh-personal属性
-      personalModule: 'personal',
-      //hh-addresslist属性
-      enableDelete: true,
-      //hh-addressedit属性
-      editType: 'create',
-      addressId: null,
-      //hh-medicine属性
-      drugOrderId: null,
-      //hh-productright属性
-      productId: null,
-      //hh-my属性
-      autoAcl: false,
-      userAcl: {
-        showActiveCode: true, //激活码菜单
-        changePhone: true, //修改手机号
-        showEhr: true, //显示病历档案
-        showExpertService: false, //是否显示专家宝菜单
-        showLogout: false, //注销菜单
-        showInvoice: false, //发票管理菜单
-        orderList: false, //订单列表
-        showBuyProduct: false, //购买会员菜单
-        showAddress: false, //地址管理菜单
-        requestInvoice: false, //开发票菜单
-        expertServiceStatus: '', //专家宝服务状态,
-        showAbout: true, //关于
-        showProductRight: true //查看权益
-      },
-      //其他属性
-      hospitalId: null
-    }
-  },
-
-  attached: function attached() {
-    that = this;
-  },
-
-  methods: {
-    propertyChanged: function propertyChanged(newVal, oldVal, changedPath) {
-      if (!newVal) {
-        return;
-      }
-
-      var _req = Object.assign(this.data._request, newVal);
-      this.setData({
-        _request: _req
-      });
-
-      var _host = this._getHost();
-      this.setData({
-        _host: _host
-      });
-
-      if (!this.data._request.userToken && this.data._request.uuid && this.data._request.token) {
-        this._getUserToken();
-      } else {
-        this._checkRequest();
-      }
-    },
-    _getHost: function _getHost() {
-      //wsServer: 'wss://wmp.hh-medic.com/wmp/websocket',
-      //fileServer: 'https://dev.hh-medic.com/miniprogramweb_master/wmp/im/upload/'
-      var host = {};
-      switch (this.data._request.profileName) {
-        case 'prod':
-          if (this.data._request.subDomain) {
-            host.wmpHost = 'https://' + this.data._request.subDomain + '.hh-medic.com/wmp/';
-            host.ehrHost = 'https://' + this.data._request.subDomain + '.hh-medic.com/ehrweb/';
-            host.patHost = 'https://' + this.data._request.subDomain + '.hh-medic.com/patient_web/';
-            host.wsServer = 'wss://' + this.data._request.subDomain + '.hh-medic.com/wmp/websocket';
-          } else {
-            host.wmpHost = 'https://wmp.hh-medic.com/wmp/';
-            host.ehrHost = 'https://e.hh-medic.com/ehrweb/';
-            host.patHost = 'https://sec.hh-medic.com/patient_web/';
-            host.wsServer = 'wss://wmp.hh-medic.com/wmp/websocket';
-          }
-          break;
-        case 'test':
-          host.wmpHost = 'https://test.hh-medic.com/wmp/';
-          host.ehrHost = 'https://test.hh-medic.com/ehrweb/';
-          host.patHost = 'https://test.hh-medic.com/patient_web/';
-          host.wsServer = 'wss://test.hh-medic.com/wmp/websocket';
-          break;
-        case 'dev':
-          host.wmpHost = 'http://10.1.0.99:8080/wmp/';
-          host.ehrHost = 'http://test.hh-medic.com/ehrweb/';
-          host.patHost = 'http://test.hh-medic.com/patient_web/';
-          host.wsServer = 'ws://10.1.0.99:8080/wmp/websocket';
-          break;
-        default:
-          break;
-      }
-      return host;
-    },
-    _logInfo: function _logInfo(content) {
-      if (!this.data._request || 'prod' == this.data._request.profileName) {
-        return;
-      }
-      console.log('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK:' + this.data._name + ']]' + content);
-    },
-    _logError: function _logError(content) {
-      if (!this.data._request || 'prod' == this.data._request.profileName) {
-        return;
-      }
-      console.error('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK:' + this.data._name + ']]' + content);
-    },
-    _triggerEvent: function _triggerEvent(name, detail) {
-      this.triggerEvent(name, detail, eventOption);
-      //this.triggerEvent(name, detail, eventOption)
-    },
-    _getUserToken: function _getUserToken() {
-      var url = this.data._host.wmpHost + 'im/getUserToken?sdkProductId=' + this.data._request.sdkProductId + '&uuid=' + this.data._request.uuid + '&token=' + this.data._request.token;
-      console.log(url);
-      wx.request({
-        url: url,
-        data: {},
-        method: 'POST',
-        header: {
-          'content-type': 'application/json' // 默认值
-        },
-        success: function success(res) {
-          if (res && res.data && 200 == res.data.status) {
-            var _req = that.data._request;
-            _req.userToken = res.data.data;
-            that.setData({
-              _request: _req
-            });
-          } else {
-            that._logInfo('>>>>>>_getUserToken failed!');
-          }
-          that._checkRequest();
-        }
-      });
-    },
-    _checkRequest: function _checkRequest() {
-      if (!this.data._request.sdkProductId || !this.data._request.userToken || !this.data._request.openId) {
-        return;
-      }
-      //this._logInfo('当前组件:' + this.data._name);
-      switch (this.data._name) {
-        case 'hh-im':
-        case 'hh-head':
-        case 'hh-ehr':
-        case 'hh-personal':
-        case 'hh-my':
-        case 'hh-addresslist':
-        case 'hh-addresssearch':
-        case 'hh-right':
-        case 'hh-buyproduct':
-        case 'hh-sdkcontext':
-
-          break;
-        case 'hh-call':
-          if (!this.data._request.dept && (this.data._request.appointedDoctorId || this.data._request.appointedOrderId) && !this.data._request.medicRecordId) {
-            this._logError('缺少必要参数:dept');
-            return;
-          }
-          break;
-        case 'hh-addressedit':
-          if ('update' == this.data._request.editType && !this.data._request.addressId) {
-            this._logError('editType为update时，需传入addressId');
-            return;
-          }
-          break;
-        case 'hh-medicine':
-          if (!this.data._request.drugOrderId) {
-            this._logError('缺少必要参数:drugOrderId');
-            return;
-          }
-          break;
-        case 'hh-productright':
-          if (!this.data._request.productId) {
-            this._logError('缺少必要参数:productId');
-            return;
-          }
-          break;
-        default:
-          return;
-      }
-      this._logInfo('检查request参数完成');
-      var sdkOptions = {
-        _host: this.data._host
-      };
-      getApp().globalData._hhSdkOptions = sdkOptions;
-
-      this._requestComplete();
-    },
-    _getPublicRequestParams: function _getPublicRequestParams() {
-      var params = 'profileName=' + this.data._request.profileName + '&subDomain=' + this.data._request.subDomain + '&sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
-      return params;
-    },
-    _initHhImSdk: function _initHhImSdk(requestHis, hhImCallbacks, initCallback) {
-      if (getApp().globalData._hhim) {
-        if (hhImCallbacks.onHistory) {
-          getApp().globalData._hhim.on('history', hhImCallbacks.onHistory);
-        }
-        if (hhImCallbacks.onMsg) {
-          getApp().globalData._hhim.on('msg', hhImCallbacks.onMsg);
-        }
-        if (hhImCallbacks.onCall) {
-          getApp().globalData._hhim.on('call', hhImCallbacks.onCall);
-        }
-        if (hhImCallbacks.onError) {
-          getApp().globalData._hhim.on('error', hhImCallbacks.onError);
-        }
-        if (hhImCallbacks.onClose) {
-          getApp().globalData._hhim.on('close', hhImCallbacks.onClose);
-        }
-        if (hhImCallbacks.onCommand) {
-          getApp().globalData._hhim.on('command', hhImCallbacks.onCommand);
-        }
-        if (requestHis) {
-          getApp().globalData._hhim.getHisMsg();
-        }
-        if (initCallback) {
-          initCallback({
-            status: 200
-          });
-        }
-        return;
-      }
-
-      this._logInfo(this.data._name + '初始化...');
-      var hhim = __webpack_require__(1);
-      hhim.init({
-        debug: false,
-        wsServer: this.data._host.wsServer,
-        fileServer: this.data._host.wmpHost + 'im/upload/'
-      });
-
-      //注册消息回调
-      if (hhImCallbacks.onHistory) {
-        hhim.on('history', hhImCallbacks.onHistory);
-      }
-      if (hhImCallbacks.onMsg) {
-        hhim.on('msg', hhImCallbacks.onMsg);
-      }
-      if (hhImCallbacks.onCall) {
-        hhim.on('call', hhImCallbacks.onCall);
-      }
-      if (hhImCallbacks.onError) {
-        hhim.on('error', hhImCallbacks.onError);
-      }
-      if (hhImCallbacks.onClose) {
-        hhim.on('close', hhImCallbacks.onClose);
-      }
-      if (hhImCallbacks.onCommand) {
-        hhim.on('command', hhImCallbacks.onCommand);
-      }
-
-      var account = wx.getAccountInfoSync();
-
-      //hhim登录
-      this._logInfo('开始登录...');
-      hhim.login(this.data._request.sdkProductId, this.data._request.userToken, this.data._request.openId, account.miniProgram.appId, requestHis, function (res) {
-        if (res) {
-          that._logInfo('登录成功');
-          //登录成功
-          hhim.sendLog('1', 'login success');
-          if (that.data.sysInfo) {
-            hhim.sendLog('1', JSON.stringify(that.data.sysInfo));
-          }
-          getApp().globalData._hhim = hhim;
-          if (initCallback) {
-            initCallback({
-              status: 200
-            });
-          }
-        } else {
-          //登录失败
-          that._logError('登录失败，请检查request中的公共参数，注意区分测试、生产环境');
-          if (initCallback) {
-            initCallback({
-              status: 400
-            });
-          }
-        }
-      });
-    },
-    _sendLog: function _sendLog(logType, logContent) {
-      var im = getApp().globalData._hhim;
-      if (!im || !im.loginStatus()) {
-        return;
-      }
-      im.sendLog(logType, logContent);
-    },
-    _viewMedicine: function _viewMedicine(drugOrderId, redirectPage) {
-      getApp().globalData._hhSdkOptions.drugOrderId = drugOrderId;
-      getApp().globalData._hhSdkOptions.redirectPage = redirectPage;
-
-      var vParam = this.data._host.patHost + 'drug/order.html?' + 'drugOrderId=' + drugOrderId + '&sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&payPage=' + encodeURIComponent(this.data.basePath + 'innerpages/pay') + '&redirectPage=' + encodeURIComponent(redirectPage ? redirectPage : '/pages/newIndex/newIndex') + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
-      var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(vParam);
-      wx.navigateTo({
-        url: pageUrl
-      });
-    },
-    _viewMedicineOrderList: function _viewMedicineOrderList(redirectPage) {
-      getApp().globalData._hhSdkOptions.redirectPage = redirectPage;
-
-      var url = this.data._host.patHost + 'drug/order-list.html?' + 'sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
-      this._viewUrl(url);
-    },
-    _viewPersonal: function _viewPersonal(personalModule) {
-      var vParam = this.data._host.wmpHost + 'view/?' + 'module=' + (personalModule ? personalModule : this.data._request.personalModule) + '&appId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion;
-
-      var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(vParam);
-      wx.navigateTo({
-        url: pageUrl
-      });
-    },
-    _viewEhr: function _viewEhr(options) {
-      var _options = Object.assign({
-        viewModule: 'memberList',
-        addMember: true,
-        patient: null,
-        medicRecordId: null,
-        appointedDoctorId: null,
-        appointedOrderId: null
-      }, options);
-
-      var vParam = 'module=' + _options.viewModule + '&appId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId;
-
-      if (_options.appointedOrderId) {
-        vParam += '&orderId=' + _options.appointedOrderId;
-      }
-      if (_options.appointedDoctorId) {
-        vParam += '&doctorId=' + _options.appointedDoctorId;
-      }
-      if ('false' == _options.addMember) {
-        vParam += '&hideAddBtn=true';
-      }
-
-      if (_options.patient) {
-        var p = Number(_options.patient);
-        if (isNaN(p)) {
-          vParam += '&patientUserToken=';
-        } else {
-          vParam += '&patient=';
-        }
-        vParam += _options.patient;
-      }
-      if (_options.medicRecordId) {
-        vParam += '&mrid=' + _options.medicRecordId;
-      }
-      vParam + '&source=wmpSdk&version=' + this.data._sdkVersion;
-      var s = this.data._host.ehrHost + 'view/?' + vParam;
-
-      var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(s);
-      wx.navigateTo({
-        url: pageUrl
-      });
-    },
-    _viewBeanList: function _viewBeanList() {
-      var vParam = this.data._host.patHost + 'drug/account.html?' + 'sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
-      var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(vParam);
-      wx.navigateTo({
-        url: pageUrl
-      });
-    },
-    _viewUrl: function _viewUrl(url) {
-      console.log(url);
-      var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(url);
-      wx.navigateTo({
-        url: pageUrl
-      });
-    },
-    _buyProduct: function _buyProduct(productId) {
-      if (!this.data._request.payPage) {
-        return;
-      }
-      var pageUrl = this.data._request.payPage + '?' + this._getPublicRequestParams() + '&name=购买套餐&price=9999&pid=' + productId;
-      wx.navigateTo({
-        url: pageUrl
-      });
-    },
-    _viewActiveCode: function _viewActiveCode() {
-      var url = this.data._host.wmpHost + 'wmp/activationCode?' + 'sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
-      this._viewUrl(url);
-    }
-  }
-});
-
 /***/ })
-
-/******/ });
+/******/ ]);

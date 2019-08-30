@@ -2,11 +2,11 @@
   <!-- 顶部按纽 -->
   <view class='btn-panel' style='height:{{msgPanelTop}}px;'>
 
-    <view class='topbtn-panel' style='background-color:{{uiStyle.navBarBg}};height:{{wxMbb.top+38}}px' wx:if='{{"custom"==navStyle}}'>
+    <view class='topbtn-panel' style='background-color:{{navigationBar.bColor}};height:{{wxMbb.top+38}}px' wx:if='{{"custom"==navStyle}}'>
       <block wx:if='{{_request.personalIconVisible}}'>
         <view class='topbtn personal {{personalIconLight}}' catchtap='_viewPers' style='top:{{wxMbb.top+4}}px;'></view>
       </block>
-      <view class='topbtn-title' style='color:{{uiStyle.navBarFg}};top:{{wxMbb.top+4}}px;'>{{uiStyle.pageTitle}}</view>
+      <view class='topbtn-title' style='color:{{navigationBar.fColor}};top:{{wxMbb.top+4}}px;'>{{navigationBar.text}}</view>
     </view>
 
     <block wx:if='{{_request.callPage}}'>
@@ -68,6 +68,10 @@
 
       <block wx:if='{{"card"==msg.type && "buyService"==msg.bodyContent.command}}'>
         <template is='msgCardBuy' data='{{...msg,title:_request.style.card.buyServiceTitle}}'></template>
+      </block>
+
+      <block wx:if='{{"card"==msg.type && "commandProductTips"==msg.bodyContent.command}}'>
+        <template is='msgCardServiceTip' data='{{...msg}}'></template>
       </block>
     </block>
   </scroll-view>
@@ -209,8 +213,8 @@
             </view>
           </view>
           <!-- <block wx:if='{{ehrPage}}'> -->
-          <view class='msg-card-foot'>
-            <view class='show-more' catchtap='_viewSummary' data-mrid='{{bodyContent.medicRecordId}}' data-patient='{{patient}}'>
+          <view class='msg-card-foot' catchtap='_viewSummary' data-mrid='{{bodyContent.medicRecordId}}' data-patient='{{patient}}'>
+            <view class='show-more'>
               <view class='show-more-text'></view>
               <view class='show-more-arraw'></view>
             </view>
@@ -274,9 +278,9 @@
               </view>
             </block>
           </view>
-          <view class='msg-card-foot' wx:if='{{bodyContent.trans}}'>
+          <view class='msg-card-foot' wx:if='{{bodyContent.trans}}' catchtap='_buyMedicine' data-drugid='{{bodyContent.drugOrderId}}' data-trans='{{bodyContent.trans}}'>
             <view class='show-more'>
-              <view class='show-more-btn {{bodyContent.trans?"":"disabled"}}' style='{{bodyContent.trans?btnStyle:""}};' catchtap='_buyMedicine' data-drugid='{{bodyContent.drugOrderId}}' data-trans='{{bodyContent.trans}}'>{{bodyContent.trans?bodyContent.buttonName:'本单不支持配送'}}</view>
+              <view class='show-more-btn {{bodyContent.trans?"":"disabled"}}' style='{{bodyContent.trans?btnStyle:""}};'>{{bodyContent.trans?bodyContent.buttonName:'本单不支持配送'}}</view>
             </view>
           </view>
         </view>
@@ -321,9 +325,38 @@
               <view class='summary-row'>{{sevice}}</view>
             </block>
           </view>
-          <view class='msg-card-foot'>
-            <view class='show-more' catchtap='_buyProduct' data-price='{{bodyContent.price}}' data-pid='{{bodyContent.productId}}'>
+          <view class='msg-card-foot' catchtap='_buyProduct' data-price='{{bodyContent.price}}' data-pid='{{bodyContent.productId}}'>
+            <view class='show-more'>
               <view class='show-more-text custom'>{{bodyContent.price}}</view>
+              <view class='show-more-arraw'></view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<!-- 8.会员开通成功卡片 -->
+<template name='msgCardServiceTip'>
+  <view class='msg-row' id='msg{{time}}'>
+    <view class='msg-img'>
+      <image class='img-head' src='{{head}}?x-oss-process=image/resize,m_fixed,h_70,w_70'></image>
+    </view>
+    <view class='msg-body card'>
+      <view class='msg-name'>{{name}}</view>
+      <view class='msg-content-main'>
+        <view class='msg card'>
+          <view class='msg-card-head'>会员开通成功</view>
+          <view class='msg-card-body summary'>
+            <block wx:for='{{bodyContent.content}}' wx:for-item='tip' wx:key=''>
+              <view class='summary-row tip'>{{tip}}</view>
+            </block>
+          </view>
+          <view class='msg-card-foot' catchtap='_viewRight'>
+            <view class='show-more'>
+              <view class='show-more-text custom'>{{bodyContent.expireTips}}</view>
+              <view class='show-more-text-right'></view>
               <view class='show-more-arraw'></view>
             </view>
           </view>

@@ -324,6 +324,51 @@ module.exports = {
 "use strict";
 
 
+function getHost(profileName, subDomain) {
+  var host = {};
+  switch (profileName) {
+    case 'prod':
+      if (subDomain) {
+        host.wmpHost = 'https://' + subDomain + '.hh-medic.com/wmp/';
+        host.ehrHost = 'https://' + subDomain + '.hh-medic.com/ehrweb/';
+        host.patHost = 'https://' + subDomain + '.hh-medic.com/patient_web/';
+        host.wsServer = 'wss://' + subDomain + '.hh-medic.com/wmp/websocket';
+      } else {
+        host.wmpHost = 'https://wmp.hh-medic.com/wmp/';
+        host.ehrHost = 'https://e.hh-medic.com/ehrweb/';
+        host.patHost = 'https://sec.hh-medic.com/patient_web/';
+        host.wsServer = 'wss://wmp.hh-medic.com/wmp/websocket';
+      }
+      break;
+    case 'test':
+      host.wmpHost = 'https://test.hh-medic.com/wmp/';
+      host.ehrHost = 'https://test.hh-medic.com/ehrweb/';
+      host.patHost = 'https://test.hh-medic.com/patient_web/';
+      host.wsServer = 'wss://test.hh-medic.com/wmp/websocket';
+      break;
+    case 'dev':
+      host.wmpHost = 'http://10.1.0.99:8080/wmp/';
+      host.ehrHost = 'http://test.hh-medic.com/ehrweb/';
+      host.patHost = 'http://test.hh-medic.com/patient_web/';
+      host.wsServer = 'ws://10.1.0.99:8080/wmp/websocket';
+      break;
+    default:
+      break;
+  }
+  return host;
+}
+
+module.exports = {
+  getHost: getHost
+};
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 /**HH-MEDIC VideoDoctor IM SDK 1.0.0
  ***ALL RIGHTS RESERVED
  ***Author:HH-MYL
@@ -641,12 +686,12 @@ function callResponse(famOrderId, accept) {
 }
 
 //挂断视频
-function hangup(callback, debug, hangupType, videoTime) {
+function hangup(callback, debug, hangupType, videoTime, hangupSource) {
   log('hangup...');
   if (!doctorName || !doctorUuid) {
     return;
   }
-  sendLog('1', 'hangup');
+  sendLog('1', 'hangup(' + hangupSource + ')');
   if (callback) {
     _callbacks.hangup = callback;
   }
@@ -1198,7 +1243,7 @@ function parseMsgReceive(msg) {
       //卡片消息
       var attach = JSON.parse(msg.data.attach);
       var content = JSON.parse(attach.content);
-      if ('summaryByFam' != content.command && 'buyDrugInformation' != content.command && 'buyService' != content.command) {
+      if ('summaryByFam' != content.command && 'buyDrugInformation' != content.command && 'buyService' != content.command && 'commandProductTips' != content.command) {
         return;
       }
 
@@ -1283,7 +1328,7 @@ function parseHistory(msgHis) {
       case 9999:
         //卡片消息
         var content = JSON.parse(msg.body.content);
-        if ('summaryByFam' == content.command || 'buyDrugInformation' == content.command || 'buyService' == content.command) {
+        if ('summaryByFam' == content.command || 'buyDrugInformation' == content.command || 'buyService' == content.command || 'commandProductTips' == content.command) {
           msgs.push({
             id: msg.msgid,
             type: 'card',
@@ -1323,7 +1368,12 @@ function clearCache() {
     endTime: null,
     list: []
   };
-  wx.clearStorage();
+  if (_options && _options.uuid) {
+    var key = 'msgCache_' + _options.uuid;
+    wx.removeStorageSync(key);
+  } else {
+    wx.clearStorage();
+  }
 }
 
 function getCacheMsgs() {
@@ -1520,7 +1570,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1528,8 +1578,9 @@ module.exports = {
 
 var common = __webpack_require__(0);
 //var hhim = require('./utils/HH_IM_SDK_DEV.js');
+var hostUtil = __webpack_require__(1);
 var eventOption = {};
-var that;
+var that, app;
 module.exports = Behavior({
   behaviors: [],
   properties: {
@@ -1614,6 +1665,7 @@ module.exports = Behavior({
 
   attached: function attached() {
     that = this;
+    app = getApp();
   },
 
   methods: {
@@ -1639,51 +1691,19 @@ module.exports = Behavior({
       }
     },
     _getHost: function _getHost() {
-      //wsServer: 'wss://wmp.hh-medic.com/wmp/websocket',
-      //fileServer: 'https://dev.hh-medic.com/miniprogramweb_master/wmp/im/upload/'
-      var host = {};
-      switch (this.data._request.profileName) {
-        case 'prod':
-          if (this.data._request.subDomain) {
-            host.wmpHost = 'https://' + this.data._request.subDomain + '.hh-medic.com/wmp/';
-            host.ehrHost = 'https://' + this.data._request.subDomain + '.hh-medic.com/ehrweb/';
-            host.patHost = 'https://' + this.data._request.subDomain + '.hh-medic.com/patient_web/';
-            host.wsServer = 'wss://' + this.data._request.subDomain + '.hh-medic.com/wmp/websocket';
-          } else {
-            host.wmpHost = 'https://wmp.hh-medic.com/wmp/';
-            host.ehrHost = 'https://e.hh-medic.com/ehrweb/';
-            host.patHost = 'https://sec.hh-medic.com/patient_web/';
-            host.wsServer = 'wss://wmp.hh-medic.com/wmp/websocket';
-          }
-          break;
-        case 'test':
-          host.wmpHost = 'https://test.hh-medic.com/wmp/';
-          host.ehrHost = 'https://test.hh-medic.com/ehrweb/';
-          host.patHost = 'https://test.hh-medic.com/patient_web/';
-          host.wsServer = 'wss://test.hh-medic.com/wmp/websocket';
-          break;
-        case 'dev':
-          host.wmpHost = 'http://10.1.0.99:8080/wmp/';
-          host.ehrHost = 'http://test.hh-medic.com/ehrweb/';
-          host.patHost = 'http://test.hh-medic.com/patient_web/';
-          host.wsServer = 'ws://10.1.0.99:8080/wmp/websocket';
-          break;
-        default:
-          break;
-      }
-      return host;
+      return hostUtil.getHost(this.data._request.profileName, this.data._request.subDomain);
     },
     _logInfo: function _logInfo(content) {
       if (!this.data._request || 'prod' == this.data._request.profileName) {
         return;
       }
-      console.log('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK:' + this.data._name + ']]' + content);
+      console.log('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK:' + this.data._name + '] ' + content);
     },
     _logError: function _logError(content) {
       if (!this.data._request || 'prod' == this.data._request.profileName) {
         return;
       }
-      console.error('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK:' + this.data._name + ']]' + content);
+      console.error('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK:' + this.data._name + '] ' + content);
     },
     _triggerEvent: function _triggerEvent(name, detail) {
       this.triggerEvent(name, detail, eventOption);
@@ -1802,7 +1822,7 @@ module.exports = Behavior({
       }
 
       this._logInfo(this.data._name + '初始化...');
-      var hhim = __webpack_require__(1);
+      var hhim = __webpack_require__(2);
       hhim.init({
         debug: false,
         wsServer: this.data._host.wsServer,
@@ -1881,10 +1901,20 @@ module.exports = Behavior({
       var url = this.data._host.patHost + 'drug/order-list.html?' + 'sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
       this._viewUrl(url);
     },
+    _viewAddressList: function _viewAddressList() {
+      var url = this.data._host.patHost + 'drug/addr-list.html?' + 'sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
+      this._viewUrl(url);
+    },
     _viewPersonal: function _viewPersonal(personalModule) {
       var vParam = this.data._host.wmpHost + 'view/?' + 'module=' + (personalModule ? personalModule : this.data._request.personalModule) + '&appId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion;
 
       var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(vParam);
+      wx.navigateTo({
+        url: pageUrl
+      });
+    },
+    _viewRight: function _viewRight() {
+      var pageUrl = this.data.basePath + 'innerpages/right?' + this._getPublicRequestParams();
       wx.navigateTo({
         url: pageUrl
       });
@@ -1962,7 +1992,6 @@ module.exports = Behavior({
 });
 
 /***/ }),
-/* 3 */,
 /* 4 */,
 /* 5 */,
 /* 6 */
@@ -1973,7 +2002,7 @@ module.exports = Behavior({
 
 //const hhim = require('./utils/HH_WMP_SDK.js');
 var common = __webpack_require__(0);
-var hhBehaviors = __webpack_require__(2);
+var hhBehaviors = __webpack_require__(3);
 var innerAudioContext = wx.createInnerAudioContext();
 var bgm = wx.getBackgroundAudioManager();
 var rm = wx.getRecorderManager();
@@ -1981,6 +2010,7 @@ var rm = wx.getRecorderManager();
 var that;
 var hhim;
 var recordStardPosition = null;
+var recording = false;
 var reloadMsg = false;
 var safeArea = 0;
 var pageIsShowing = false;
@@ -2016,7 +2046,7 @@ Component({
       //   navStyle: styleName,
       //   callBtnTop: bTop
       // })
-
+      rm.onStart(that._onRecordStart);
       rm.onStop(that._onRecordStop);
       pageIsShowing = true;
     },
@@ -2072,7 +2102,11 @@ Component({
     utilsAnimation: null, //工具栏动画对象
     disconnAnimation: null,
     wxMbb: null, //右上角胶囊信息
-    uiStyle: null,
+    navigationBar: {
+      bColor: '#ffffff',
+      fColor: '#000000',
+      text: '视频医生'
+    },
     safeAreaHight: 34,
     customStyle: null,
     cardOptions: {
@@ -2142,6 +2176,14 @@ Component({
             login: true
           });
           hhim = getApp().globalData._hhim;
+          hhim.clearCache();
+          wx.showLoading({
+            title: '获取消息...',
+            mask: true
+          });
+          setTimeout(function () {
+            wx.hideLoading();
+          }, 3000);
         } else {
           that._triggerEvent('login', {
             login: false
@@ -2184,6 +2226,7 @@ Component({
 
     /** 收到历史消息 */
     _receiveHis: function _receiveHis(msgList) {
+      wx.hideLoading();
       that._addToMsgList(msgList, reloadMsg);
     },
 
@@ -2193,7 +2236,7 @@ Component({
       that._addToMsgList([msg]);
     },
     _onCall: function _onCall(res) {
-      that._logInfo('用户被叫...');
+      that._logInfo('用户被叫...' + JSON.stringify(res));
       var pageUrl = '';
       switch (res.data.doctorType) {
         case 'famDoctor':
@@ -2205,7 +2248,6 @@ Component({
           break;
         case 'expert': //专家呼叫
         default:
-          //pageUrl = '../../packageDemo/pages/expertpush/expertpush?status=2';
           pageUrl = that.data._request.callPage + '?' + that._getPublicRequestParams() + '&status=5';
           break;
       }
@@ -2471,6 +2513,13 @@ Component({
 
     /** 开始录音 */
     _startRecord: function _startRecord(e) {
+      if (recording) {
+        wx.showToast({
+          title: '录音中请稍候',
+          icon: 'none'
+        });
+        return;
+      }
       this.setData({
         recordBtnTip: '松开 结束',
         recordMaskVisible: '',
@@ -2478,20 +2527,31 @@ Component({
       });
       recordStardPosition = e.touches[0].clientY;
       rm.start({
-        format: 'aac'
+        format: 'mp3'
       });
     },
 
 
     /** 停止录音 */
     _stopRecord: function _stopRecord(e) {
-      this.setData({
-        recordBtnTip: '按住 说话',
-        recordMaskVisible: 'hidden'
+      this._doStopRecord().then(function () {
+        that.setData({
+          recordBtnTip: '按住 说话',
+          recordMaskVisible: 'hidden'
+        });
+        recordStardPosition = null;
       });
-
-      recordStardPosition = null;
-      rm.stop();
+    },
+    _doStopRecord: function _doStopRecord() {
+      return new Promise(function (resolve, reject) {
+        var t = setInterval(function () {
+          if (recording) {
+            clearInterval(t);
+            rm.stop();
+            resolve();
+          }
+        }, 100);
+      });
     },
 
 
@@ -2510,20 +2570,30 @@ Component({
         }
       }
     },
-
+    _onRecordStart: function _onRecordStart() {
+      recording = true;
+    },
 
     /** 录音结束后调用上传 */
     _onRecordStop: function _onRecordStop(res) {
+      recording = false;
       if (that.data.recordCancel) {
         return;
       }
-      wx.showLoading({
-        title: '发送中...'
-      });
+      if (res.duration <= 500) {
+        wx.showToast({
+          title: '录音时长过短',
+          icon: 'none'
+        });
+        return;
+      }
+      // wx.showLoading({
+      //   title: '发送中...',
+      // })
       hhim.sendAudio(res.tempFilePath, res.duration, this._sendCallback);
-      setTimeout(function () {
-        wx.hideLoading();
-      }, 5000);
+      // setTimeout(function() {
+      //   wx.hideLoading();
+      // }, 5000);
     },
 
 
@@ -2615,43 +2685,7 @@ Component({
         });
       }
 
-      var bg = '#ffffff',
-          fg = '#000000',
-          title = '视频医生';
-
-      if (style.navBarBg) {
-        bg = style.navBarBg;
-      }
-      if (style.navBarFg) {
-        fg = style.navBarFg;
-      }
-
-      wx.setNavigationBarColor({
-        frontColor: fg,
-        backgroundColor: bg
-      });
-      if (style.personalIconClass) {
-        this.setData({
-          personalIconLight: style.personalIconClass
-        });
-      } else {
-        this._setPersonalIcon(bg);
-      }
-
-      if (style.pageTitle) {
-        title = style.pageTitle;
-      }
-      wx.setNavigationBarTitle({
-        title: title
-      });
-
-      this.setData({
-        uiStyle: {
-          navBarBg: bg,
-          navBarFg: fg,
-          pageTitle: title
-        }
-      });
+      this._setNavigationBar();
 
       if (style.customStyle && style.customStyle.length > 0) {
         var cStyle = {};
@@ -2689,6 +2723,41 @@ Component({
         });
       }
       if (style.asst) {}
+    },
+    _setNavigationBar: function _setNavigationBar() {
+      var navBar = this.data.navigationBar;
+      var style = this.data._request.style;
+      if (style.navigationBar) {
+        navBar = Object.assign(navBar, style.navigationBar);
+      } else {
+        if (style.navBarBg) {
+          navBar.bColor = style.navBarBg;
+        }
+        if (style.navBarFg) {
+          navBar.fColor = style.navBarFg;
+        }
+        if (style.pageTitle) {
+          navBar.text = style.pageTitle;
+        }
+      }
+      this.setData({
+        navigationBar: navBar
+      });
+      wx.setNavigationBarColor({
+        frontColor: navBar.fColor,
+        backgroundColor: navBar.bColor
+      });
+      wx.setNavigationBarTitle({
+        title: navBar.text
+      });
+
+      if (style.personalIconClass) {
+        this.setData({
+          personalIconLight: style.personalIconClass
+        });
+      } else {
+        this._setPersonalIcon(navBar.bColor);
+      }
     },
     _setPersonalIcon: function _setPersonalIcon(bg) {
       if (bg.indexOf('#') < 0) return;
