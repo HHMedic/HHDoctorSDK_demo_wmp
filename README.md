@@ -1,4 +1,4 @@
-# 和缓视频医生微信小程序SDK使用指南（1.0.8）
+# 和缓视频医生微信小程序SDK使用指南（1.0.9）
 
 和缓视频医生微信小程序SDK（**本SDK**）为小程序自定义组件形式，使用npm方式发布。本文引导开发者从零开始，一步一步搭建起和缓视频医生基本功能框架。如果开发者是在现有项目中集成本SDK，可直接从第2步开始阅读。
 
@@ -242,6 +242,7 @@
 | playTimeoutSeconds        | Integer | hh-call | 10 | 否 | 播放医生画面超时(单位：秒)，当因某些原因导致微信无法播放医生画面时，会提示用户，并退出呼叫 |
 | playTimeoutMessage        | String | hh-call | 播放视频失败，请重启微信再呼叫 | 否 | 播放医生画面超时后提示用户的信息内容 |
 | weakNetworkTimeout        | Integer | hh-call | 6 | 否 | 弱网监控超时时间(单位：秒)，当小程序与服务器通信往返消息总耗时大于设置的超时时间时，认为当前是弱网环境，会主动终止当前呼叫。 |
+| ringtone        | String | hh-call | 无 | 否 | 呼叫医生时的振铃音，支持传入文件的url地址，支持mp3格式音频文件，url需在小程序的“downloadFile合法域名”范围内。 该音频文件第一次使用时会下载到小程序本地存储中(key:ringFile)，如更换其他音频文件，需调用wx.clearStorage()或wx.removeStorage()清理缓存后，新的音频文件方可生效  |
 | viewModule  | Enum | hh-ehr | memberList | 否 | **`memberList`**: 显示家庭成员列表界面<br />**`ehrList`**: 显示家庭成员主账号健康档案列表界面<br />**`detail`**: 显示指定的健康档案详情，需与patient属性及medicRecordId配合使用 |
 | addMember | Boolen | hh-ehr |  true | 否 | 家庭成员列表下方是否显示添加新成员按钮 |
 | patient    | String | hh-ehr | 无        | 否 | 需要查看健康档案的实际患者的userToken值 |
