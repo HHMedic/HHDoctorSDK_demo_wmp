@@ -2341,7 +2341,7 @@ Component({
       that._stopSpeedStat();
       that._clearCountDown();
       that._clearTimeoutHandlers();
-      wx.offNetworkStatusChange();
+      //wx.offNetworkStatusChange();
 
       if (getApp().globalData._hhim) {
         that._logInfo('页面返回挂机，当前状态码：' + that.data.status);
@@ -2379,6 +2379,9 @@ Component({
             break;
         }
       }
+      try {
+        wx.offNetworkStatusChange();
+      } catch (e) {}
 
       setTimeout(function () {
         that._stopRing();
@@ -3045,14 +3048,14 @@ Component({
       getApp().globalData._hhim.on('error', that._hhImError);
 
       pushStart = false;
+      that._playRing();
 
       setTimeout(function () {
         that.data.pusher.stop();
-      }, 100);
+      }, 500);
 
       setTimeout(function () {
         that.data.pusher.start();
-        that._playRing();
       }, 1000);
 
       setTimeout(function () {
@@ -3555,13 +3558,34 @@ Component({
       });
 
       that._showPusher();
-      that._countDown();
-      getApp().globalData._hhim.call(that._callCb, false);
 
-      setTimeout(function () {
-        that.data.pusher.start();
-        that._playRing();
-      }, 1000);
+      that.data.pusher.startPreview({
+        success: function success() {
+          that._countDown();
+          getApp().globalData._hhim.call(that._callCb, false);
+          that._playRing();
+          setTimeout(function () {
+            that.data.pusher.start();
+          }, 1000);
+        },
+        fail: function fail() {
+          wx.showModal({
+            title: '错误',
+            content: that.data._request.cameraTimeoutMessage,
+            showCancel: false,
+            success: function success() {
+              wx.navigateBack({
+                delta: 1
+              });
+            }
+          });
+          that._hangup({
+            hangupType: 'CANCEl',
+            stayInpage: true,
+            source: '_transfer'
+          });
+        }
+      });
     },
     _resumeVideo: function _resumeVideo() {
       playStart = false;
@@ -3643,11 +3667,33 @@ Component({
       }
 
       that._showPusher();
-      setTimeout(function () {
-        that.data.pusher.start();
-        that._playRing();
-      }, 1000);
-      //that._playRing();
+
+      that.data.pusher.startPreview({
+        success: function success() {
+          that._playRing();
+          setTimeout(function () {
+            that.data.pusher.start();
+          }, 1000);
+        },
+        fail: function fail() {
+          wx.showModal({
+            title: '错误',
+            content: that.data._request.cameraTimeoutMessage,
+            showCancel: false,
+            success: function success() {
+              wx.navigateBack({
+                delta: 1
+              });
+            }
+          });
+          that._hangup({
+            hangupType: 'CANCEl',
+            stayInpage: true,
+            source: '_parseCallInfo'
+          });
+        }
+      });
+
       wx.hideLoading();
     },
 
@@ -4166,24 +4212,19 @@ Component({
       wx.getStorage({
         key: key,
         success: function success(res) {
-          ringFile = res.data;
-        },
-        fail: function fail() {
-          wx.downloadFile({
-            url: that.data._request.ringtone,
-            success: function success(res1) {
-              wx.saveFile({
-                tempFilePath: res1.tempFilePath,
-                success: function success(res2) {
-                  ringFile = res2.savedFilePath;
-                  wx.setStorage({
-                    key: key,
-                    data: ringFile
-                  });
-                }
-              });
+          wx.getSavedFileInfo({
+            filePath: res.data,
+            success: function success(r) {
+              ringFile = res.data;
+            },
+            fail: function fail(e) {
+              //文件不存在
+              that._downloadRing();
             }
           });
+        },
+        fail: function fail() {
+          that._downloadRing();
         }
       });
 
@@ -4192,6 +4233,24 @@ Component({
       });
       ring.loop = true;
       ring.volume = 1;
+    },
+    _downloadRing: function _downloadRing() {
+      var key = 'ringFile';
+      wx.downloadFile({
+        url: that.data._request.ringtone,
+        success: function success(res1) {
+          wx.saveFile({
+            tempFilePath: res1.tempFilePath,
+            success: function success(res2) {
+              ringFile = res2.savedFilePath;
+              wx.setStorage({
+                key: key,
+                data: ringFile
+              });
+            }
+          });
+        }
+      });
     },
     _playRing: function _playRing() {
       that._stopRing();

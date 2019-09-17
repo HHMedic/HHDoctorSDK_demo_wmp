@@ -2105,7 +2105,9 @@ Component({
   pageLifetimes: {
     show: function show() {
       pageIsShowing = true;
-
+      wx.setKeepScreenOn({
+        keepScreenOn: true
+      });
       if (!hhim) {
         return;
       }
@@ -2118,6 +2120,9 @@ Component({
     },
     hide: function hide() {
       pageIsShowing = false;
+      wx.setKeepScreenOn({
+        keepScreenOn: false
+      });
       if (hhim) hhim.on('close', null);
     }
   },
