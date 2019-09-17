@@ -315,6 +315,10 @@ page {
   background-image: url("https://imgs.hh-medic.com/icon/wmp/icon-invoice.png");
 }
 
+.menu-icon.clear {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/icon-clear.png");
+}
+
 .menu-name {
   flex-grow: 1;
   line-height: 50px;

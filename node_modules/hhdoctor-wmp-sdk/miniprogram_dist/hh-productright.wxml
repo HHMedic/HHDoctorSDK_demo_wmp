@@ -2,7 +2,7 @@
 
 <view class='panel top'>
   <view class='top-background'></view>
-  <template is='{{product.canOrderExpert?"productPrime":"product"}}' data='{{...product,selectedPid:selectedPid}}'></template>
+  <template is='{{product.canOrderExpert?"productPrime":"product"}}' data='{{...product,selectedPid:selectedPid,sdkProductId:_request.sdkProductId}}'></template>
 </view>
 
 <rightList class='rigth-list' product='{{product}}' base-path='{{basePath}}'></rightList>

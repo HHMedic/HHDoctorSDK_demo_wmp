@@ -1,0 +1,80 @@
+/* pages/invitationcode/invitationcode.wxss */
+page {
+  width: 100%;
+  height: 100%;
+}
+.wrap {
+  width: 100%;
+  height: 100%;
+  background: #eee;
+  display: flex;
+  flex-direction: column;
+  
+}
+
+.content {
+  margin-top: 327rpx;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0 60rpx;
+  box-sizing: border-box;
+  margin-bottom: 87rpx;
+}
+
+.ipt_list {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.active {
+  border: thin solid #0592F5!important;
+}
+.ipt {
+  width: 80rpx;
+  height: 120rpx;
+  background: #fff;
+  border-radius: 10rpx;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  font-size: 28px;
+  justify-content: center;
+  background:#FFF;
+  border:1px solid #666666;
+  color: #666666;
+}
+
+.ipts {
+  width: 0;
+  height: 0;
+}
+
+.btn {
+  width: 100%;
+  border: 0;
+  background: #ccc;
+  color: #fff;
+  padding: 0 40rpx;
+  box-sizing: border-box;
+}
+
+.active_btn {
+  background: #1890ff;
+}
+
+.tip_text {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.tip_text text {
+  font-size:32rpx;
+  font-weight:400;
+  color:#F53205;
+  line-height:57rpx;
+}

@@ -349,10 +349,10 @@ function getHost(profileName, subDomain) {
       host.wsServer = 'wss://test.hh-medic.com/wmp/websocket';
       break;
     case 'dev':
-      host.wmpHost = 'http://10.1.0.99:8080/wmp/';
-      host.ehrHost = 'http://test.hh-medic.com/ehrweb/';
-      host.patHost = 'http://test.hh-medic.com/patient_web/';
-      host.wsServer = 'ws://10.1.0.99:8080/wmp/websocket';
+      host.wmpHost = 'http://192.168.8.180:8080/wmp/';
+      host.ehrHost = 'https://test.hh-medic.com/ehrweb/';
+      host.patHost = 'https://test.hh-medic.com/patient_web/';
+      host.wsServer = 'ws://192.168.8.180:8080/wmp/websocket';
       break;
     default:
       break;
@@ -390,7 +390,8 @@ Component({
     user: null,
     product: null,
     productDesc: '',
-    vMoney: -1
+    vMoney: -1,
+    cacheSize: ''
   },
   lifetimes: {
     attached: function attached() {
@@ -408,14 +409,23 @@ Component({
       this.setData({
         sysInfo: info
       });
+      this._getCacheSize();
     }
+  },
+  pageLifetimes: {
+    // 组件所在页面的生命周期函数
+    show: function show() {
+      this._getProductInfo();
+    },
+    hide: function hide() {},
+    resize: function resize() {}
   },
   /**
    * 组件的方法列表
    */
   methods: {
     _requestComplete: function _requestComplete() {
-      this._getProductInfo();
+      //this._getProductInfo();
       if (this.data._request.autoAcl) {
         this._getUserAcl();
       }
@@ -601,6 +611,24 @@ Component({
           }*/
         }
       });
+    },
+    _getCacheSize: function _getCacheSize() {
+      wx.getStorageInfo({
+        success: function success(res) {
+          that.setData({
+            cacheSize: res.currentSize + ' KB'
+          });
+        }
+      });
+    },
+    _clearCache: function _clearCache() {
+      wx.clearStorage();
+      wx.showToast({
+        title: '清理完毕'
+      });
+      that.setData({
+        cacheSize: '0 KB'
+      });
     }
   }
 });
@@ -670,6 +698,8 @@ var _cacheMsgs = {
   endTime: null,
   list: []
 };
+
+var _commandCache = new Array();
 
 var socketTask;
 var isPrecall = false;
@@ -1413,6 +1443,7 @@ function parseLoginResponse(msg) {
   if (_callbacks.login) {
     _callbacks.login(msg.data.login);
   }
+  procCommandCache();
   heartbeat();
 }
 //解析发送消息响应消息
@@ -1788,6 +1819,33 @@ function loginStatus() {
   return isLogin;
 }
 
+function addToCommandCache(commandName, commandArgs) {
+  //console.log('将命令加入缓存');
+  _commandCache.push({
+    name: commandName,
+    args: commandArgs
+  });
+}
+
+function procCommandCache() {
+  //console.log('处理缓存的命令');
+  for (var i = 0; i < _commandCache.length; i++) {
+    var _cmd = _commandCache.shift();
+    if (!_cmd || !_cmd.name) {
+      continue;
+    }
+
+    switch (_cmd.name) {
+      case 'hangup':
+        //console.log('缓存的hangup');
+        hangup(_cmd.args[0], _cmd.args[1], _cmd.args[2], _cmd.args[3], _cmd.args[4]);
+        break;
+      default:
+        break;
+    }
+  }
+}
+
 //对外公开接口
 module.exports = {
   init: init,
@@ -1810,7 +1868,8 @@ module.exports = {
   evaluate: evaluate,
   on: on,
   loginStatus: loginStatus,
-  clearCache: clearCache
+  clearCache: clearCache,
+  addToCommandCache: addToCommandCache
 };
 
 /***/ }),
@@ -1875,6 +1934,7 @@ module.exports = Behavior({
       playTimeoutSeconds: 10,
       playTimeoutMessage: '播放视频失败，请重启微信再呼叫',
       weakNetworkTimeout: 6,
+      ringtone: 'https://imgs.hh-medic.com/icon/ring.mp3',
       //hh-personal属性
       personalModule: 'personal',
       //hh-addresslist属性
@@ -2230,8 +2290,22 @@ module.exports = Behavior({
       });
     },
     _viewActiveCode: function _viewActiveCode() {
-      var url = this.data._host.wmpHost + 'wmp/activationCode?' + 'sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
-      this._viewUrl(url);
+      /*var url = this.data._host.wmpHost + 'wmp/activationCode?' +
+        'sdkProductId=' + this.data._request.sdkProductId +
+        '&userToken=' + this.data._request.userToken +
+        '&openId=' + this.data._request.openId +
+        '&profileName=' + this.data._request.profileName +
+        '&subDomain=' + this.data._request.subDomain +
+        '&source=wmpSdk' +
+        '&version=' + this.data._sdkVersion +
+        '&_=' + new Date().getTime();
+      this._viewUrl(url);*/
+
+      var param = 'sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&profileName=' + this.data._request.profileName + '&subDomain=' + this.data._request.subDomain + '&source=wmpSdk' + '&version=' + this.data._sdkVersion;
+      var pageUrl = this.data.basePath + 'innerpages/invitationcode?' + param;
+      wx.navigateTo({
+        url: pageUrl
+      });
     }
   }
 });

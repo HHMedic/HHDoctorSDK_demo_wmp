@@ -21,6 +21,7 @@ Page({
           text: '视频医生' //视频界面顶部标题
         }
       }
+      options.ringtone = 'https://imgs.hh-medic.com/icon/wmp/nokia.mp3'; //自定义铃声url
       this.setData({
         hhRequest: options
       })

@@ -36,6 +36,7 @@ Page({
     //   price: options.price,
     //   famPid: options.pid
     // })
+    console.log('pay options:', options);
     if ('undefined' != typeof(options.name)) {
       this.setData({
         name: options.name

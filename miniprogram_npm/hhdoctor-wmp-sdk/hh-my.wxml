@@ -94,6 +94,11 @@
       <view class='menu-remark'></view>
       <view class='menu-arrow'></view>
     </view>
+    <view class='menu-item' catchtap='_clearCache'>
+      <view class='menu-icon clear'></view>
+      <view class='menu-name'>清理缓存</view>
+      <view class='menu-remark'>{{cacheSize}}</view>
+    </view>
     <view class='menu-item' catchtap='_viewAbout' wx:if='{{_request.userAcl.showAbout}}'>
       <view class='menu-icon about'></view>
       <view class='menu-name'>关于</view>

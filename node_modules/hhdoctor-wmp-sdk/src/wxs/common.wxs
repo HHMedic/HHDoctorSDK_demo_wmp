@@ -49,12 +49,12 @@ var getPeriod2 = function(batchType, batchNum, validateMonth) {
   if (1 == validateMonth) {
     return '月';
   }
-  if (3 == validateMonth) {
+  /*if (3 == validateMonth) {
     return '季';
   }
   if (12 == validateMonth) {
     return '年';
-  }
+  }*/
   return validateMonth + '月';
 }
 

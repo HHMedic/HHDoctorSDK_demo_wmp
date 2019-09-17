@@ -151,6 +151,8 @@ var _cacheMsgs = {
   list: []
 };
 
+var _commandCache = new Array();
+
 var socketTask;
 var isPrecall = false;
 var sendingMsg = [];
@@ -893,6 +895,7 @@ function parseLoginResponse(msg) {
   if (_callbacks.login) {
     _callbacks.login(msg.data.login);
   }
+  procCommandCache();
   heartbeat();
 }
 //解析发送消息响应消息
@@ -1268,6 +1271,33 @@ function loginStatus() {
   return isLogin;
 }
 
+function addToCommandCache(commandName, commandArgs) {
+  //console.log('将命令加入缓存');
+  _commandCache.push({
+    name: commandName,
+    args: commandArgs
+  });
+}
+
+function procCommandCache() {
+  //console.log('处理缓存的命令');
+  for (var i = 0; i < _commandCache.length; i++) {
+    var _cmd = _commandCache.shift();
+    if (!_cmd || !_cmd.name) {
+      continue;
+    }
+
+    switch (_cmd.name) {
+      case 'hangup':
+        //console.log('缓存的hangup');
+        hangup(_cmd.args[0], _cmd.args[1], _cmd.args[2], _cmd.args[3], _cmd.args[4]);
+        break;
+      default:
+        break;
+    }
+  }
+}
+
 //对外公开接口
 module.exports = {
   init: init,
@@ -1290,7 +1320,8 @@ module.exports = {
   evaluate: evaluate,
   on: on,
   loginStatus: loginStatus,
-  clearCache: clearCache
+  clearCache: clearCache,
+  addToCommandCache: addToCommandCache
 };
 
 /***/ })
