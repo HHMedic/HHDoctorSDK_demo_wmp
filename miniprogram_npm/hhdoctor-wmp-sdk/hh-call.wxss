@@ -303,6 +303,12 @@
   color: #ebf1f8;
 }
 
+.waitting-tips {
+  top: 25px;
+  font-size: 18px;
+  color: #ebf1f8;
+}
+
 .waitting-countdown {
   /* bottom: 140px; */
   top: 65px;

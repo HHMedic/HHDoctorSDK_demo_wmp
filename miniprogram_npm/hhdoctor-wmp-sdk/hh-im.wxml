@@ -36,7 +36,7 @@
   </block>
 
   <!-- 中部消息列表 -->
-  <scroll-view class='msg-panel-scroll' style='top:{{msgPanelTop}}px;height:{{msgPanelHeight}}px;' scroll-y scroll-into-view='{{lastMsgId}}' bindscrolltoupper='_loadMoreHisMsg'>
+  <scroll-view class='msg-panel-scroll' style='top:{{msgPanelTop}}px;height:{{msgPanelHeight}}px;' scroll-y scroll-into-view='{{lastMsgId}}'>
     <block wx:for='{{msgList}}' wx:for-item='msg' wx:key='{{time}}'>
       <view class='msg-row timestamp'>
         <text class='msg-time'>{{msg.timeText}}</text>
@@ -146,7 +146,10 @@
         <view class='msg-name'>{{asst.name?asst.name:name}}</view>
       </block>
       <view class='msg-content-main {{"c"==from?"user":""}}'>
-        <view class='msg {{"c"==from?"user":""}} text'>{{text}}</view>
+        <!-- <view class='msg {{"c"==from?"user":""}} text'>{{text}}</view> -->
+        <view class='msg {{"c"==from?"user":""}} text'>
+          <text>{{text}}</text>
+        </view>
       </view>
     </view>
   </view>

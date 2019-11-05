@@ -23,7 +23,7 @@
     <image class='card-image {{selectedPid==productServiceId?"selected":""}}' src='{{3009==sdkProductId?"https://imgs.hh-medic.com/icon/wmp/card-hh.png":"https://imgs.hh-medic.com/icon/wmp/card.png"}}' mode='widthFix'></image>
     <view class='card-title'>{{productServiceName}}</view>
     <!-- 描述信息 -->
-    <view class='card-desc-list'>
+    <view class='card-desc-list' wx:if='{{productDetail && productDetail.length>0}}'>
       <view class='card-desc'>7×24小时视频看医生</view>
     </view>
     <!-- 实际价格 -->
@@ -38,7 +38,7 @@
         <text class='price-num-raw'>{{productPrice}}</text>/{{common.getPeriod2(batchType,batchNum,validateMonth)}}
       </view>
     </block>
-    <view class='view-right' catchtap='_viewProductRight' data-pid='{{productServiceId}}'>查看权益</view>
+    <view wx:if='{{productDetail && productDetail.length>0}}' class='view-right' catchtap='_viewProductRight' data-pid='{{productServiceId}}'>查看权益</view>
   </view>
 </template>
 
@@ -47,7 +47,7 @@
   <view class='card-info prime' catchtap='_selectProduct' data-pid='{{productServiceId}}'>
     <image class='card-image prime {{selectedPid==productServiceId?"selected":""}}' src='{{3009==sdkProductId?"https://imgs.hh-medic.com/icon/wmp/card-prime-hh.png":"https://imgs.hh-medic.com/icon/wmp/card-prime.png"}}' mode='widthFix'></image>
     <view class='card-title prime'>{{productServiceName}}</view>
-    <view class='card-desc-list'>
+    <view class='card-desc-list' wx:if='{{productDetail && productDetail.length>0}}'>
       <view class='card-desc prime'>7×24小时视频看医生</view>
       <view class='card-desc prime key'>知名专家会诊咨询</view>
     </view>
@@ -63,6 +63,6 @@
         <text class='price-num-raw'>{{productPrice}}</text>/{{common.getPeriod2(batchType,batchNum,validateMonth)}}
       </view>
     </block>
-    <view class='view-right prime' catchtap='_viewProductRight' data-pid='{{productServiceId}}'>查看权益</view>
+    <view wx:if='{{productDetail && productDetail.length>0}}' class='view-right prime' catchtap='_viewProductRight' data-pid='{{productServiceId}}'>查看权益</view>
   </view>
 </template>

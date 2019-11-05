@@ -137,6 +137,7 @@ var _callbacks = {
   onTransferCall: null,
   onUpdateUrl: null,
   onCommand: null,
+  onAllocate: null,
   login: null,
   sendMsg: [],
   addAttatch: null,
@@ -152,7 +153,6 @@ var _cacheMsgs = {
 };
 
 var _commandCache = new Array();
-
 var socketTask;
 var isPrecall = false;
 var sendingMsg = [];
@@ -173,6 +173,7 @@ function init(option) {
       _options.fileServer = option.fileServer;
     }
   }
+  _options.wxAppId = wx.getAccountInfoSync().miniProgram.appId;
   log('init');
 };
 
@@ -322,7 +323,8 @@ function preCall(dept, callback, toUuid, appointedDoctorId, appointedOrderId, mr
     action: 'PRECALL_REQUEST',
     data: {
       dept: dept,
-      debug: false
+      debug: false,
+      waitList: true
     }
   };
   if (toUuid) {
@@ -415,7 +417,7 @@ function callResponse(famOrderId, accept) {
 function hangup(callback, debug, hangupType, videoTime, hangupSource) {
   log('hangup...');
   if (!doctorName || !doctorUuid) {
-    return;
+    //return;
   }
   sendLog('1', 'hangup(' + hangupSource + ')');
   if (callback) {
@@ -514,6 +516,47 @@ function on(event, callback) {
     case 'command':
       _callbacks.onCommand = callback;
       break;
+    case 'allocate':
+      _callbacks.onAllocate = callback;
+    default:
+      break;
+  }
+};
+
+function off(event) {
+  switch (event) {
+    case 'msg':
+      _callbacks.onMsg = null;
+      break;
+    case 'error':
+      _callbacks.onError = null;
+      break;
+    case 'close':
+      _callbacks.onClose = null;
+      break;
+    case 'history':
+      _callbacks.onHistory = null;
+      break;
+    case 'call':
+      _callbacks.onCallRequest = null;
+      break;
+    case 'callinfo':
+      _callbacks.onCallInfoCb = null;
+      break;
+    case 'hangup':
+      _callbacks.onHangupRequest = null;
+      break;
+    case 'updateurl':
+      _callbacks.onUpdateUrl = null;
+      break;
+    case 'transfer':
+      _callbacks.onTransferCall = null;
+      break;
+    case 'command':
+      _callbacks.onCommand = null;
+      break;
+    case 'allocate':
+      _callbacks.onAllocate = null;
     default:
       break;
   }
@@ -829,6 +872,9 @@ function parseSocketMessage(data) {
     case 'CALLINFO_RESPONSE':
       parseCallInfoResponse(msg);
       break;
+    case 'ALLOCATE_REQUEST':
+      parseAllocate(msg);
+      break;
     case 'CALL_RESPONSE':
       sendLog('1', 'call response:' + data);
       if (_callbacks.call) {
@@ -924,6 +970,22 @@ function parseMsgResponse(msg) {
     delete sendingMsg[id];
   }
 }
+
+function parseAllocate(msg) {
+  if (msg.data && msg.data.doctor) {
+    doctorName = msg.data.doctor.name;
+    doctorUuid = msg.data.doctor.login.uuid;
+    sendLog('1', 'allocate doctor success:' + msg.data.doctor.name + '(' + msg.data.doctor.login.uuid + ')');
+  }
+
+  if (msg && msg.data && msg.data.livePushUrl) sendLog('1', 'push:' + msg.data.livePushUrl);
+  if (msg && msg.data && msg.data.livePlayUrl) sendLog('1', 'play:' + msg.data.livePlayUrl);
+
+  if (_callbacks.onAllocate) {
+    _callbacks.onAllocate(msg);
+  }
+}
+
 //解析服务器推送的错误消息
 function parseErrorReceive(msg) {
   if (_callbacks.onError) {
@@ -1095,7 +1157,7 @@ function clearCache() {
     endTime: null,
     list: []
   };
-  if (_options && _options.uuid) {
+  if (_options && 'undefined' != typeof _options.uuid) {
     var key = 'msgCache_' + _options.uuid;
     wx.removeStorageSync(key);
   } else {
@@ -1319,6 +1381,7 @@ module.exports = {
   feedback: feedback,
   evaluate: evaluate,
   on: on,
+  off: off,
   loginStatus: loginStatus,
   clearCache: clearCache,
   addToCommandCache: addToCommandCache

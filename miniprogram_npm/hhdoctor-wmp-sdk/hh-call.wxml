@@ -1,11 +1,12 @@
 <block wx:if="{{0==status}}">
   <view class='full-screen'>
-    <image class="full-screen" src='https://imgs.hh-medic.com/icon/wmp/bg-default.jpg' mode='aspectFill'></image>
+    <image class="full-screen" src='{{callBgImage}}' mode='aspectFill'></image>
     <view class='waitting-mask'>
       <text class='waitting-text waitting-doctorname'></text>
+      <text class='waitting-text waitting-tips'>{{waittingTips}}</text>
       <text class='waitting-text waitting-countdown'>拨号中...</text>
       <view class='waitting-text waitting-control-item'>
-        <image catchtap='_navBack' class="waitting-hangup-btn" src='https://imgs.hh-medic.com/icon/wmp/hangup.png'></image>
+        <image catchtap='_navBackOrCancel' class="waitting-hangup-btn" src='https://imgs.hh-medic.com/icon/wmp/hangup.png'></image>
         <view class='waitting-hangup-btn-text'>取消</view>
       </view>
     </view>

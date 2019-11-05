@@ -492,6 +492,7 @@ var _callbacks = {
   onTransferCall: null,
   onUpdateUrl: null,
   onCommand: null,
+  onAllocate: null,
   login: null,
   sendMsg: [],
   addAttatch: null,
@@ -507,7 +508,6 @@ var _cacheMsgs = {
 };
 
 var _commandCache = new Array();
-
 var socketTask;
 var isPrecall = false;
 var sendingMsg = [];
@@ -528,6 +528,7 @@ function init(option) {
       _options.fileServer = option.fileServer;
     }
   }
+  _options.wxAppId = wx.getAccountInfoSync().miniProgram.appId;
   log('init');
 };
 
@@ -677,7 +678,8 @@ function preCall(dept, callback, toUuid, appointedDoctorId, appointedOrderId, mr
     action: 'PRECALL_REQUEST',
     data: {
       dept: dept,
-      debug: false
+      debug: false,
+      waitList: true
     }
   };
   if (toUuid) {
@@ -770,7 +772,7 @@ function callResponse(famOrderId, accept) {
 function hangup(callback, debug, hangupType, videoTime, hangupSource) {
   log('hangup...');
   if (!doctorName || !doctorUuid) {
-    return;
+    //return;
   }
   sendLog('1', 'hangup(' + hangupSource + ')');
   if (callback) {
@@ -869,6 +871,47 @@ function on(event, callback) {
     case 'command':
       _callbacks.onCommand = callback;
       break;
+    case 'allocate':
+      _callbacks.onAllocate = callback;
+    default:
+      break;
+  }
+};
+
+function off(event) {
+  switch (event) {
+    case 'msg':
+      _callbacks.onMsg = null;
+      break;
+    case 'error':
+      _callbacks.onError = null;
+      break;
+    case 'close':
+      _callbacks.onClose = null;
+      break;
+    case 'history':
+      _callbacks.onHistory = null;
+      break;
+    case 'call':
+      _callbacks.onCallRequest = null;
+      break;
+    case 'callinfo':
+      _callbacks.onCallInfoCb = null;
+      break;
+    case 'hangup':
+      _callbacks.onHangupRequest = null;
+      break;
+    case 'updateurl':
+      _callbacks.onUpdateUrl = null;
+      break;
+    case 'transfer':
+      _callbacks.onTransferCall = null;
+      break;
+    case 'command':
+      _callbacks.onCommand = null;
+      break;
+    case 'allocate':
+      _callbacks.onAllocate = null;
     default:
       break;
   }
@@ -1184,6 +1227,9 @@ function parseSocketMessage(data) {
     case 'CALLINFO_RESPONSE':
       parseCallInfoResponse(msg);
       break;
+    case 'ALLOCATE_REQUEST':
+      parseAllocate(msg);
+      break;
     case 'CALL_RESPONSE':
       sendLog('1', 'call response:' + data);
       if (_callbacks.call) {
@@ -1279,6 +1325,22 @@ function parseMsgResponse(msg) {
     delete sendingMsg[id];
   }
 }
+
+function parseAllocate(msg) {
+  if (msg.data && msg.data.doctor) {
+    doctorName = msg.data.doctor.name;
+    doctorUuid = msg.data.doctor.login.uuid;
+    sendLog('1', 'allocate doctor success:' + msg.data.doctor.name + '(' + msg.data.doctor.login.uuid + ')');
+  }
+
+  if (msg && msg.data && msg.data.livePushUrl) sendLog('1', 'push:' + msg.data.livePushUrl);
+  if (msg && msg.data && msg.data.livePlayUrl) sendLog('1', 'play:' + msg.data.livePlayUrl);
+
+  if (_callbacks.onAllocate) {
+    _callbacks.onAllocate(msg);
+  }
+}
+
 //解析服务器推送的错误消息
 function parseErrorReceive(msg) {
   if (_callbacks.onError) {
@@ -1450,7 +1512,7 @@ function clearCache() {
     endTime: null,
     list: []
   };
-  if (_options && _options.uuid) {
+  if (_options && 'undefined' != typeof _options.uuid) {
     var key = 'msgCache_' + _options.uuid;
     wx.removeStorageSync(key);
   } else {
@@ -1674,6 +1736,7 @@ module.exports = {
   feedback: feedback,
   evaluate: evaluate,
   on: on,
+  off: off,
   loginStatus: loginStatus,
   clearCache: clearCache,
   addToCommandCache: addToCommandCache
@@ -1708,7 +1771,7 @@ module.exports = Behavior({
     }
   },
   data: {
-    _sdkVersion: '1.0.6',
+    _sdkVersion: '1.0.9',
     _request: {
       //公共属性
       subDomain: '',
@@ -1725,6 +1788,7 @@ module.exports = Behavior({
       medicinePage: null,
       addressPage: '',
       payPage: '',
+      serviceType: 'asst',
       //hh-ehr属性
       viewModule: 'memberList',
       addMember: true,
@@ -1768,8 +1832,10 @@ module.exports = Behavior({
         requestInvoice: false, //开发票菜单
         expertServiceStatus: '', //专家宝服务状态,
         showAbout: true, //关于
+        showClearCache: true, //清理缓存
         showProductRight: true //查看权益
       },
+      regPage: '',
       //其他属性
       hospitalId: null
     }
@@ -1965,7 +2031,7 @@ module.exports = Behavior({
 
       //hhim登录
       this._logInfo('开始登录...');
-      hhim.login(this.data._request.sdkProductId, this.data._request.userToken, this.data._request.openId, account.miniProgram.appId, requestHis, function (res) {
+      hhim.login(this.data._request.sdkProductId, 'ai' == this.data._request.serviceType ? 'unreg' : this.data._request.userToken, this.data._request.openId, account.miniProgram.appId, requestHis, function (res) {
         if (res) {
           that._logInfo('登录成功');
           //登录成功
@@ -2008,12 +2074,14 @@ module.exports = Behavior({
       });
     },
     _viewMedicineOrderList: function _viewMedicineOrderList(redirectPage) {
+      if (this._isUnReg(true)) return;
       getApp().globalData._hhSdkOptions.redirectPage = redirectPage;
 
       var url = this.data._host.patHost + 'drug/order-list.html?' + 'sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
       this._viewUrl(url);
     },
     _viewAddressList: function _viewAddressList() {
+      if (this._isUnReg(true)) return;
       var url = this.data._host.patHost + 'drug/addr-list.html?' + 'sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&source=wmpSdk' + '&version=' + this.data._sdkVersion + '&_=' + new Date().getTime();
       this._viewUrl(url);
     },
@@ -2032,6 +2100,9 @@ module.exports = Behavior({
       });
     },
     _viewEhr: function _viewEhr(options) {
+      if (this._isUnReg(true)) {
+        return;
+      }
       var _options = Object.assign({
         viewModule: 'memberList',
         addMember: true,
@@ -2081,7 +2152,7 @@ module.exports = Behavior({
       });
     },
     _viewUrl: function _viewUrl(url) {
-      console.log(url);
+      url = this._appendUrlParams(url);
       var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(url);
       wx.navigateTo({
         url: pageUrl
@@ -2097,22 +2168,50 @@ module.exports = Behavior({
       });
     },
     _viewActiveCode: function _viewActiveCode() {
-      /*var url = this.data._host.wmpHost + 'wmp/activationCode?' +
-        'sdkProductId=' + this.data._request.sdkProductId +
-        '&userToken=' + this.data._request.userToken +
-        '&openId=' + this.data._request.openId +
-        '&profileName=' + this.data._request.profileName +
-        '&subDomain=' + this.data._request.subDomain +
-        '&source=wmpSdk' +
-        '&version=' + this.data._sdkVersion +
-        '&_=' + new Date().getTime();
-      this._viewUrl(url);*/
+      if (this._isUnReg(true)) return;
 
       var param = 'sdkProductId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId + '&profileName=' + this.data._request.profileName + '&subDomain=' + this.data._request.subDomain + '&source=wmpSdk' + '&version=' + this.data._sdkVersion;
       var pageUrl = this.data.basePath + 'innerpages/invitationcode?' + param;
       wx.navigateTo({
         url: pageUrl
       });
+    },
+    _isUnReg: function _isUnReg(alert) {
+      if ('unreg' == this.data._request.userToken) {
+        if (alert) {
+          wx.showToast({
+            title: '请注册登录后再试',
+            icon: 'none'
+          });
+        }
+        return true;
+      }
+      return false;
+    },
+    _appendUrlParams: function _appendUrlParams(url) {
+      if (url.indexOf('?') >= 0) {
+        url += '&';
+      } else {
+        url += '?';
+      }
+      url += '_=' + new Date().getTime() + '&source=wmpSdk';
+
+      if (url.indexOf('openId=') < 0 && this.data._request.openId) {
+        url += '&openId=' + this.data._request.openId;
+      }
+      if (url.indexOf('wmpVersion=') < 0 && getApp().globalData.wmpVersion) {
+        url += '&wmpVersion=' + getApp().globalData.wmpVersion;
+      }
+      if (url.indexOf('sdkVersion=') < 0) {
+        url += '&sdkVersion=' + this.data._sdkVersion;
+      }
+      if (url.indexOf('sdkProductId=') < 0 && this.data._request.sdkProductId) {
+        url += '&sdkProductId=' + this.data._request.sdkProductId;
+      }
+      if (url.indexOf('wxAppId=') < 0 && getApp().globalData.wxAppId) {
+        url += '&wxAppId=' + getApp().globalData.wxAppId;
+      }
+      return url;
     }
   }
 });

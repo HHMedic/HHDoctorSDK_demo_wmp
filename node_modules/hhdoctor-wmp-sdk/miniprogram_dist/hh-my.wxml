@@ -33,6 +33,10 @@
     <view class='buy-btn-panel' wx:if='{{!product && _request.userAcl.showBuyProduct && _request.payPage}}'>
       <view class='buy-btn-large prime' catchtap='_buyProduct'>立即开通</view>
     </view>
+
+    <view class='buy-btn-panel' wx:if='{{"unreg"==_request.userToken}}'>
+      <view class='buy-btn-large prime' catchtap='_reg'>立即注册/登录</view>
+    </view>
   </view>
 </view>
 
@@ -94,7 +98,7 @@
       <view class='menu-remark'></view>
       <view class='menu-arrow'></view>
     </view>
-    <view class='menu-item' catchtap='_clearCache'>
+    <view class='menu-item' catchtap='_clearCache' wx:if='{{_request.userAcl.showClearCache}}'>
       <view class='menu-icon clear'></view>
       <view class='menu-name'>清理缓存</view>
       <view class='menu-remark'>{{cacheSize}}</view>
