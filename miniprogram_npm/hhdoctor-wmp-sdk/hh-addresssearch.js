@@ -82,11 +82,12 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 12);
+/******/ 	return __webpack_require__(__webpack_require__.s = 16);
 /******/ })
 /************************************************************************/
-/******/ ([
-/* 0 */
+/******/ ({
+
+/***/ 0:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -318,7 +319,8 @@ module.exports = {
 };
 
 /***/ }),
-/* 1 */
+
+/***/ 1:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -363,7 +365,151 @@ module.exports = {
 };
 
 /***/ }),
-/* 2 */
+
+/***/ 16:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var that;
+Component({
+  behaviors: [__webpack_require__(3)],
+  /**
+   * 组件的属性列表
+   */
+  properties: {
+    currentCity: {
+      type: String,
+      value: '定位中',
+      observer: function observer(newVal, oldVal, changedPath) {
+        //console.log('>>>>currentCity change,', newVal, oldVal);
+        if ('定位中' == oldVal) {
+          this._getLocation();
+        } else if (oldVal && newVal != oldVal) {
+          this.setData({
+            resultList: []
+          });
+        }
+      }
+    }
+  },
+
+  /**
+   * 组件的初始数据
+   */
+  data: {
+    _name: 'hh-addresssearch',
+    showCityList: false,
+    navibarHeight: 0,
+    listHeight: 200,
+    cityListSize: {
+      height: 300
+    },
+    resultList: [],
+    sysInfo: null
+  },
+  lifetimes: {
+    attached: function attached() {
+      that = this;
+      this._getLocation();
+    },
+    ready: function ready() {
+      this._resize();
+    }
+  },
+  /**
+   * 组件的方法列表
+   */
+  methods: {
+    getLocation: function getLocation() {
+      this._getLocation();
+    },
+    _requestComplete: function _requestComplete() {
+      console.log('address search');
+    },
+    _navbarResize: function _navbarResize(e) {
+      this.setData({
+        navibarHeight: e.detail.height
+      });
+    },
+    _resize: function _resize() {
+      var res = wx.getSystemInfoSync();
+      var size = {
+        height: res.windowHeight - this.data.navibarHeight - 50
+      };
+      this.setData({
+        listHeight: res.windowHeight - this.data.navibarHeight - 150,
+        cityListSize: size,
+        sysInfo: res
+      });
+    },
+    _getLocation: function _getLocation() {
+      wx.getLocation({
+        success: function success(res) {
+          that._getLocationByLngLat(res);
+        },
+        fail: function fail() {}
+      });
+    },
+    _getLocationByLngLat: function _getLocationByLngLat(e) {
+      var url = this._getHost().wmpHost + 'address/searchByCoord?type=1&lng=' + e.longitude + '&lat=' + e.latitude;
+      wx.request({
+        url: url,
+        data: {},
+        method: 'POST',
+        success: function success(res) {
+          if (res && res.data && 200 == res.data.status) {
+            //成功
+            that.setData({
+              resultList: res.data.data.list,
+              currentCity: res.data.data.geoInfo.city.replace('市', '')
+            });
+            that._triggerEvent('locatecity', {
+              city: that.data.currentCity
+            });
+          } else {
+            console.log('_getLocationByLngLat fail');
+          }
+        }
+      });
+    },
+    _searchByKeyword: function _searchByKeyword(e) {
+      this.setData({
+        resultList: []
+      });
+      var url = this._getHost().wmpHost + 'address/searchByKeyword' + '?region=' + encodeURIComponent(this.data.currentCity) + '&kw=' + encodeURIComponent(e.detail.value);
+      wx.request({
+        url: url,
+        data: {},
+        method: 'POST',
+        success: function success(res) {
+          if (res && res.data && 200 == res.data.status) {
+            //成功
+            that.setData({
+              resultList: res.data.data.list
+            });
+          } else {
+            console.log('_getLocationByLngLat fail');
+          }
+        }
+      });
+    },
+    _selectAddress: function _selectAddress(e) {
+      that._triggerEvent('selectAddress', e.currentTarget.dataset.address);
+    },
+    _showCityList: function _showCityList() {
+      that._triggerEvent('showcitylist', {});
+    },
+    _naviBack: function _naviBack() {
+      that._triggerEvent('naviback', {});
+    }
+  }
+});
+
+/***/ }),
+
+/***/ 2:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1664,7 +1810,8 @@ module.exports = {
 };
 
 /***/ }),
-/* 3 */
+
+/***/ 3:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1691,7 +1838,7 @@ module.exports = Behavior({
     }
   },
   data: {
-    _sdkVersion: '1.0.9',
+    _sdkVersion: '1.1.1',
     _request: {
       //公共属性
       subDomain: '',
@@ -1708,6 +1855,7 @@ module.exports = Behavior({
       medicinePage: null,
       addressPage: '',
       payPage: '',
+      redirectPage: '',
       serviceType: 'asst',
       //hh-ehr属性
       viewModule: 'memberList',
@@ -2136,155 +2284,6 @@ module.exports = Behavior({
   }
 });
 
-/***/ }),
-/* 4 */,
-/* 5 */,
-/* 6 */,
-/* 7 */,
-/* 8 */,
-/* 9 */,
-/* 10 */,
-/* 11 */,
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var that;
-Component({
-  behaviors: [__webpack_require__(3)],
-  /**
-   * 组件的属性列表
-   */
-  properties: {
-    currentCity: {
-      type: String,
-      value: '定位中',
-      observer: function observer(newVal, oldVal, changedPath) {
-        //console.log('>>>>currentCity change,', newVal, oldVal);
-        if ('定位中' == oldVal) {
-          this._getLocation();
-        } else if (oldVal && newVal != oldVal) {
-          this.setData({
-            resultList: []
-          });
-        }
-      }
-    }
-  },
-
-  /**
-   * 组件的初始数据
-   */
-  data: {
-    _name: 'hh-addresssearch',
-    showCityList: false,
-    navibarHeight: 0,
-    listHeight: 200,
-    cityListSize: {
-      height: 300
-    },
-    resultList: [],
-    sysInfo: null
-  },
-  lifetimes: {
-    attached: function attached() {
-      that = this;
-      this._getLocation();
-    },
-    ready: function ready() {
-      this._resize();
-    }
-  },
-  /**
-   * 组件的方法列表
-   */
-  methods: {
-    getLocation: function getLocation() {
-      this._getLocation();
-    },
-    _requestComplete: function _requestComplete() {
-      console.log('address search');
-    },
-    _navbarResize: function _navbarResize(e) {
-      this.setData({
-        navibarHeight: e.detail.height
-      });
-    },
-    _resize: function _resize() {
-      var res = wx.getSystemInfoSync();
-      var size = {
-        height: res.windowHeight - this.data.navibarHeight - 50
-      };
-      this.setData({
-        listHeight: res.windowHeight - this.data.navibarHeight - 150,
-        cityListSize: size,
-        sysInfo: res
-      });
-    },
-    _getLocation: function _getLocation() {
-      wx.getLocation({
-        success: function success(res) {
-          that._getLocationByLngLat(res);
-        },
-        fail: function fail() {}
-      });
-    },
-    _getLocationByLngLat: function _getLocationByLngLat(e) {
-      var url = this._getHost().wmpHost + 'address/searchByCoord?type=1&lng=' + e.longitude + '&lat=' + e.latitude;
-      wx.request({
-        url: url,
-        data: {},
-        method: 'POST',
-        success: function success(res) {
-          if (res && res.data && 200 == res.data.status) {
-            //成功
-            that.setData({
-              resultList: res.data.data.list,
-              currentCity: res.data.data.geoInfo.city.replace('市', '')
-            });
-            that._triggerEvent('locatecity', {
-              city: that.data.currentCity
-            });
-          } else {
-            console.log('_getLocationByLngLat fail');
-          }
-        }
-      });
-    },
-    _searchByKeyword: function _searchByKeyword(e) {
-      this.setData({
-        resultList: []
-      });
-      var url = this._getHost().wmpHost + 'address/searchByKeyword' + '?region=' + encodeURIComponent(this.data.currentCity) + '&kw=' + encodeURIComponent(e.detail.value);
-      wx.request({
-        url: url,
-        data: {},
-        method: 'POST',
-        success: function success(res) {
-          if (res && res.data && 200 == res.data.status) {
-            //成功
-            that.setData({
-              resultList: res.data.data.list
-            });
-          } else {
-            console.log('_getLocationByLngLat fail');
-          }
-        }
-      });
-    },
-    _selectAddress: function _selectAddress(e) {
-      that._triggerEvent('selectAddress', e.currentTarget.dataset.address);
-    },
-    _showCityList: function _showCityList() {
-      that._triggerEvent('showcitylist', {});
-    },
-    _naviBack: function _naviBack() {
-      that._triggerEvent('naviback', {});
-    }
-  }
-});
-
 /***/ })
-/******/ ]);
+
+/******/ });

@@ -82,7 +82,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 19);
+/******/ 	return __webpack_require__(__webpack_require__.s = 23);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -363,64 +363,6 @@ function getHost(profileName, subDomain) {
 module.exports = {
   getHost: getHost
 };
-
-/***/ }),
-
-/***/ 19:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var that;
-Component({
-  behaviors: [__webpack_require__(3)],
-  /**
-   * 组件的属性列表
-   */
-  properties: {},
-
-  /**
-   * 组件的初始数据
-   */
-  data: {
-    _name: 'hh-productright',
-    product: {}
-  },
-  lifetimes: {
-    attached: function attached() {
-      that = this;
-    }
-  },
-  /**
-   * 组件的方法列表
-   */
-  methods: {
-    _requestComplete: function _requestComplete() {
-      this._getProductInfo();
-    },
-    _getProductInfo: function _getProductInfo() {
-      var url = this._getHost().wmpHost + 'my/productDetail?userToken=' + this.data._request.userToken + '&sdkProductId=' + this.data._request.sdkProductId + '&productId=' + this.data._request.productId;
-      wx.request({
-        url: url,
-        data: {},
-        method: 'POST',
-        success: function success(res) {
-          if (res && res.data && 200 == res.data.status) {
-            //成功
-            that.setData({
-              product: res.data.data
-            });
-          } else {}
-        }
-      });
-    },
-    _buy: function _buy() {
-      if (!this.data.product) return;
-      this._buyProduct(this.data.product.productServiceId);
-    }
-  }
-});
 
 /***/ }),
 
@@ -1726,6 +1668,64 @@ module.exports = {
 
 /***/ }),
 
+/***/ 23:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var that;
+Component({
+  behaviors: [__webpack_require__(3)],
+  /**
+   * 组件的属性列表
+   */
+  properties: {},
+
+  /**
+   * 组件的初始数据
+   */
+  data: {
+    _name: 'hh-productright',
+    product: {}
+  },
+  lifetimes: {
+    attached: function attached() {
+      that = this;
+    }
+  },
+  /**
+   * 组件的方法列表
+   */
+  methods: {
+    _requestComplete: function _requestComplete() {
+      this._getProductInfo();
+    },
+    _getProductInfo: function _getProductInfo() {
+      var url = this._getHost().wmpHost + 'my/productDetail?userToken=' + this.data._request.userToken + '&sdkProductId=' + this.data._request.sdkProductId + '&productId=' + this.data._request.productId;
+      wx.request({
+        url: url,
+        data: {},
+        method: 'POST',
+        success: function success(res) {
+          if (res && res.data && 200 == res.data.status) {
+            //成功
+            that.setData({
+              product: res.data.data
+            });
+          } else {}
+        }
+      });
+    },
+    _buy: function _buy() {
+      if (!this.data.product) return;
+      this._buyProduct(this.data.product.productServiceId);
+    }
+  }
+});
+
+/***/ }),
+
 /***/ 3:
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1753,7 +1753,7 @@ module.exports = Behavior({
     }
   },
   data: {
-    _sdkVersion: '1.0.9',
+    _sdkVersion: '1.1.1',
     _request: {
       //公共属性
       subDomain: '',
@@ -1770,6 +1770,7 @@ module.exports = Behavior({
       medicinePage: null,
       addressPage: '',
       payPage: '',
+      redirectPage: '',
       serviceType: 'asst',
       //hh-ehr属性
       viewModule: 'memberList',

@@ -82,7 +82,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 20);
+/******/ 	return __webpack_require__(__webpack_require__.s = 24);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -1668,7 +1668,7 @@ module.exports = {
 
 /***/ }),
 
-/***/ 20:
+/***/ 24:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1749,7 +1749,7 @@ module.exports = Behavior({
     }
   },
   data: {
-    _sdkVersion: '1.0.9',
+    _sdkVersion: '1.1.1',
     _request: {
       //公共属性
       subDomain: '',
@@ -1766,6 +1766,7 @@ module.exports = Behavior({
       medicinePage: null,
       addressPage: '',
       payPage: '',
+      redirectPage: '',
       serviceType: 'asst',
       //hh-ehr属性
       viewModule: 'memberList',

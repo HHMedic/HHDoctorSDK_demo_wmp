@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "hhLive": "../../hh-live/hh-live"
+  },
+  "navigationStyle": "custom",
+  "navigationBarTitleText": "加载中"
+}

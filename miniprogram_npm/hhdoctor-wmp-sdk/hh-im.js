@@ -82,7 +82,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 10);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -1691,7 +1691,7 @@ module.exports = Behavior({
     }
   },
   data: {
-    _sdkVersion: '1.0.9',
+    _sdkVersion: '1.1.1',
     _request: {
       //公共属性
       subDomain: '',
@@ -1708,6 +1708,7 @@ module.exports = Behavior({
       medicinePage: null,
       addressPage: '',
       payPage: '',
+      redirectPage: '',
       serviceType: 'asst',
       //hh-ehr属性
       viewModule: 'memberList',
@@ -2137,9 +2138,126 @@ module.exports = Behavior({
 });
 
 /***/ }),
-/* 4 */,
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var app = getApp();
+var wmpHost = app.globalData._hhSdkOptions._host.wmpHost;
+var urls = {
+  videoReportTrace: wmpHost + 'video/reportTrace?targetId={0}&traceType={1}&traceCode={2}',
+  videoLeaveLive: wmpHost + 'video/leaveLive?id={0}',
+  videoAddComment: wmpHost + 'video/addComment',
+  videoList: wmpHost + 'video/list?channelType={0}',
+  videoComment: wmpHost + 'video/comments?videoId={0}&lastCommentId={1}&channelType={2}',
+  getHistoryMsg: wmpHost + 'trtc/getHistoryMsg?asstUuid={0}'
+};
+var requestHeader = {};
+
+String.prototype.format = function () {
+  if (arguments.length == 0) return this;
+  for (var s = this, i = 0; i < arguments.length; i++) {
+    s = s.replace(new RegExp("\\{" + i + "\\}", "g"), arguments[i]);
+  }return s;
+};
+
+function doRequest(url, method, data) {
+  return new Promise(function (resolve, reject) {
+    url = addPubVars(url);
+    console.log('>>>>' + url);
+    wx.request({
+      url: url,
+      data: data,
+      method: method ? method.toUpperCase() : 'POST',
+      header: requestHeader,
+      success: function success(res) {
+        if (200 == res.statusCode && res.data && res.data.status && 200 == res.data.status) {
+          resolve(res.data);
+        } else {
+          reject(res.data);
+        }
+      },
+      fail: function fail(res) {
+        wx.showModal({
+          title: '提示',
+          content: res && res.data && res.data.error || "网络请求错误",
+          showCancel: false
+        });
+        reject();
+      }
+    });
+  });
+}
+
+function addPubVars(url) {
+  url = addParam(url, 'sdkProductId', app.globalData._hhSdkOptions._sdkProductId);
+  url = addParam(url, 'userToken', app.globalData._hhSdkOptions._userToken);
+  url = addParam(url, 'openId', app.globalData._hhSdkOptions._openId);
+  url = addParam(url, '_', new Date().getTime());
+  return url;
+}
+
+function addParam(url, key, value) {
+  if (url.indexOf(key + '=') < 0 && value) {
+    url += (url.indexOf('?') >= 0 ? '&' : '?') + key + '=' + value;
+  }
+  return url;
+}
+
+/** 上报小程序直播埋点数据 */
+function reportTrace(targetId, traceType, traceCode) {
+  var url = urls.videoReportTrace.format(targetId, traceType, traceCode);
+  return doRequest(url, '', {});
+}
+
+/** 离开直播 */
+function leaveLive(id) {
+  var url = urls.videoLeaveLive.format(id);
+  return doRequest(url, '', {});
+}
+
+/** 添加评论 */
+function addComment(comment) {
+  var url = urls.videoAddComment;
+  return doRequest(url, '', comment);
+}
+
+/** 获取评论列表 */
+function getComment(videoId, lastCommentId, channelType) {
+  var url = urls.videoComment.format(videoId, lastCommentId, channelType);
+  return doRequest(url, '', {});
+}
+
+/** 获取视频列表 */
+function getVideoList(channelType) {
+  var url = urls.videoList.format(channelType);
+  return doRequest(url, '', {});
+}
+
+/** 获取历史IM消息 */
+function getHistoryMsg(asstUuid) {
+  var url = urls.getHistoryMsg.format(asstUuid);
+  return doRequest(url, '', {});
+}
+
+module.exports = {
+  reportTrace: reportTrace,
+  leaveLive: leaveLive,
+  addComment: addComment,
+  getComment: getComment,
+  getVideoList: getVideoList,
+  getHistoryMsg: getHistoryMsg
+};
+
+/***/ }),
 /* 5 */,
-/* 6 */
+/* 6 */,
+/* 7 */,
+/* 8 */,
+/* 9 */,
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2162,6 +2280,11 @@ var pageIsShowing = false;
 var firstShow = true;
 var voicePlaying = false;
 var calling = false;
+var intervalHandler = {
+  liveList: null,
+  resize: null
+};
+var apiUtil;
 
 Component({
   behaviors: [hhBehaviors],
@@ -2189,6 +2312,7 @@ Component({
       wx.setKeepScreenOn({
         keepScreenOn: true
       });
+      that._getLiveListCycle();
       if (!hhim) {
         return;
       }
@@ -2218,6 +2342,7 @@ Component({
     sysInfo: null, //小程序系统信息
     msgPanelTop: 120, //中部消息列表顶部
     msgPanelHeight: 100, //中部消息列表高度
+    livePanelHeight: 110,
     bottomHeight: 50, //底部输入和工具栏高度
     callBtnTop: 35,
     mainBtnHeight: 64,
@@ -2255,19 +2380,19 @@ Component({
   methods: {
     _requestComplete: function _requestComplete() {
       this._logInfo('初始化参数完成，准备启动IM...');
-      this._resize();
-      var mHeight = 64;
+      apiUtil = __webpack_require__(4);
       firstShow = true;
-      if ('custom' == this.data.navStyle) {
+      this._resize();
+
+      /*if ('custom' == this.data.navStyle) {
         mHeight = this.data.wxMbb.top + (this.data._request.callPage ? 102 : 38);
       } else if (!this.data._request.callPage) {
         mHeight = 0;
       }
-
-      this.setData({
+       this.setData({
         msgPanelTop: mHeight,
         msgPanelHeight: this.data.sysInfo.windowHeight - mHeight - safeArea - 50
-      });
+      })*/
 
       that._applyStyle();
       /*if ('unreg' == this.data._request.userToken) {
@@ -2278,24 +2403,63 @@ Component({
       that._viewIm();
     },
     _resize: function _resize() {
+      intervalHandler.resize = setInterval(function () {
+        that._doResize().then(function () {
+          that._logInfo('获取resize参数成功');
+          that._clearIntervalHandler(intervalHandler.resize);
+          var mHeight = 64;
+          if ('custom' == that.data.navStyle) {
+            mHeight = that.data.wxMbb.top + (that.data._request.callPage ? 102 : 38);
+          } else if (!that.data._request.callPage) {
+            mHeight = 0;
+          }
+          that.setData({
+            msgPanelTop: mHeight,
+            msgPanelHeight: that.data.sysInfo.windowHeight - mHeight - safeArea - 50
+          });
+        });
+      }, 100);
+    },
+    _doResize: function _doResize() {
+      return new Promise(function (resolve, reject) {
+        var rect = wx.getMenuButtonBoundingClientRect();
+        var res = wx.getSystemInfoSync();
+        var styleName = 'custom';
+        var bTop = 35;
+        if (res.windowHeight < res.screenHeight) {
+          styleName = 'default';
+          bTop = -35;
+        }
+        that._getSafeAreaHeight(res);
+        that.setData({
+          sysInfo: res,
+          wxMbb: rect,
+          navStyle: styleName,
+          callBtnTop: bTop
+        });
+        resolve();
+      });
+    },
+
+
+    /*_resize() {
       var rect = wx.getMenuButtonBoundingClientRect();
       var res = wx.getSystemInfoSync();
-
-      var styleName = 'custom';
+       var styleName = 'custom';
       var bTop = 35;
       if (res.windowHeight < res.screenHeight) {
         styleName = 'default';
         bTop = -35;
       }
-
-      that._getSafeAreaHeight(res);
+       that._getSafeAreaHeight(res);
       that.setData({
         sysInfo: res,
         wxMbb: rect,
         navStyle: styleName,
         callBtnTop: bTop
-      });
-    },
+      })
+    },*/
+
     _viewImUnReg: function _viewImUnReg() {},
     _viewIm: function _viewIm() {
       this._initHhImSdk(true, {
@@ -2981,7 +3145,7 @@ Component({
       if (!e.currentTarget.dataset.trans) {
         return;
       }
-      this._viewMedicine(e.currentTarget.dataset.drugid);
+      this._viewMedicine(e.currentTarget.dataset.drugid, this.data._request.redirectPage);
     },
     _tapExtendBtn: function _tapExtendBtn(e) {
       if (!e.currentTarget.dataset.btn) {
@@ -3029,6 +3193,104 @@ Component({
           });
         }
       });
+    },
+    _getLiveListCycle: function _getLiveListCycle() {
+      that._clearIntervalHandler(intervalHandler.liveList);
+      /*if (intervalHandler.liveList) {
+        clearInterval(intervalHandler.liveList);
+        intervalHandler.liveList = null;
+      }*/
+      that._getLiveList();
+      intervalHandler.liveList = setInterval(function () {
+        that._getLiveList();
+      }, 30000);
+    },
+
+    /** 获取直播列表 */
+    _getLiveList: function _getLiveList() {
+      if ('unreg' == that.data._request.userToken || !that.data._request.callPage) {
+        that.setData({
+          livePanelHeight: 0
+        });
+        return;
+      }
+      var url = this._getHost().wmpHost + 'video/bannerList?' + this._getPublicRequestParams();
+      wx.request({
+        url: url,
+        data: {},
+        method: 'POST',
+        success: function success(res) {
+          wx.hideLoading();
+          if (res && res.data) {
+            that._filterLiveList(res.data.list);
+          }
+        },
+        fail: function fail() {
+          that.setData({
+            livePanelHeight: 0
+          });
+        }
+      });
+    },
+    _filterLiveList: function _filterLiveList(list) {
+      var liveList = [];
+      for (var i = 0; i < list.length; i++) {
+        if (0 == list[i].liveStatus || 1 == list[i].liveStatus) {
+          liveList.push(list[i]);
+        }
+        if (2 == liveList.length) {
+          break;
+        }
+      }
+
+      if (1 == liveList.length) {
+        liveList.push({
+          id: -1,
+          imageUrl: '',
+          liveStatus: -1
+        });
+      }
+      that.setData({
+        liveList: liveList
+      });
+      that.setData({
+        livePanelHeight: that.data.liveList.length > 0 ? 110 : 0
+      });
+    },
+    _tapLive: function _tapLive(e) {
+      var live = e.currentTarget.dataset.live;
+      if (live.id < 0) return;
+      switch (live.liveStatus) {
+        case 0:
+          wx.showToast({
+            title: live.message ? live.message : '请查看开播时间，记得按时观看哦',
+            icon: 'none',
+            duration: 2500
+          });
+          break;
+        case 1:
+          var pageUrl = that.data.basePath + 'innerpages/video/video?' + that._getPublicRequestParams() + '&liveSource=WMP_BANNER_LIVE' + '&filterType=live' + '&videoType=live' + '&enableLiveShare=false' + '&videoId=' + live.id;
+          wx.navigateTo({
+            url: pageUrl
+          });
+          break;
+        default:
+          break;
+      }
+
+      //上报日志
+      //apiUtil.reportTrace(live.id, 'live', 'WMP_BANNER_CLICK');
+    },
+    _clearAllIntervalHandler: function _clearAllIntervalHandler() {
+      Object.keys(intervalHandler).forEach(function (key) {
+        that._clearIntervalHandler(intervalHandler[key]);
+      });
+    },
+    _clearIntervalHandler: function _clearIntervalHandler(handler) {
+      if (handler) {
+        clearInterval(handler);
+        handler = null;
+      }
     }
   }
 });

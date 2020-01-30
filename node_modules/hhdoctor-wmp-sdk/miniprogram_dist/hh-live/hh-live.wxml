@@ -1,0 +1,82 @@
+<wxs module="math">
+  var abs = function(val) {
+    return Math.abs(val);
+  }
+  module.exports = {
+    abs: abs
+  };
+</wxs>
+<view style='width:750rpx;height:{{height?height+"px":"100vh"}};'>
+  <template name="live">
+    <block wx:if="{{math.abs(current-index)<=1}}">
+      <live-player id="live-{{index}}" src="{{url}}" class="full-screen" autoplay="{{false}}" object-fit="fillCrop" bindstatechange="_onPlayerStateChange">
+        <template wx:if="{{current==index}}" is="ctrls" data="{{isResized,btnClosePosition,viewerPosition,showComments,inputting,liveInfo,viewers,doctorComment}}"></template>
+      </live-player>
+    </block>
+  </template>
+
+  <template name="video">
+    <block wx:if="{{math.abs(current-index)<=1}}">
+      <video id="video-{{index}}" src="{{url}}" controls="{{false}}" enable-progress-gesture="{{false}}" enable-play-gesture="{{false}}" object-fit="cover" class="full-screen" bindplay="_onVideoPlay" bindended="_onVideoEnded">
+        <template wx:if="{{current==index}}" is="ctrls" data="{{isResized,btnClosePosition,showComments,inputting}}"></template>
+      </video>
+    </block>
+  </template>
+
+  <template name="ctrls">
+    <cover-image class="live-bg" src="https://imgs.hh-medic.com/icon/wmp/live-bg.png" style="height:{{viewerPosition.top+30}}px;" mode="aspectFit"></cover-image>
+    <cover-view wx:if="{{false}}" class="btn-close" style="top:{{btnClosePosition.top}}px;left:{{btnClosePosition.left}}px;" catchtap="_close">
+      <cover-image class="close-image" src="https://imgs.hh-medic.com/icon/wmp/close_50.png" mode="aspectFit"></cover-image>
+    </cover-view>
+    <cover-view wx:if="{{isResized && viewers}}" class="viewer-count" style="top:5px;right:{{viewerPosition.right}}px;">{{viewers}}人观看</cover-view>
+    <cover-view wx:if="{{showComments && !inputting && 1==liveInfo.liveStatus}}" class="input-panel" data-inputting="{{inputting}}" catchtap="_tapCommentInput">
+      <cover-image class="comment-image" src="https://imgs.hh-medic.com/icon/wmp/comment.png" mode="aspectFit"></cover-image>
+      <cover-view class="comment-tips">说点什么吧~</cover-view>
+    </cover-view>
+    <cover-view wx:if="{{2==liveInfo.liveStatus}}" class="swiper-guide live-finish">
+      <cover-image class="live-finish-icon" src="https://imgs.hh-medic.com/icon/wmp/video-icon.png" mode="aspectFit"></cover-image>
+      <cover-view class="live-finish-tips">直播已结束</cover-view>
+      <cover-view class="live-finish-back" catchtap="_close">返回</cover-view>
+    </cover-view>
+  </template>
+
+  <swiper id="video-list" class="full-screen" indicator-dots="{{false}}" autoplay="{{false}}" vertical="{{true}}" duration="100" skip-hidden-item-layout="{{true}}" current="{{currentIndex}}" bindchange="_swiperChange" bindanimationfinish="_swiperanimationFinish"
+    bindtransition="_swiperTransition">
+    <block wx:for='{{liveList}}' wx:for-item='liveItem' wx:for-index="idx" wx:key='id'>
+      <swiper-item class="swiper-item ">
+        <template is="{{liveItem.type}}" data="{{...liveItem,index:idx,current:currentIndex,isResized,btnClosePosition,viewerPosition,showComments,inputting,liveInfo,viewers,doctorComment}}"> </template>
+      </swiper-item>
+    </block>
+  </swiper>
+
+
+  <scroll-view wx:if="{{drawInSameLayer && showComments}}" class="comments" scroll-y="{{true}}" scroll-into-view="comment-{{commentList.length-1}}">
+    <block wx:for='{{commentList}}' wx:for-item='comment' wx:for-index="idx" wx:key='id'>
+      <view id="comment-{{idx}}" class="comment-row">
+        <view class="comment">
+          <block wx:if="{{'tips'==comment.commentType}}">
+            <text class="comment-init">{{comment.comment}}</text>
+          </block>
+          <block wx:else>
+            <text class="comment-name">{{comment.userName}}:</text>{{comment.comment}}
+          </block>
+        </view>
+      </view>
+    </block>
+  </scroll-view>
+
+  <view wx:if="{{inputting}}">
+    <input class="input-ctrl" confirm-type="send" focus="{{inputting}}" placeholder="说点什么~" bindconfirm="_sendComment" bindblur="_cancelInput"></input>
+  </view>
+
+  <view wx:if="{{false}}" class="share-panel">
+    <button class="btn-share" open-type="share"></button>
+  </view>
+
+  <view wx:if="{{doctorComment.userName && doctorComment.comment}}" class="doctor-commment" style="top:30px;">
+    <view class="doctor-commment-container">
+      <text class="doctor-name">{{doctorComment.userName}}:</text> {{doctorComment.comment}}
+    </view>
+  </view>
+
+</view>

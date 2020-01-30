@@ -35,8 +35,17 @@
     </view>
   </block>
 
+  <!-- 直播banner -->
+  <view class="live-panel" style='top:{{msgPanelTop}}px;'>
+    <block wx:for='{{liveList}}' wx:for-item='live' wx:key='id'>
+      <view class="live-item" data-live="{{live}}" catchtap="_tapLive">
+        <image wx:if="{{live.liveStatus>=0}}" class="live-item-image status {{1==live.liveStatus?'active':'inactive'}}" src="{{live.imageUrl}}" mode="aspectFill"></image>
+      </view>
+    </block>
+  </view>
+  
   <!-- 中部消息列表 -->
-  <scroll-view class='msg-panel-scroll' style='top:{{msgPanelTop}}px;height:{{msgPanelHeight}}px;' scroll-y scroll-into-view='{{lastMsgId}}'>
+  <scroll-view class='msg-panel-scroll' style='top:{{msgPanelTop+livePanelHeight}}px;height:{{msgPanelHeight-livePanelHeight}}px;' scroll-y scroll-into-view='{{lastMsgId}}'>
     <block wx:for='{{msgList}}' wx:for-item='msg' wx:key='{{time}}'>
       <view class='msg-row timestamp'>
         <text class='msg-time'>{{msg.timeText}}</text>

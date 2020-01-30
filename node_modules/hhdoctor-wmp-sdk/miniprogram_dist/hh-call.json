@@ -5,6 +5,7 @@
     "hhAddress": "./hh-addresslist",
     "hhAddressEdit": "./hh-addressedit",
     "hhAddressSearch": "./hh-addresssearch",
-    "hhCityList": "./hh-citylist"
+    "hhCityList": "./hh-citylist",
+    "hhLive": "./hh-live/hh-live"
   }
 }

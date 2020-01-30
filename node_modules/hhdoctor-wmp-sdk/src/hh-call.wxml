@@ -1,7 +1,29 @@
 <block wx:if="{{0==status}}">
   <view class='full-screen'>
     <image class="full-screen" src='{{callBgImage}}' mode='aspectFill'></image>
-    <view class='waitting-mask'>
+
+    <block wx:if="{{waittingVideoTips}}">
+      <view class="waitting-video-info">
+        <view class="waitting-video-tips">
+          <view class="waitting-video-tip-main">{{msgMain}}</view>
+          <view class="waitting-video-tip-sub">{{msgSec}}</view>
+        </view>
+
+        <view class="waitting-video-tip-toast">{{msgTime}}</view>
+      </view>
+    </block>
+
+    <hhLive wx:if="{{waittingVideo}}" request="{{_request}}" class="hh-live" style="left:0px;top:0px;width:100%;height:{{sysInfo.screenHeight-110}}px;" bindclose="_onCloseVideo" bindinputcomment="_onInputComment">
+    </hhLive>
+
+    <view wx:if="{{waittingVideo}}" class='waitting-mask small'>
+      <text class='waitting-text waitting-tips small'>{{waittingTips}}</text>
+      <view class='waitting-text waitting-control-item small'>
+        <image catchtap='_navBackOrCancel' class="waitting-hangup-btn" src='https://imgs.hh-medic.com/icon/wmp/hangup.png'></image>
+      </view>
+    </view>
+
+    <view wx:if="{{!waittingVideo}}" class='waitting-mask'>
       <text class='waitting-text waitting-doctorname'></text>
       <text class='waitting-text waitting-tips'>{{waittingTips}}</text>
       <text class='waitting-text waitting-countdown'>拨号中...</text>
@@ -10,6 +32,7 @@
         <view class='waitting-hangup-btn-text'>取消</view>
       </view>
     </view>
+
   </view>
 </block>
 
@@ -80,23 +103,26 @@
 
 <view class='full-screen {{playerVisible}}'>
   <live-player id="livePlayer" class="live-player" autoplay="false" src="{{playUrl}}" mode="{{playerMode}}" min-cache="{playerMinCache}" max-cache="{playerMaxCache}" object-fit="{{uiStyle.objFit}}" muted="{{uiStyle.muted}}" background-mute="true" bindstatechange="_statechangePlayer"
-    bindnetstatus="_netChangedPlayer" binderror="_errorPlayer">
+    bindnetstatus="_netChangedPlayer" binderror="_errorPlayer" catchtap='_showHideBtns' data-btn-visible="{{btnVisible}}">
     <block wx:if='{{!expertCalling}}'>
       <cover-view class='logo' style='width:{{logoWidth}}px;'>
         <cover-image class='logo-img' mode='widthFix' src='{{_request.logoImage}}'></cover-image>
       </cover-view>
     </block>
+    <!-- <cover-image class="video-calling-bg" src="https://imgs.hh-medic.com/icon/wmp/calling-bg.png" catchtap='_showHideBtns' data-btn-visible="{{btnVisible}}"></cover-image> -->
 
-    <block wx:if='{{uploadedImages.length>0}}'>
+    <block wx:if='{{btnVisible && uploadedImages.length>0}}'>
       <cover-view class='uploaded-img-panel'>
-        <cover-image catchtap='_tapShowUploaded' class='uploaded-img' mode='scaleToFill' src='{{uploadedImages[uploadedImages.length-1]}}'>
+        <cover-image catchtap='_tapShowUploaded' class='uploaded-img' mode='scaleToFill' src='{{uploadedImages[uploadedImages.length-1]}}?x-oss-process=image/resize,m_fixed,w_64,h_64'>
         </cover-image>
         <cover-view class='uploaded-img-count'>{{uploadedImages.length}}</cover-view>
       </cover-view>
     </block>
 
-    <cover-view class='video-time-panel'>{{videoTime}}</cover-view>
-    <cover-view class='video-control-panel'>
+    <cover-view class='video-time-panel' wx:if="{{btnVisible}}">
+      <cover-view class='video-time-text'>{{videoTime}}</cover-view>
+    </cover-view>
+    <cover-view class='video-control-panel' wx:if="{{btnVisible}}">
       <cover-view class='video-control-item'>
         <block wx:if='{{!expertCalling}}'>
           <cover-image bindtap='_selectImage' class="video-control-btn" src='https://imgs.hh-medic.com/icon/wmp/video-camera.png'></cover-image>
@@ -112,10 +138,10 @@
         <cover-view class='video-control-btn-text'>切换摄像头</cover-view>
       </cover-view>
     </cover-view>
-    <block wx:if="{{uiStyle.extBtns && !expertCalling}}">
-      <cover-view class='ext-control-panel' style="height:{{extControlHeight}}px">
+    <block wx:if="{{uiStyle.extBtns && !expertCalling && btnVisible}}">
+      <cover-view class='ext-control-panel' style="height:{{extControlHeight}}px" animation="{{animationRight}}">
         <block wx:if="{{showExtControls}}">
-          <cover-view bindtap='_tapShowLicense' class='ext-control-item'>
+          <cover-view wx:if='{{license}}' bindtap='_tapShowLicense' class='ext-control-item'>
             <cover-image class="ext-control-btn  ext-control-license" src='https://imgs.hh-medic.com/icon/wmp/license.png'></cover-image>
             <cover-view class='ext-control-btn-text'>{{uiStyle.license}}</cover-view>
           </cover-view>
@@ -130,50 +156,16 @@
       </cover-view>
     </block>
 
-    <!-- <cover-view class='location' catchtap='_showAddress' wx:if='{{!expertCalling}}'>
-      <cover-image class='location-image' src='https://imgs.hh-medic.com/icon/wmp/location.png'></cover-image>
-      <cover-view class='location-text'>地址</cover-view>
-    </cover-view>
-
-    <cover-view class='address-panel' wx:if='{{1==addressStatus}}'>
-      <cover-view class='address-title'>
-        选择配送地址
-        <cover-view class='address-btn' catchtap='_hideAddress'>取消</cover-view>
-      </cover-view>
-      <cover-view class='address-list'>
-        <hhAddress id='hhAddress' request='{{_request}}' parent-container='native' bindeditaddress='_editAddress' bindselectaddress='_chooseAddress'></hhAddress>
-      </cover-view>
-      <cover-view class='address-opt'>
-        <cover-view class='address-addbtn' catchtap='_addAddress'>
-          <cover-image class='address-addicon' src='https://imgs.hh-medic.com/icon/wmp/add.png'></cover-image>
-          <cover-view class='address-addtext'>添加地址</cover-view>
-        </cover-view>
-      </cover-view>
-    </cover-view>
-
-    <cover-view class='address-panel confirm' wx:if='{{2==addressStatus}}'>
-      <cover-view class='address-title'>
-        确认配送地址
-        <cover-view class='address-btn left' catchtap='_showAddress'>返回</cover-view>
-        <cover-view class='address-btn' catchtap='_hideAddress'>取消</cover-view>
-      </cover-view>
-      <cover-view class='address-confirm'>
-        <cover-view class='address-confirm-tip'>您选择的收货地址为：</cover-view>
-        <cover-view class='address-detail'>{{address.province}}{{address.city}}{{address.district}}{{address.address}}{{address.houseNum}}，收货人{{address.name}}，电话：{{address.phoneNum}}</cover-view>
-      </cover-view>
-      <cover-view class='address-confirm-btnpanel'>
-        <cover-view class='address-confirm-btn' catchtap='_confirmAddress'>确认</cover-view>
-      </cover-view>
-    </cover-view> -->
-
     <cover-view class='error-msg' wx:if="{{errorMsgVisible}}">
-      {{errorMsg}}
+      <cover-view class="error-msg-text">
+        {{errorMsg}}
+      </cover-view>
     </cover-view>
   </live-player>
 </view>
 
 <live-pusher class="live-pusher {{pusherVisible}}" style="width:{{pusherWidth}}px;height:{{pusherHeight}}px;top:{{pusherTop}}px;" url="{{pushUrl}}" min-bitrate="{{pusherMinBitrate}}" max-bitrate="{{pusherMaxBitrate}}" mode="{{pusherMode}}" beauty="1"
-  orientation="{{orientation}}" whiteness="1" bindstatechange="_onLivePusherChange" binderror="_onLivePusherError" bindnetstatus="_onLivePusherNetInfo" />
+  device-position="{{isBackCamera?'back':'front'}}" orientation="{{orientation}}" whiteness="1" bindstatechange="_onLivePusherChange" binderror="_onLivePusherError" bindnetstatus="_onLivePusherNetInfo" />
 
 <block wx:if="{{3==status}}">
   <view class='full-screen'>
@@ -192,13 +184,13 @@
   </view>
 </block>
 
-<block wx:if="{{showSettingBtn}}">
+<!-- <block wx:if="{{showSettingBtn}}">
   <view class="setting-mask"></view>
   <view class="setting-panel">
     <text class='setting-text'>您未授权小程序使用您的麦克风或摄像头，无法使用相应功能</text>
     <button catchtap='_navToSetting' open-type='openSetting' type='primary' class='setting-btn'>现在去授权</button>
   </view>
-</block>
+</block> -->
 
 
 <block wx:if="{{showLaunchBtn}}">

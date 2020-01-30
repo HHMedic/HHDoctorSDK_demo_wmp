@@ -36,6 +36,20 @@
   text-align: center;
   font-size: 16px;
   color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.video-time-text {
+  box-sizing: border-box;
+  padding: 5px auto;
+  min-width: 75px;
+  width: 75px;
+  line-height: 24px;
+  border-radius: 5px;
+  background-color: rgba(0, 0, 0, 0.35);
 }
 
 .video-control-panel {
@@ -258,6 +272,15 @@
   border-radius: 15px;
 }
 
+.hh-live {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 400px;
+  z-index: 999;
+}
+
 .waitting-mask {
   position: absolute;
   left: 0px;
@@ -265,6 +288,10 @@
   height: 219px;
   width: 100%;
   background-color: rgba(0, 0, 0, 0.8);
+}
+
+.waitting-mask.small {
+  height: 110px;
 }
 
 .waitting-text {
@@ -278,6 +305,10 @@
 .waitting-control-item {
   display: inline-block;
   top: 100px;
+}
+
+.waitting-control-item.small {
+  top: 40px;
 }
 
 .waitting-control-items {
@@ -307,6 +338,10 @@
   top: 25px;
   font-size: 18px;
   color: #ebf1f8;
+}
+
+.waitting-tips.small {
+  top: 10px;
 }
 
 .waitting-countdown {
@@ -928,4 +963,92 @@ button::after {
   left: 0px;
   bottom: 180px;
   z-index: 9;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.error-msg-text {
+  box-sizing: border-box;
+  padding: 5px 25px;
+  min-width: 75px;
+  line-height: 24px;
+  border-radius: 5px;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.video-waitting {
+  position: absolute;
+}
+
+.waitting-video-info {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.waitting-video-tips {
+  margin-top: -100px;
+  border-radius: 5px;
+  width: 316px;
+  height: 127px;
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/tips-bg.png');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  -moz-background-size: 100% 100%;
+  text-align: center;
+}
+
+.waitting-video-tip-main {
+  margin-top: 34px;
+  color: #333;
+  font-size: 18px;
+  line-height: 18px;
+}
+
+.waitting-video-tip-sub {
+  margin-top: 16px;
+  color: #333;
+  font-size: 14px;
+  line-height: 14px;
+}
+
+.waitting-video-tip-toast {
+  margin-top: 45px;
+  border-radius: 5px;
+  font-size: 15px;
+  width: 216px;
+  height: 40px;
+  text-align: center;
+  line-height: 40px;
+  background-color: rgba(0, 0, 0, 0.54);
+  color: #fff;
+}
+
+.btn-close-video {
+  position: fixed;
+  left: 10px;
+  top: 10px;
+  width: 70px;
+  height: 22px;
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/close-video.png');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  -moz-background-size: 100% 100%;
+  z-index: 999;
+}
+
+.video-calling-bg {
+  position: fixed;
+  left: 0px;
+  bottom: 0px;
+  width: 100%;
+  height: 300px;
 }

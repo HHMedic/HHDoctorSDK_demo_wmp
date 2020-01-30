@@ -82,7 +82,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 16);
+/******/ 	return __webpack_require__(__webpack_require__.s = 20);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -363,82 +363,6 @@ function getHost(profileName, subDomain) {
 module.exports = {
   getHost: getHost
 };
-
-/***/ }),
-
-/***/ 16:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var hhBehaviors = __webpack_require__(3);
-
-var that;
-
-Component({
-  behaviors: [hhBehaviors],
-  /**
-   * 组件的属性列表
-   */
-  properties: {},
-
-  /**
-   * 组件的初始数据
-   */
-  data: {
-    _name: 'hh-ehr',
-    url: ''
-  },
-
-  lifetimes: {
-    attached: function attached() {
-      that = this;
-    },
-    ready: function ready() {},
-    detached: function detached() {}
-  },
-  /**
-   * 组件的方法列表
-   */
-  methods: {
-    _requestComplete: function _requestComplete() {
-      this._logInfo('初始化参数完成');
-      that._viewEhr();
-    },
-    _viewEhr: function _viewEhr() {
-      var vParam = 'module=' + this.data._request.viewModule + '&appId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId;
-      if (this.data._request.appointedOrderId) {
-        vParam += '&orderId=' + this.data._request.appointedOrderId;
-      }
-      if (this.data._request.appointedDoctorId) {
-        vParam += '&doctorId=' + this.data._request.appointedDoctorId;
-      }
-      if ('false' == this.data.addMember) {
-        vParam += '&hideAddBtn=true';
-      }
-
-      if (this.data._request.patient) {
-        var p = Number(this.data._request.patient);
-        if (isNaN(p)) {
-          vParam += '&patientUserToken=';
-        } else {
-          vParam += '&patient=';
-        }
-        vParam += this.data._request.patient;
-      }
-      if (this.data._request.medicRecordId) {
-        vParam += '&mrid=' + this.data._request.medicRecordId;
-      }
-      vParam + '&source=wmpSdk&version=' + this.data._sdkVersion;
-      var s = this.data._host.ehrHost + 'view/?' + vParam;
-      console.log(s);
-      this.setData({
-        url: s
-      });
-    }
-  }
-});
 
 /***/ }),
 
@@ -1744,6 +1668,82 @@ module.exports = {
 
 /***/ }),
 
+/***/ 20:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var hhBehaviors = __webpack_require__(3);
+
+var that;
+
+Component({
+  behaviors: [hhBehaviors],
+  /**
+   * 组件的属性列表
+   */
+  properties: {},
+
+  /**
+   * 组件的初始数据
+   */
+  data: {
+    _name: 'hh-ehr',
+    url: ''
+  },
+
+  lifetimes: {
+    attached: function attached() {
+      that = this;
+    },
+    ready: function ready() {},
+    detached: function detached() {}
+  },
+  /**
+   * 组件的方法列表
+   */
+  methods: {
+    _requestComplete: function _requestComplete() {
+      this._logInfo('初始化参数完成');
+      that._viewEhr();
+    },
+    _viewEhr: function _viewEhr() {
+      var vParam = 'module=' + this.data._request.viewModule + '&appId=' + this.data._request.sdkProductId + '&userToken=' + this.data._request.userToken + '&openId=' + this.data._request.openId;
+      if (this.data._request.appointedOrderId) {
+        vParam += '&orderId=' + this.data._request.appointedOrderId;
+      }
+      if (this.data._request.appointedDoctorId) {
+        vParam += '&doctorId=' + this.data._request.appointedDoctorId;
+      }
+      if ('false' == this.data.addMember) {
+        vParam += '&hideAddBtn=true';
+      }
+
+      if (this.data._request.patient) {
+        var p = Number(this.data._request.patient);
+        if (isNaN(p)) {
+          vParam += '&patientUserToken=';
+        } else {
+          vParam += '&patient=';
+        }
+        vParam += this.data._request.patient;
+      }
+      if (this.data._request.medicRecordId) {
+        vParam += '&mrid=' + this.data._request.medicRecordId;
+      }
+      vParam + '&source=wmpSdk&version=' + this.data._sdkVersion;
+      var s = this.data._host.ehrHost + 'view/?' + vParam;
+      console.log(s);
+      this.setData({
+        url: s
+      });
+    }
+  }
+});
+
+/***/ }),
+
 /***/ 3:
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1771,7 +1771,7 @@ module.exports = Behavior({
     }
   },
   data: {
-    _sdkVersion: '1.0.9',
+    _sdkVersion: '1.1.1',
     _request: {
       //公共属性
       subDomain: '',
@@ -1788,6 +1788,7 @@ module.exports = Behavior({
       medicinePage: null,
       addressPage: '',
       payPage: '',
+      redirectPage: '',
       serviceType: 'asst',
       //hh-ehr属性
       viewModule: 'memberList',

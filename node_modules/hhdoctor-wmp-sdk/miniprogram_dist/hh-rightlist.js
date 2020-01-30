@@ -82,7 +82,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 18);
+/******/ 	return __webpack_require__(__webpack_require__.s = 22);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -363,45 +363,6 @@ function getHost(profileName, subDomain) {
 module.exports = {
   getHost: getHost
 };
-
-/***/ }),
-
-/***/ 18:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-// components/hh-rightlist.js
-Component({
-  behaviors: [__webpack_require__(3)],
-  /**
-   * 组件的属性列表
-   */
-  properties: {
-    product: {
-      type: Object,
-      value: {},
-      observer: function observer(newVal, oldVal, changedPath) {}
-    }
-
-  },
-
-  /**
-   * 组件的初始数据
-   */
-  data: {},
-
-  /**
-   * 组件的方法列表
-   */
-  methods: {
-    _view: function _view(e) {
-      var url = e.currentTarget.dataset.url;
-      this._viewUrl(url);
-    }
-  }
-});
 
 /***/ }),
 
@@ -1707,6 +1668,45 @@ module.exports = {
 
 /***/ }),
 
+/***/ 22:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+// components/hh-rightlist.js
+Component({
+  behaviors: [__webpack_require__(3)],
+  /**
+   * 组件的属性列表
+   */
+  properties: {
+    product: {
+      type: Object,
+      value: {},
+      observer: function observer(newVal, oldVal, changedPath) {}
+    }
+
+  },
+
+  /**
+   * 组件的初始数据
+   */
+  data: {},
+
+  /**
+   * 组件的方法列表
+   */
+  methods: {
+    _view: function _view(e) {
+      var url = e.currentTarget.dataset.url;
+      this._viewUrl(url);
+    }
+  }
+});
+
+/***/ }),
+
 /***/ 3:
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1734,7 +1734,7 @@ module.exports = Behavior({
     }
   },
   data: {
-    _sdkVersion: '1.0.9',
+    _sdkVersion: '1.1.1',
     _request: {
       //公共属性
       subDomain: '',
@@ -1751,6 +1751,7 @@ module.exports = Behavior({
       medicinePage: null,
       addressPage: '',
       payPage: '',
+      redirectPage: '',
       serviceType: 'asst',
       //hh-ehr属性
       viewModule: 'memberList',

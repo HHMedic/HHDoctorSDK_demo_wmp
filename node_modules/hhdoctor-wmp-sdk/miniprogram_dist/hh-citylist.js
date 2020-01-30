@@ -82,11 +82,12 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 11);
+/******/ 	return __webpack_require__(__webpack_require__.s = 15);
 /******/ })
 /************************************************************************/
-/******/ ([
-/* 0 */
+/******/ ({
+
+/***/ 0:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -318,7 +319,8 @@ module.exports = {
 };
 
 /***/ }),
-/* 1 */
+
+/***/ 1:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -363,7 +365,153 @@ module.exports = {
 };
 
 /***/ }),
-/* 2 */
+
+/***/ 15:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var that;
+var cities;
+Component({
+  behaviors: [__webpack_require__(3)],
+  /**
+   * 组件的属性列表
+   */
+  properties: {
+    size: {
+      type: Object,
+      value: {},
+      observer: function observer(newVal, oldVal, changedPath) {
+        this._resize();
+      }
+    },
+    locationCity: {
+      type: String,
+      value: ''
+    }
+  },
+  lifetimes: {
+    attached: function attached() {
+      that = this;
+    },
+    ready: function ready() {
+      this._getCityList();
+    }
+  },
+  /**
+   * 组件的初始数据
+   */
+  data: {
+    _name: 'hh-citylist',
+    navibarHeight: 0,
+    listHeight: 200,
+    scopeLocation: true,
+    // curCity: '',
+    cityList: [],
+    hotCityList: []
+  },
+
+  /**
+   * 组件的方法列表
+   */
+  methods: {
+    _navbarResizeCityList: function _navbarResizeCityList(e) {
+      var res = wx.getSystemInfoSync();
+      this.setData({
+        navibarHeight: e.detail.height,
+        listHeight: res.windowHeight - e.detail.height - 97
+      });
+    },
+
+
+    // _resize() {
+    //   if (this.data.size && this.data.size.height) {
+    //     this.setData({
+    //       listHeight: this.data.size.height - 97
+    //     })
+    //   } else {
+    //     var res = wx.getSystemInfoSync();
+    //     this.setData({
+    //       listHeight: res.windowHeight - 97
+    //     })
+    //   }
+    // },
+
+    _getCityList: function _getCityList() {
+      wx.getSetting({
+        success: function success(res) {
+          that.setData({
+            scopeLocation: res.authSetting['scope.userLocation']
+          });
+        }
+      });
+
+      var url = this._getHost().wmpHost + 'vendor/HH/json/hp_city.json';
+      wx.request({
+        url: url,
+        data: {},
+        method: 'GET',
+        success: function success(res) {
+          cities = res.data.list;
+          if (cities) {
+            that._getHotCities();
+            that._filterCities();
+          }
+        }
+      });
+    },
+    _getHotCities: function _getHotCities() {
+      var hot = [];
+      for (var i = 0; i < cities.length; i++) {
+        for (var j = 0; j < cities[i].cities.length; j++) {
+          if (cities[i].cities[j].isHot) {
+            hot.push(cities[i].cities[j]);
+          }
+        }
+      }
+      this.setData({
+        hotCityList: hot
+      });
+    },
+    _filterCitiesByKw: function _filterCitiesByKw(e) {
+      var kw = e.detail.value;
+      this._filterCities(kw);
+    },
+    _filterCities: function _filterCities(kw) {
+      var city = [];
+      for (var i = 0; i < cities.length; i++) {
+        for (var j = 0; j < cities[i].cities.length; j++) {
+          if (kw) {
+            if (cities[i].cities[j].name.indexOf(kw) >= 0) {
+              city.push(cities[i].cities[j]);
+            }
+          } else {
+            city.push(cities[i].cities[j]);
+          }
+        }
+      }
+      this.setData({
+        cityList: city
+      });
+    },
+    _selectCity: function _selectCity(e) {
+      var city = e.currentTarget.dataset.city;
+      this._triggerEvent('citylistselect', city);
+    },
+    _closeCityList: function _closeCityList() {
+      this._triggerEvent('citylistclose', {});
+    },
+    _naviBack: function _naviBack() {
+      that._triggerEvent('naviback', {});
+    }
+  }
+});
+
+/***/ }),
+
+/***/ 2:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1664,7 +1812,8 @@ module.exports = {
 };
 
 /***/ }),
-/* 3 */
+
+/***/ 3:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1691,7 +1840,7 @@ module.exports = Behavior({
     }
   },
   data: {
-    _sdkVersion: '1.0.9',
+    _sdkVersion: '1.1.1',
     _request: {
       //公共属性
       subDomain: '',
@@ -1708,6 +1857,7 @@ module.exports = Behavior({
       medicinePage: null,
       addressPage: '',
       payPage: '',
+      redirectPage: '',
       serviceType: 'asst',
       //hh-ehr属性
       viewModule: 'memberList',
@@ -2136,156 +2286,6 @@ module.exports = Behavior({
   }
 });
 
-/***/ }),
-/* 4 */,
-/* 5 */,
-/* 6 */,
-/* 7 */,
-/* 8 */,
-/* 9 */,
-/* 10 */,
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var that;
-var cities;
-Component({
-  behaviors: [__webpack_require__(3)],
-  /**
-   * 组件的属性列表
-   */
-  properties: {
-    size: {
-      type: Object,
-      value: {},
-      observer: function observer(newVal, oldVal, changedPath) {
-        this._resize();
-      }
-    },
-    locationCity: {
-      type: String,
-      value: ''
-    }
-  },
-  lifetimes: {
-    attached: function attached() {
-      that = this;
-    },
-    ready: function ready() {
-      this._getCityList();
-    }
-  },
-  /**
-   * 组件的初始数据
-   */
-  data: {
-    _name: 'hh-citylist',
-    navibarHeight: 0,
-    listHeight: 200,
-    scopeLocation: true,
-    // curCity: '',
-    cityList: [],
-    hotCityList: []
-  },
-
-  /**
-   * 组件的方法列表
-   */
-  methods: {
-    _navbarResizeCityList: function _navbarResizeCityList(e) {
-      var res = wx.getSystemInfoSync();
-      this.setData({
-        navibarHeight: e.detail.height,
-        listHeight: res.windowHeight - e.detail.height - 97
-      });
-    },
-
-
-    // _resize() {
-    //   if (this.data.size && this.data.size.height) {
-    //     this.setData({
-    //       listHeight: this.data.size.height - 97
-    //     })
-    //   } else {
-    //     var res = wx.getSystemInfoSync();
-    //     this.setData({
-    //       listHeight: res.windowHeight - 97
-    //     })
-    //   }
-    // },
-
-    _getCityList: function _getCityList() {
-      wx.getSetting({
-        success: function success(res) {
-          that.setData({
-            scopeLocation: res.authSetting['scope.userLocation']
-          });
-        }
-      });
-
-      var url = this._getHost().wmpHost + 'vendor/HH/json/hp_city.json';
-      wx.request({
-        url: url,
-        data: {},
-        method: 'GET',
-        success: function success(res) {
-          cities = res.data.list;
-          if (cities) {
-            that._getHotCities();
-            that._filterCities();
-          }
-        }
-      });
-    },
-    _getHotCities: function _getHotCities() {
-      var hot = [];
-      for (var i = 0; i < cities.length; i++) {
-        for (var j = 0; j < cities[i].cities.length; j++) {
-          if (cities[i].cities[j].isHot) {
-            hot.push(cities[i].cities[j]);
-          }
-        }
-      }
-      this.setData({
-        hotCityList: hot
-      });
-    },
-    _filterCitiesByKw: function _filterCitiesByKw(e) {
-      var kw = e.detail.value;
-      this._filterCities(kw);
-    },
-    _filterCities: function _filterCities(kw) {
-      var city = [];
-      for (var i = 0; i < cities.length; i++) {
-        for (var j = 0; j < cities[i].cities.length; j++) {
-          if (kw) {
-            if (cities[i].cities[j].name.indexOf(kw) >= 0) {
-              city.push(cities[i].cities[j]);
-            }
-          } else {
-            city.push(cities[i].cities[j]);
-          }
-        }
-      }
-      this.setData({
-        cityList: city
-      });
-    },
-    _selectCity: function _selectCity(e) {
-      var city = e.currentTarget.dataset.city;
-      this._triggerEvent('citylistselect', city);
-    },
-    _closeCityList: function _closeCityList() {
-      this._triggerEvent('citylistclose', {});
-    },
-    _naviBack: function _naviBack() {
-      that._triggerEvent('naviback', {});
-    }
-  }
-});
-
 /***/ })
-/******/ ]);
+
+/******/ });
