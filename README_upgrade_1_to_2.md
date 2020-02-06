@@ -52,4 +52,4 @@ https://webim.tim.qq.com
 进入微信公众号后台，依次点击【设置】-【基本设置】，找到“基础库最低版本设置”，修改为2.9.4
 
 
-[<<<返回SDK文档](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README.md)
+[<<<返回SDK文档](https://github.com/HHMedic/HHDoctorSDK_demo_wmp)
