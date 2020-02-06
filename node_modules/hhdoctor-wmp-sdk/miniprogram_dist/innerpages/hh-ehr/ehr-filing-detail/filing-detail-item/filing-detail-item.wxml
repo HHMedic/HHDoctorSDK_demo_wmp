@@ -1,0 +1,5 @@
+<!--components/innerpages/hh-ehr/ehr-filing-detail/filing-detail-item/filing-detail-item.wxml-->
+<view class='item-box'>
+    <view class='item-caption'>{{caption}}</view>
+    <slot/>
+</view>

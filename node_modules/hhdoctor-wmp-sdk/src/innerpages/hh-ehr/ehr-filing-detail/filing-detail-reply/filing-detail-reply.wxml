@@ -1,0 +1,28 @@
+<!--components/innerpages/hh-ehr/ehr-filing-detail/filing-detail-reply/filing-detail-reply.wxml-->
+<wxs src="../filing-detail.wxs" module="filingDetail" />
+<view class='reply-item' wx:for='{{summaryTalkList}}' wx:key=''>
+  <view class='reply-time' ><view class='time-block'> {{filingDetail.formatTimeText(item.createTime)}}</view></view>
+  <view class='reply-main'>
+    <view class='reply-avatar'><image src="{{item.talkUserPic +'?x-oss-process=image/resize,m_fixed,h_70,w_70'}}" class='avatar-img'></image></view>
+    <view class='reply-content'>
+      <view class='reply-person'>家庭医生-{{item.talkName}}</view>
+      <!-- 文本 -->
+      <view class='reply-text' wx:if='{{item.contentType=="text"}}'>
+        {{item.content}}
+      </view>
+
+      <!-- 音频 -->
+      <view class='reply-audio' wx:if='{{item.contentType=="sound"}}'>
+        <view class='reply-audio-icon' bindtap='bindAudio' data-audio="{{item.content.replace('http://image.hh-medic.com','https://imgs.hh-medic.com')+'.mp3'}}"></view> 
+      </view>
+
+      <!-- 图片 -->
+      <view class='reply-img' wx:if='{{item.contentType=="pic"}}'>
+        <image src="{{item.content+'?x-oss-process=image/resize,m_fixed,h_330,w_270'}}"
+         bindtap='bindPreviewImg' class='reply-image' mode='widthFix' data-src="{{item.content+'?x-oss-process=image/resize,m_fixed,h_330,w_270'}}"></image>
+      </view>
+
+    </view>
+  </view>
+
+</view>

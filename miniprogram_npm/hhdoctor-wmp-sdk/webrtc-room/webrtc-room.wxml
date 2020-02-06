@@ -1,0 +1,6 @@
+<import src='./bigsmalltemplate/bigsmalltemplate.wxml' />
+<view class='conponent-box'>
+  <block if="{{template == 'bigsmall'}}">
+    <template is='bigsmalltemplate' data="{{pushURL, aspect, minBitrate, maxBitrate, beauty, whiteness, enableCamera, muted, debug, members, autoplay, playerMutedStatus, playerVideoStatus,roomName, smallViewRight, smallViewTop, smallViewWidth, smallViewHeight, startPlay, fixPlayId, playerBackgroundImg, waitingImg, loadingImg,flash,isLivePusher,width,height,left,orderid,status,netSpeed,pushCode,loading,waitPlay}}" />
+  </block>
+</view>

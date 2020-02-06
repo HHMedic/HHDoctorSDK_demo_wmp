@@ -1,0 +1,38 @@
+<!--components/innerpages/hh-ehr/ehr-add-member/member-login/member-login.wxml-->
+  <view class='member-inputs'>
+    <view class='inputs-item'>
+      <text class='inputs-text'>允许成员独立登录</text>
+      <switch 
+      checked="{{isLoginChecked}}" 
+      bindchange="bindLoginChecked" 
+      data-type='switch'
+      bindtap='bindDisabledModal'
+      class='inputs-switch'
+      color='#3c91ee'
+      disabled='{{isedit}}'
+      />
+    </view>
+    <view class='inputs-item' wx:if='{{isLoginChecked}}'>
+      <text class='inputs-text'>手机号</text>
+      <input placeholder="请输入独立登录手机号" 
+          placeholder-class="inputs-placeholder"
+          class='inputs-input'
+          name='{{name}}'
+          bindinput="bindLoginInput"
+          bindblur="bindLoginBlur"
+          value='{{value}}'
+          type='number'
+          maxlength="20"
+          data-type='input'
+          bindtap='bindDisabledModal'
+          disabled='{{isedit && isAccount}}'
+           ></input> 
+    </view>
+    <!-- 编辑状态下如果已设置允许成员独立登录手机号 则禁止更改 点击弹窗提示联系相应负责人更改 如果没有开通独立登录则允许设置独立登录 -->
+  </view>
+  <view class='member-tip'>对方可用本人手机号登录，并共享您当前套餐内所有权益。</view>
+
+
+
+
+

@@ -1,3 +1,5 @@
+<wxs src="./wxs/common.wxs" module="common" />
+
 <view class='panel top'>
   <view class='top-background'></view>
   <view class='card'>
@@ -95,7 +97,7 @@
     <view class='menu-item' catchtap='_changePhone' wx:if='{{_request.userAcl.changePhone}}'>
       <view class='menu-icon setting'></view>
       <view class='menu-name'>更换手机号</view>
-      <view class='menu-remark'></view>
+      <view class='menu-remark'>{{common.phoneDesensitization(user.phoneNum)}}</view>
       <view class='menu-arrow'></view>
     </view>
     <view class='menu-item' catchtap='_clearCache' wx:if='{{_request.userAcl.showClearCache}}'>

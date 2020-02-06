@@ -21,6 +21,7 @@ Page({
    */
   handleFocus(e) {
     var inputValue = e.detail.value;
+
     that.setData({
       values: inputValue
     })

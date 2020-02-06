@@ -1,8 +1,10 @@
 {
   "usingComponents": {
-    "hhCall": "hhdoctor-wmp-sdk/hh-call"
+    "hhCall": "hhdoctor-wmp-sdk/hh-rtc/hh-rtc"
   },
   "navigationBarBackgroundColor": "#000000",
   "navigationBarTextStyle": "white",
-  "navigationBarTitleText": "视频医生"
+  "navigationBarTitleText": "视频医生",
+  "navigationStyle": "custom",
+  "disableScroll": true
 }

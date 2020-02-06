@@ -1,0 +1,32 @@
+<!--components/innerpages/hh-ehr/ehr-filing-list/ehr-filing-list.wxml-->
+<wxs src="./ehr-filing-list.wxs" module="time" />
+<view class='page'>
+   <view class='filing-box' wx:if='{{medicrecords.length}}' wx:for='{{medicrecords}}' wx:key='' bindtap='bindFilingItem' data-id='{{item.medicRecordId}}' >
+      <view class='filing-top'>
+         <text class='filing-date'>{{time.formatDate(item.createTime)}}</text>
+         <text class='filing-name'>{{item.source=='famDoctor'?'总结详情':item.source=='expert'?'专家总结':'自建档案'}}</text>
+      </view>
+      <view class='filing-content'>
+        <view class='filing-text'>{{item.medicRecordSummaryData.diseaseDescn}}</view>
+         <scroll-view class='filing-scroll' scroll-x 
+         wx:if='{{item.medicRecordExamineData.checkPics.length || item.medicRecordExamineData.medicRecordPics.length || item.medicRecordExamineData.dicomPics.length}}'>
+            <list-images name='病例'  
+            imgUrls='{{item.medicRecordExamineData.checkPics}}' 
+            wx:if='{{item.medicRecordExamineData.checkPics.length}}'
+            ></list-images> 
+            <list-images name='检查报告' 
+            imgUrls='{{item.medicRecordExamineData.medicRecordPics}}'
+            wx:if='{{item.medicRecordExamineData.medicRecordPics.length}}'
+            ></list-images>
+            <list-images name='影像胶片' 
+            imgUrls='{{item.medicRecordExamineData.dicomPics}}'
+            wx:if='{{item.medicRecordExamineData.dicomPics.length}}'
+            ></list-images>
+        </scroll-view>
+      </view>
+   </view>
+   <view wx:if='{{!medicrecords.length && isLoad}}'> <image src='https://imgs.hh-medic.com/icon/wmp/ehr-nofile.png' class='no-data' mode='widthFix'></image></view>
+
+   <!-- 自建档案入口 -->
+   <navigator class='filing-nav' hover-class="none" url='/components/innerpages/hh-ehr/ehr-add-filing/ehr-add-filing?uuid={{memberUuid}}&nickname={{nickname}}'></navigator>
+</view>

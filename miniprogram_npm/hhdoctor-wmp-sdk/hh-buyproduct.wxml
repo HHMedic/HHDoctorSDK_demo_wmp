@@ -2,15 +2,15 @@
 
 <view class='main'>
   <view class='panel'>
-    <view class='panel-card-list'>
-      <block wx:for='{{productList}}' wx:for-item='product' wx:key='{{pid}}'>
-        <template is='{{product.canOrderExpert?"productPrime":"product"}}' data='{{...product,selectedPid:selectedPid,sdkProductId:_request.sdkProductId}}'></template>
+    <view wx:if="{{productList && productList.length>0}}" class='panel-card-list'>
+      <block wx:for='{{productList}}' wx:for-item='product' wx:key='productServiceId'>
+        <template is='{{product.canOrderExpert?"productPrime":"product"}}' data='{{...product,selectedPid:selectedPid,sdkProductId:_request.sdkProductId,productComment:productComment}}'></template>
       </block>
 
     </view>
   </view>
 
-  <button class='btn' catchtap='_buySelect'>立即开通</button>
+  <button wx:if="{{productList && productList.length>0}}" class='btn' catchtap='_buySelect'>立即开通</button>
 </view>
 
 
@@ -24,7 +24,7 @@
     <view class='card-title'>{{productServiceName}}</view>
     <!-- 描述信息 -->
     <view class='card-desc-list' wx:if='{{productDetail && productDetail.length>0}}'>
-      <view class='card-desc'>7×24小时视频看医生</view>
+      <view class='card-desc'>{{productComment[0]}}</view>
     </view>
     <!-- 实际价格 -->
     <view class='card-price'>
@@ -48,8 +48,8 @@
     <image class='card-image prime {{selectedPid==productServiceId?"selected":""}}' src='{{3009==sdkProductId?"https://imgs.hh-medic.com/icon/wmp/card-prime-hh.png":"https://imgs.hh-medic.com/icon/wmp/card-prime.png"}}' mode='widthFix'></image>
     <view class='card-title prime'>{{productServiceName}}</view>
     <view class='card-desc-list' wx:if='{{productDetail && productDetail.length>0}}'>
-      <view class='card-desc prime'>7×24小时视频看医生</view>
-      <view class='card-desc prime key'>知名专家会诊咨询</view>
+      <view class='card-desc prime'>{{productComment[0]}}</view>
+      <view class='card-desc prime key'>{{productComment[1]}}</view>
     </view>
     <!-- 实际价格 -->
     <view class='card-price'>

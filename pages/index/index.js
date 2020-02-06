@@ -1,4 +1,6 @@
 // pages/index/index.js
+let app = getApp();
+let self;
 Page({
 
   /**
@@ -12,22 +14,29 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad: function(options) {
-    this.setData({
-      hhRequest: {
-        profileName: 'test', //test:测试环境,   prod:生产环境
-        sdkProductId: 9003, //已分配的产品sdkProductId
-        userToken: 'E6E6E880BB3AD4A1D8B31FE763B6ADEB3F0D04F68EA2608F6783B874E4F50EEF', //服务器注册用户接口返回的userToken
-        openId: 'oirIW0Rc9lRBp3PyfCyxis123JR0', //用户微信openId
-        callPage: '../call/call',
-        style: {
-          navigationBar: {
-            bColor: '#ffffff', //标题栏背景色，默认:#000000
-            fColor: '#000000', //标题栏前景色，默认:#ffffff
-            text: '视频医生DEMO' //标题栏文字，默认：视频医生
+    self = this;
+    app.hhDoctorLogin()
+      .then(() => {
+        self.setData({
+          hhRequest: {
+            profileName: app.globalData.profileName, //test:测试环境,   prod:生产环境
+            sdkProductId: app.globalData.sdkProductId, //已分配的产品sdkProductId
+            userToken: app.globalData.userToken, //服务器注册用户接口返回的userToken
+            openId: app.globalData.openId, //用户微信openId
+            callPage: '../call/call',
+            style: {
+              navigationBar: {
+                bColor: '#ffffff', //标题栏背景色，默认:#000000
+                fColor: '#000000', //标题栏前景色，默认:#ffffff
+                text: '视频医生DEMO' //标题栏文字，默认：视频医生
+              }
+            }
           }
-        }
-      }
-    })
+        })
+      })
+      .catch(() => {
+        console.error('视频医生登录失败')
+      })
   },
 
   /**

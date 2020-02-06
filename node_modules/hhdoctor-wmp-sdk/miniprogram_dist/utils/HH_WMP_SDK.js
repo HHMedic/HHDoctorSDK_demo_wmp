@@ -1,98 +1,3 @@
-module.exports =
-/******/ (function(modules) { // webpackBootstrap
-/******/ 	// The module cache
-/******/ 	var installedModules = {};
-/******/
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
-/******/
-/******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId]) {
-/******/ 			return installedModules[moduleId].exports;
-/******/ 		}
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = installedModules[moduleId] = {
-/******/ 			i: moduleId,
-/******/ 			l: false,
-/******/ 			exports: {}
-/******/ 		};
-/******/
-/******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
-/******/ 		// Flag the module as loaded
-/******/ 		module.l = true;
-/******/
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
-/******/
-/******/
-/******/ 	// expose the modules object (__webpack_modules__)
-/******/ 	__webpack_require__.m = modules;
-/******/
-/******/ 	// expose the module cache
-/******/ 	__webpack_require__.c = installedModules;
-/******/
-/******/ 	// define getter function for harmony exports
-/******/ 	__webpack_require__.d = function(exports, name, getter) {
-/******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
-/******/ 		}
-/******/ 	};
-/******/
-/******/ 	// define __esModule on exports
-/******/ 	__webpack_require__.r = function(exports) {
-/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 		}
-/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 	};
-/******/
-/******/ 	// create a fake namespace object
-/******/ 	// mode & 1: value is a module id, require it
-/******/ 	// mode & 2: merge all properties of value into the ns
-/******/ 	// mode & 4: return value when already ns object
-/******/ 	// mode & 8|1: behave like require
-/******/ 	__webpack_require__.t = function(value, mode) {
-/******/ 		if(mode & 1) value = __webpack_require__(value);
-/******/ 		if(mode & 8) return value;
-/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
-/******/ 		var ns = Object.create(null);
-/******/ 		__webpack_require__.r(ns);
-/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
-/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
-/******/ 		return ns;
-/******/ 	};
-/******/
-/******/ 	// getDefaultExport function for compatibility with non-harmony modules
-/******/ 	__webpack_require__.n = function(module) {
-/******/ 		var getter = module && module.__esModule ?
-/******/ 			function getDefault() { return module['default']; } :
-/******/ 			function getModuleExports() { return module; };
-/******/ 		__webpack_require__.d(getter, 'a', getter);
-/******/ 		return getter;
-/******/ 	};
-/******/
-/******/ 	// Object.prototype.hasOwnProperty.call
-/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-/******/
-/******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
-/******/
-/******/
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
-/******/ })
-/************************************************************************/
-/******/ ({
-
-/***/ 2:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
 /**HH-MEDIC VideoDoctor IM SDK 1.0.0
  ***ALL RIGHTS RESERVED
  ***Author:HH-MYL
@@ -102,12 +7,13 @@ module.exports =
  */
 
 //Private variables
-var loginWithHisMsg = true;
+var loginWithHisMsg = false;
 var heartBeatInterval;
 var imPhoto;
+var demoStatus = -1;
 var doctorName, doctorUuid;
 var connected = false,
-    isLogin = false;
+  isLogin = false;
 
 var _options = {
   debug: false,
@@ -125,7 +31,7 @@ var _asst = {
   uuid: null,
   name: null,
   photo: null
-};
+}
 
 var _callbacks = {
   onMsg: null,
@@ -135,7 +41,9 @@ var _callbacks = {
   onCallRequest: null,
   onHangupRequest: null,
   onTransferCall: null,
+  onUpgradeCall: null,
   onUpdateUrl: null,
+  onUpdateOrderId: null,
   onCommand: null,
   onAllocate: null,
   login: null,
@@ -144,18 +52,19 @@ var _callbacks = {
   preCall: null,
   call: null,
   hangup: null
-};
+}
 
 var _cacheMsgs = {
   startTime: null,
   endTime: null,
   list: []
-};
+}
 
 var _commandCache = new Array();
 var socketTask;
 var isPrecall = false;
 var sendingMsg = [];
+var upgradeOrderId = '';
 
 //Public methods
 //初始化配置
@@ -163,13 +72,13 @@ var sendingMsg = [];
 //option.wsServer:字符型,websocket服务器地址
 function init(option) {
   if (option) {
-    if ('undefined' != typeof option.debug) {
+    if ('undefined' != typeof(option.debug)) {
       _options.debug = option.debug;
     }
-    if ('undefined' != typeof option.wsServer) {
+    if ('undefined' != typeof(option.wsServer)) {
       _options.wsServer = option.wsServer;
     }
-    if ('undefined' != typeof option.fileServer) {
+    if ('undefined' != typeof(option.fileServer)) {
       _options.fileServer = option.fileServer;
     }
   }
@@ -181,7 +90,7 @@ function init(option) {
 //function login(sdkProductId, uuid, token, openId, withHisMsg, callback) {
 function login(sdkProductId, userToken, openId, wxAppId, withHisMsg, callback) {
   log('login');
-  if ('undefined' != typeof withHisMsg) {
+  if ('undefined' != typeof(withHisMsg)) {
     loginWithHisMsg = withHisMsg;
   }
   if (callback) {
@@ -220,10 +129,11 @@ function sendLog(logType, logContent) {
       type: logType,
       text: logContent
     }
-  };
+  }
   try {
     sendMessage(JSON.stringify(msg));
   } catch (e) {}
+
 };
 
 function getHisMsg(loadMore) {
@@ -243,7 +153,7 @@ function getHisMsg(loadMore) {
       to: _asst.uuid,
       endTime: endTime
     }
-  };
+  }
   try {
     sendMessage(JSON.stringify(msg));
   } catch (e) {}
@@ -270,7 +180,7 @@ function sendText(text, callback) {
       to: _asst.uuid,
       from: _options.uuid
     }
-  };
+  }
 
   var sendingText = {
     type: 'text',
@@ -306,6 +216,7 @@ function sendAudio(file, duration, callback) {
   sendFile([file], 0, 'audio', callback, duration);
 }
 
+
 //预呼叫
 function preCall(dept, callback, toUuid, appointedDoctorId, appointedOrderId, mrId, patientId, hospitalId) {
   log('preCalling...');
@@ -326,7 +237,7 @@ function preCall(dept, callback, toUuid, appointedDoctorId, appointedOrderId, mr
       debug: false,
       waitList: true
     }
-  };
+  }
   if (toUuid) {
     msg.data.to = toUuid;
   }
@@ -345,6 +256,10 @@ function preCall(dept, callback, toUuid, appointedDoctorId, appointedOrderId, mr
   if (hospitalId) {
     msg.data.hospitalId = hospitalId;
   }
+  if (upgradeOrderId) {
+    msg.data.orderId = upgradeOrderId;
+    upgradeOrderId = '';
+  }
 
   if (connected) {
     //已连接
@@ -352,7 +267,7 @@ function preCall(dept, callback, toUuid, appointedDoctorId, appointedOrderId, mr
   } else {
     //处理页面打开但是没有连接到wss服务器的情况，尝试重连
     connectToWss();
-    setTimeout(function () {
+    setTimeout(function() {
       if (connected) {
         sendMessage(JSON.stringify(msg));
       } else {
@@ -387,7 +302,7 @@ function call(callback) {
       pushcontent: '',
       debug: false
     }
-  };
+  }
   sendMessage(JSON.stringify(msg));
 }
 
@@ -396,7 +311,7 @@ function callInfo() {
   var msg = {
     action: 'CALLINFO_REQUEST',
     data: {}
-  };
+  }
   sendMessage(JSON.stringify(msg));
 }
 
@@ -409,7 +324,7 @@ function callResponse(famOrderId, accept) {
       accept: accept,
       from: _options.uuid
     }
-  };
+  }
   sendMessage(JSON.stringify(msg));
 }
 
@@ -435,7 +350,7 @@ function hangup(callback, debug, hangupType, videoTime, hangupSource) {
       type: hangupType,
       videoTime: videoTime
     }
-  };
+  }
   sendMessage(JSON.stringify(msg));
 }
 
@@ -455,7 +370,7 @@ function feedback(orderId, questionId, answer) {
       questionId: questionId,
       answer: answer
     }
-  };
+  }
   sendMessage(JSON.stringify(msg));
 }
 
@@ -475,7 +390,7 @@ function evaluate(orderId, value, text) {
       value: value,
       text: text
     }
-  };
+  }
   sendMessage(JSON.stringify(msg));
 }
 
@@ -510,8 +425,14 @@ function on(event, callback) {
     case 'updateurl':
       _callbacks.onUpdateUrl = callback;
       break;
+    case 'updateorderid':
+      _callbacks.onUpdateOrderId = callback;
+      break;
     case 'transfer':
       _callbacks.onTransferCall = callback;
+      break;
+    case 'upgradecall':
+      _callbacks.onUpgradeCall = callback;
       break;
     case 'command':
       _callbacks.onCommand = callback;
@@ -549,9 +470,14 @@ function off(event) {
     case 'updateurl':
       _callbacks.onUpdateUrl = null;
       break;
+    case 'updateorderid':
+      _callbacks.onUpdateOrderId = null;
+      break;
     case 'transfer':
       _callbacks.onTransferCall = null;
       break;
+    case 'upgradecall':
+      _callbacks.onUpgradeCall = null;
     case 'command':
       _callbacks.onCommand = null;
       break;
@@ -573,18 +499,18 @@ function connectToWss() {
     log(e.toString());
   }
   connected = false;
-  wx.onSocketOpen(function (res) {
+  wx.onSocketOpen(function(res) {
     log('websocket open');
     connected = true;
     startLogin();
   });
 
-  wx.onSocketMessage(function (res) {
+  wx.onSocketMessage(function(res) {
     log('websocket recv:' + res.data);
     parseSocketMessage(res.data);
   });
 
-  wx.onSocketError(function (res) {
+  wx.onSocketError(function(res) {
     connected = false;
     log('websocket error');
     if (_callbacks.onError) {
@@ -592,7 +518,7 @@ function connectToWss() {
     }
   });
 
-  wx.onSocketClose(function (res) {
+  wx.onSocketClose(function(res) {
     connected = false;
     isLogin = false;
     log('websocket close');
@@ -620,7 +546,7 @@ function startLogin() {
       wxAppId: _options.wxAppId,
       withHisMsg: loginWithHisMsg
     }
-  };
+  }
   sendMessage(JSON.stringify(msg));
 }
 //连接websocket服务器失败回调处理
@@ -674,7 +600,7 @@ function sendFile(files, index, fileType, callback, duration) {
 
   sendingMsg[id] = sendingFile;
 
-  getSendFileInfo(files[index], fileType, function (resFile) {
+  getSendFileInfo(files[index], fileType, function(resFile) {
     wx.uploadFile({
       url: _options.fileServer,
       filePath: files[index],
@@ -685,7 +611,7 @@ function sendFile(files, index, fileType, callback, duration) {
         'token': _options.token,
         'fileType': fileType
       },
-      success: function success(res) {
+      success: function(res) {
         var data = JSON.parse(res.data);
         if (200 == data.statusCode) {
           var fileUrl = data.data;
@@ -704,13 +630,13 @@ function sendFile(files, index, fileType, callback, duration) {
               to: _asst.uuid,
               from: _options.uuid
             }
-          };
+          }
           sendMessage(JSON.stringify(msg));
           sendFile(files, index + 1, fileType, callback, duration);
         }
       }
-    });
-  }, function () {
+    })
+  }, function() {
     if (_callbacks.onError) {
       _callbacks.onError('文件上传失败');
     }
@@ -728,12 +654,12 @@ function uploadFile(file, callback) {
       'account': _options.uuid,
       'token': _options.token
     },
-    success: function success(res) {
+    success: function(res) {
       if (callback) {
         callback(res.data);
       }
     },
-    fail: function fail() {
+    fail: function() {
       if (callback) {
         callback({
           statusCode: 400,
@@ -741,7 +667,7 @@ function uploadFile(file, callback) {
         });
       }
     }
-  });
+  })
 }
 
 //添加附件
@@ -758,7 +684,7 @@ function addAttatch(url, callback) {
       from: _options.uuid,
       url: url
     }
-  };
+  }
   sendMessage(JSON.stringify(msg));
 }
 
@@ -788,52 +714,52 @@ function doSwitchMode(mode) {
       attach: {},
       pushcontent: ''
     }
-  };
+  }
   sendMessage(JSON.stringify(msg));
 }
 
 //获取待发送文件的信息
-function getSendFileInfo(file, fileType, _success, _fail) {
+function getSendFileInfo(file, fileType, success, fail) {
   wx.getFileInfo({
     filePath: file,
     digestAlgorithm: 'md5',
-    success: function success(fileResult) {
+    success: function(fileResult) {
       if ('image' == fileType) {
         wx.getImageInfo({
           src: file,
-          success: function success(imageResult) {
-            if (_success) {
+          success: function(imageResult) {
+            if (success) {
               var res = {
                 size: fileResult.size,
                 digest: fileResult.digest,
                 height: imageResult.height,
                 width: imageResult.width
-              };
-              _success(res);
+              }
+              success(res);
             }
           },
-          fail: function fail() {
-            if (_fail) {
-              _fail('getSendFileInfo fail');
+          fail: function() {
+            if (fail) {
+              fail('getSendFileInfo fail');
             }
           }
-        });
+        })
       } else {
         var res = {
           size: fileResult.size,
           digest: fileResult.digest,
           height: 0,
           width: 0
-        };
-        _success(res);
+        }
+        success(res);
       }
     },
-    fail: function fail() {
-      if (_fail) {
-        _fail('getSendFileInfo fail');
+    fail: function() {
+      if (fail) {
+        fail('getSendFileInfo fail');
       }
     }
-  });
+  })
 }
 
 //解析收到的消息内容并进行处理
@@ -895,9 +821,18 @@ function parseSocketMessage(data) {
         _callbacks.onUpdateUrl(msg);
       }
       break;
+    case 'UPDATE_ORDERID':
+      if (_callbacks.onUpdateOrderId) {
+        _callbacks.onUpdateOrderId(msg);
+      }
+      break;
     case 'CALL_TRANSFER':
       sendLog('1', 'call transfer:' + data);
       parseTransfer(msg);
+      break;
+    case 'CALL_UPGRADE':
+      sendLog('1', 'call upgrade:' + data);
+      parseUpgradeCall(msg);
       break;
     case 'COMMAND_REQUEST':
       sendLog('1', 'command:' + data);
@@ -938,6 +873,7 @@ function parseLoginResponse(msg) {
   _asst.name = msg.data.asstName;
   _asst.photo = msg.data.asstPhoto;
   isLogin = true;
+  if ('undefined' != typeof(msg.data.demoOptionStatus)) demoStatus = msg.data.demoOptionStatus;
   if (_callbacks.login) {
     _callbacks.login(msg.data.login);
   }
@@ -955,7 +891,7 @@ function parseMsgResponse(msg) {
   if (msg.data.success && sendingMsg[id]) {
     var msgData = sendingMsg[id];
     if (msg.data.msgId) {
-      msgData.id = msg.data.msgId;
+      msgData.id = msg.data.msgId
     }
     if (!existMsg(msgData.id)) {
       _cacheMsgs.list.push(msgData);
@@ -966,9 +902,11 @@ function parseMsgResponse(msg) {
   if (_callbacks.sendMsg[id]) {
     var allDone = 1 == Object.keys(sendingMsg).length;
     msg.data.allDone = allDone;
+    msg.data.imMessage = sendingMsg[id];
     _callbacks.sendMsg[id](msg.data);
     delete sendingMsg[id];
   }
+
 }
 
 function parseAllocate(msg) {
@@ -977,6 +915,7 @@ function parseAllocate(msg) {
     doctorUuid = msg.data.doctor.login.uuid;
     sendLog('1', 'allocate doctor success:' + msg.data.doctor.name + '(' + msg.data.doctor.login.uuid + ')');
   }
+
 
   if (msg && msg.data && msg.data.livePushUrl) sendLog('1', 'push:' + msg.data.livePushUrl);
   if (msg && msg.data && msg.data.livePlayUrl) sendLog('1', 'play:' + msg.data.livePlayUrl);
@@ -994,12 +933,9 @@ function parseErrorReceive(msg) {
 }
 //解析服务器推送的实时消息
 function parseMsgReceive(msg) {
-  var _data;
-
   var data;
   switch (msg.data.msgType) {
-    case 'PICTURE':
-      //图片消息
+    case 'PICTURE': //图片消息
       var attach = JSON.parse(msg.data.attach);
       data = {
         id: msg.data.msgidServer,
@@ -1013,8 +949,7 @@ function parseMsgReceive(msg) {
         time: msg.data.msgTimestamp
       };
       break;
-    case 'AUDIO':
-      //音频消息
+    case 'AUDIO': //音频消息
       var attach = JSON.parse(msg.data.attach);
       data = {
         id: msg.data.msgidServer,
@@ -1028,22 +963,30 @@ function parseMsgReceive(msg) {
         time: msg.data.msgTimestamp
       };
       break;
-    case 'CARD':
-      //卡片消息
+    case 'CARD': //卡片消息
       var attach = JSON.parse(msg.data.attach);
       var content = JSON.parse(attach.content);
-      if ('summaryByFam' != content.command && 'buyDrugInformation' != content.command && 'buyService' != content.command && 'commandProductTips' != content.command) {
+      if ('summaryByFam' != content.command &&
+        'buyDrugInformation' != content.command &&
+        'buyService' != content.command &&
+        'commandProductTips' != content.command) {
         return;
       }
 
-      data = (_data = {
+      data = {
         id: msg.data.msgidServer,
         from: 'd',
-        type: 'card'
-      }, _data['from'] = attach.talkUuid, _data.head = attach.talkUserPic, _data.name = attach.talkName, _data.time = attach.createTime, _data.patient = attach.patientUuid, _data.body = attach, _data.bodyContent = content, _data);
+        type: 'card',
+        from: attach.talkUuid,
+        head: attach.talkUserPic,
+        name: attach.talkName,
+        time: attach.createTime,
+        patient: attach.patientUuid,
+        body: attach,
+        bodyContent: content
+      };
       break;
-    default:
-      //默认是文本
+    default: //默认是文本
       data = {
         id: msg.data.msgidServer,
         type: 'text',
@@ -1076,8 +1019,7 @@ function parseHistory(msgHis) {
     var head = msg.from == _options.uuid ? imPhoto : _asst.photo;
     var name = msg.from == _options.uuid ? '' : _asst.name;
     switch (msg.type) {
-      case 0:
-        //文本消息
+      case 0: //文本消息
         msgs.push({
           id: msg.msgid,
           type: 'text',
@@ -1085,11 +1027,10 @@ function parseHistory(msgHis) {
           head: head,
           name: name,
           time: msg.sendtime,
-          text: msg.body.msg
+          text: msg.body.msg,
         });
         break;
-      case 1:
-        //图片消息
+      case 1: //图片消息
         msgs.push({
           id: msg.msgid,
           type: 'image',
@@ -1098,11 +1039,10 @@ function parseHistory(msgHis) {
           name: name,
           time: msg.sendtime,
           url: msg.body.url,
-          thumbnail: msg.body.url + '?x-oss-process=image/resize,m_fixed,w_200'
+          thumbnail: msg.body.url + '?x-oss-process=image/resize,m_fixed,w_200',
         });
         break;
-      case 2:
-        //音频消息
+      case 2: //音频消息
         msgs.push({
           id: msg.msgid,
           type: 'audio',
@@ -1114,10 +1054,12 @@ function parseHistory(msgHis) {
           dur: msg.body.dur
         });
         break;
-      case 9999:
-        //卡片消息
+      case 9999: //卡片消息
         var content = JSON.parse(msg.body.content);
-        if ('summaryByFam' == content.command || 'buyDrugInformation' == content.command || 'buyService' == content.command || 'commandProductTips' == content.command) {
+        if ('summaryByFam' == content.command ||
+          'buyDrugInformation' == content.command ||
+          'buyService' == content.command ||
+          'commandProductTips' == content.command) {
           msgs.push({
             id: msg.msgid,
             type: 'card',
@@ -1156,8 +1098,8 @@ function clearCache() {
     startTime: null,
     endTime: null,
     list: []
-  };
-  if (_options && 'undefined' != typeof _options.uuid) {
+  }
+  if (_options && 'undefined' != typeof(_options.uuid)) {
     var key = 'msgCache_' + _options.uuid;
     wx.removeStorageSync(key);
   } else {
@@ -1188,11 +1130,13 @@ function setCacheMsgs() {
   wx.setStorage({
     key: key,
     data: JSON.stringify(_cacheMsgs.list),
-    success: function success() {},
-    fail: function fail(e) {
+    success: function() {
+
+    },
+    fail: function(e) {
       log('setCacheMsgs fail');
     }
-  });
+  })
 }
 
 function sortMsg(a, b) {
@@ -1200,9 +1144,9 @@ function sortMsg(a, b) {
 }
 
 function existMsg(id) {
-  var test = function test(item) {
+  var test = function(item) {
     return parseInt(item.id) == parseInt(id);
-  };
+  }
   var exist = _cacheMsgs.list.some(test);
   return exist;
 }
@@ -1255,6 +1199,14 @@ function parseTransfer(msg) {
   }
 }
 
+//解析呼叫升级消息
+function parseUpgradeCall(msg) {
+  upgradeOrderId = msg.data.orderId;
+  if (_callbacks.onUpgradeCall) {
+    _callbacks.onUpgradeCall(msg);
+  }
+}
+
 //解析被叫信息
 function parseCallInfoResponse(msg) {
   if (msg.data) {
@@ -1304,13 +1256,13 @@ function formatTime(date) {
   var second = date.getSeconds();
   var mSecond = date.getMilliseconds();
 
-  return [year, month, day].map(formatNumber).join('-') + ' ' + [hour, minute, second].map(formatNumber).join(':') + '.' + mSecond;
+  return [year, month, day].map(formatNumber).join('-') + ' ' + [hour, minute, second].map(formatNumber).join(':') + '.' + mSecond
 };
 
 //格式化数字
 function formatNumber(n) {
-  n = n.toString();
-  return n[1] ? n : '0' + n;
+  n = n.toString()
+  return n[1] ? n : '0' + n
 }
 
 //websocket心跳，防止与服务器断开连接
@@ -1321,10 +1273,10 @@ function heartbeat() {
   if (heartBeatInterval) {
     clearInterval(heartBeatInterval);
   }
-  heartBeatInterval = setInterval(function () {
+  heartBeatInterval = setInterval(function() {
     var msg = {
       action: 'HEARTBEAT_REQUEST'
-    };
+    }
     sendMessage(JSON.stringify(msg));
   }, 10000);
 }
@@ -1333,17 +1285,21 @@ function loginStatus() {
   return isLogin;
 }
 
+function getDemoStatus() {
+  return demoStatus;
+}
+
 function addToCommandCache(commandName, commandArgs) {
   //console.log('将命令加入缓存');
   _commandCache.push({
     name: commandName,
     args: commandArgs
-  });
+  })
 }
 
 function procCommandCache() {
   //console.log('处理缓存的命令');
-  for (var i = 0; i < _commandCache.length; i++) {
+  for (let i = 0; i < _commandCache.length; i++) {
     var _cmd = _commandCache.shift();
     if (!_cmd || !_cmd.name) {
       continue;
@@ -1383,10 +1339,7 @@ module.exports = {
   on: on,
   off: off,
   loginStatus: loginStatus,
+  getDemoStatus: getDemoStatus,
   clearCache: clearCache,
   addToCommandCache: addToCommandCache
-};
-
-/***/ })
-
-/******/ });
+}

@@ -7,7 +7,7 @@
             <input class="ipt {{values.length == index ? 'active' : ''}}" disabled value="{{values.length>=index+1?values[index]:''}}" catchtap='handleTap' />
           </block>
         </view>
-        <input type="text" name="code" class='ipts' maxlength="{{leg}}" focus="{{isFocus}}" bindinput="handleFocus" />
+        <input type="text" name="code" class='ipts' maxlength="{{leg}}" focus="{{isFocus}}" bindinput="handleFocus" value="{{values}}" />
         <!-- <button
          class="btn {{values.length === 6 ? 'active_btn' : ''}}" 
          formType="submit"

@@ -1,5 +1,4 @@
 var that;
-let userToken=null;
 Page({
 
   /**
@@ -14,6 +13,7 @@ Page({
    */
   onLoad: function(options) {
     that = this;
+    wx.hideShareMenu();
     if ('WMP_SHARE_LIVE' == options.liveSource) {
       //来自分享
       this.getUserInfo(options);
@@ -21,11 +21,7 @@ Page({
       this.setData({
         hhRequest: options
       })
-      userToken = options.userToken||null
     }
-    wx.showShareMenu({
-      withShareTicket: true
-    })
   },
 
   /**
@@ -76,7 +72,7 @@ Page({
   onShareAppMessage: function() {
     let live = this.selectComponent('#live');
     if (live) live.startShare();
-    let pageUrl = '/components/innerpages/video/video' +
+    let pageUrl = live.getBasePath() + 'innerpages/video/video' +
       '?filterType=live' +
       '&videoType=live' +
       '&videoId=' + that.data.liveInfo.id +
@@ -112,6 +108,26 @@ Page({
   },
   /** 点击左上角关闭 */
   onClose() {
+    if (!getApp().globalData._hhSdkOptions._userToken) {
+      //未注册用户
+      wx.showModal({
+        title: '提示',
+        content: '现在注册即可每天观看医生专题讲座，还可享1对1视频咨询医生',
+        showCancel: true,
+        cancelText: '取消',
+        confirmText: '前往注册',
+        success: function(res) {
+          if (res.confirm) {
+            that.redirectToReg();
+            return;
+          }
+          if (res.cancel) {
+            that.afterClose();
+          }
+        }
+      })
+      return;
+    }
     that.afterClose();
   },
   redirectToReg() {
@@ -136,14 +152,18 @@ Page({
   },
   /** 点击输入评论 */
   onInputComment(res) {
-    if (!userToken) {
+    if (!getApp().globalData._hhSdkOptions._userToken) {
       //未注册用户
       wx.showModal({
         title: '提示',
         content: '注册后，即可发送评论',
-        showCancel: false,
+        showCancel: true,
+        cancelText: '取消',
+        confirmText: '前往注册',
         success: function(res) {
-          
+          if (res.confirm) {
+            that.redirectToReg();
+          }
         }
       })
     }
@@ -151,13 +171,21 @@ Page({
   /** 播放列表为空 */
   onLiveListEmpty() {
     let msg = '当前直播已结束';
-    
+    let unRegUser = !getApp().globalData._hhSdkOptions._userToken;
+    if (!getApp().globalData._hhSdkOptions._userToken) {
+      msg += '，现在注册即可每天观看医生直播，还可享1对1视频咨询医生';
+    }
     wx.showModal({
       title: '提示',
       content: msg,
-      showCancel: false,
+      showCancel: unRegUser,
+      confirmText: unRegUser ? '前往注册' : '返回',
       success: function(res) {
-        that.afterClose();
+        if (res.confirm && unRegUser) {
+          that.redirectToReg();
+        } else {
+          that.afterClose();
+        }
       }
     })
   },

@@ -22,18 +22,30 @@
 
   <!-- 呼叫按钮 -->
   <block wx:if='{{_request.callPage}}'>
-    <view class='callbtn-panel' style='top:{{callBtnTop}}px;' animation="{{animationData}}">
-      <view class='call-doctor' catchtap='_callDoctor' data-dept='600002' style='{{customStyle.popBtn}}'>
-        <image class='btn-call-img' src='https://imgs.hh-medic.com/icon/wmp/online-adult.png'></image>
-        <text class='btn-call-text' style='{{customStyle.popBtnText}}'>成人</text>
-      </view>
-      <view class='call-btn-sept'></view>
-      <view class='call-doctor' catchtap='_callDoctor' data-dept='600000' style='{{customStyle.popBtn}}'>
-        <image class='btn-call-img' src='https://imgs.hh-medic.com/icon/wmp/online-child.png'></image>
-        <text class='btn-call-text' style='{{customStyle.popBtnText}}'>儿科</text>
+    <view class="callbtn-panel-container" style='top:{{callBtnTop}}px;' animation="{{animationData}}">
+      <view class="demo-status demo-status{{demoStatus}}" catchtap="_changeDemoStatus">进入演示模式</view>
+      <view class='callbtn-panel'>
+        <view class='call-doctor' catchtap='_callDoctor' data-dept='600002' style='{{customStyle.popBtn}}'>
+          <image class='btn-call-img' src='https://imgs.hh-medic.com/icon/wmp/online-adult.png'></image>
+          <text class='btn-call-text' style='{{customStyle.popBtnText}}'>成人</text>
+        </view>
+        <view class='call-btn-sept'></view>
+        <view class='call-doctor' catchtap='_callDoctor' data-dept='600000' style='{{customStyle.popBtn}}'>
+          <image class='btn-call-img' src='https://imgs.hh-medic.com/icon/wmp/online-child.png'></image>
+          <text class='btn-call-text' style='{{customStyle.popBtnText}}'>儿童</text>
+        </view>
       </view>
     </view>
   </block>
+
+    <!-- 选择成员呼叫列表 -->
+  <!-- <view class='member-wrap' style='top:{{msgPanelTop}}px;' >
+    <view class='member-text'>选择成员发起咨询</view>
+    <view class='member-list'>
+      <view class='member-item' wx:for='{{9}}' wx:key=''>成员{{index+1}}</view>
+    </view>
+    <view class='member-button' bindtap='bindAddMember'>添加成员</view>
+  </view> -->
 
   <!-- 直播banner -->
   <view class="live-panel" style='top:{{msgPanelTop}}px;'>
@@ -43,10 +55,10 @@
       </view>
     </block>
   </view>
-  
+
   <!-- 中部消息列表 -->
   <scroll-view class='msg-panel-scroll' style='top:{{msgPanelTop+livePanelHeight}}px;height:{{msgPanelHeight-livePanelHeight}}px;' scroll-y scroll-into-view='{{lastMsgId}}'>
-    <block wx:for='{{msgList}}' wx:for-item='msg' wx:key='{{time}}'>
+    <block wx:for='{{msgList}}' wx:for-item='msg' wx:key='time'>
       <view class='msg-row timestamp'>
         <text class='msg-time'>{{msg.timeText}}</text>
       </view>
@@ -361,7 +373,7 @@
         <view class='msg card'>
           <view class='msg-card-head'>会员开通成功</view>
           <view class='msg-card-body summary'>
-            <block wx:for='{{bodyContent.content}}' wx:for-item='tip' wx:key=''>
+            <block wx:for='{{bodyContent.content}}' wx:for-item='tip' wx:key='id'>
               <view class='summary-row tip'>{{tip}}</view>
             </block>
           </view>
@@ -377,3 +389,6 @@
     </view>
   </view>
 </template>
+
+
+

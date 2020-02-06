@@ -1,0 +1,48 @@
+/* components/innerpages/hh-ehr/ehr-filing-list/list-images/list-images.wxss */
+
+.scroll-item{
+  display:inline-block;
+  position:relative;
+  width:176rpx;
+  height:176rpx;
+  margin-right:20rpx;
+  border-radius:10rpx;
+  overflow:hidden;
+}
+.scroll-img{
+  width:176rpx;
+  height:176rpx;
+}
+.scroll-name{
+  position:absolute;
+  left:0;
+  bottom:0;
+  right:0;
+  height:44rpx;
+  line-height:44rpx;
+  background:rgba(0,0,0,.2);
+  font-size:24rpx;
+  font-family:PingFang SC;
+  font-weight:300;
+  color:rgba(255,255,255,1);
+  padding:0 20rpx;
+  box-sizing: border-box;
+  overflow:hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.scroll-many{
+  position:absolute;
+  right:0;
+  top:0;
+  font-size:22rpx;
+  font-family:PingFang SC;
+  font-weight:300;
+  color:rgba(255,255,255,1);
+  background:rgba(0,0,0,.2);
+  height:40rpx;
+  line-height:40rpx;
+  padding:0 20rpx;
+  box-sizing: border-box;
+  text-align: right;
+}

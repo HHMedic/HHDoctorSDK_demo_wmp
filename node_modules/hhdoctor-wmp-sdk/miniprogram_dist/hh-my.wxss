@@ -336,6 +336,7 @@ page {
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
+  margin-left: 10px;
 }
 
 .mask {

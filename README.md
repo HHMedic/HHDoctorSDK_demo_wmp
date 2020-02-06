@@ -1,4 +1,4 @@
-# 和缓视频医生微信小程序SDK使用指南（1.1.0）
+# 和缓视频医生微信小程序SDK使用指南（2.0.0）
 
 和缓视频医生微信小程序SDK（**本SDK**）为小程序自定义组件形式，使用npm方式发布。本文引导开发者从零开始，一步一步搭建起和缓视频医生基本功能框架。如果开发者是在现有项目中集成本SDK，可直接从第2步开始阅读。
 
@@ -9,7 +9,11 @@
 
 ## 旧版本SDK文档
 
- 如需查看旧版本(0.1.*)文档，请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_0.1.md) 
+ 如需查看旧版本文档，请：
+ 
+ 查看0.*版本文档请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_0.1.md) 
+
+ 查看1.*版本文档请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_1.0.md) 
  
 ## 特别说明（重点关注事项）
 
@@ -28,6 +32,8 @@
 7. 在小程序后台“设置”-“基本设置”下，将“基础库最低版本设置”设置为2.7.0或更高版本。
 
 8. 生产环境与测试环境的sdkProductId可以通用，但用户数据是完全隔离的，请勿将测试环境的userToken数据应用到生产环境，反之亦然。
+
+8. 如果您是从 `1.*` 版本SDK升级到 `2.*` 版本SDK，请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_upgrade_1_to_2.md)查看升级指南。
 
 ---
 
@@ -103,6 +109,10 @@
   ```
     https://mp.hh-medic.com
     https://test.hh-medic.com
+    https://official.opensso.tencent-cloud.com
+    https://yun.tim.qq.com
+    https://cloud.tencent.com
+    https://webim.tim.qq.com
   ```
   - socket合法域名:
   ```
@@ -125,13 +135,13 @@
 ### 4.在"业务域名”下增加如下配置：
   ```
     https://mp.hh-medic.com
-    https://test.hh-medic.com
+
   ```
 ### 5.在"开发"-"接口设置"下打开相应权限
 
  ![](https://imgs.hh-medic.com/icon/wmp/sdk/WX20190225-093837.png)  
     
-### 6. 在“设置”-“基本设置”下，将“基础库最低版本设置”设置为2.7.0或更高版本。
+### 6. 在“设置”-“基本设置”下，将“基础库最低版本设置”设置为2.9.4或更高版本。
 
 
 ## SDK说明
@@ -156,10 +166,10 @@
     }
     ```
 
-### 2.hh-call组件
+### 2.hh-sdk组件
   - **功能** ：呼叫视频医生
 
-  - **入口** ：hhdoctor-wmp-sdk/hh-call
+  - **入口** ：hhdoctor-wmp-sdk/hh-rtc/hh-rtc
 
   - **参数说明** ：
 
@@ -237,14 +247,14 @@
 | callPage  | String | hh-im | 无 | 否 | 呼叫视频医生页面相对当前页面的位置，例如“/pages/call/call”，点击页面顶部的呼叫医生按纽，可跳转到上述页面进行呼叫。不设置该属性，或该属性值为空字符串，则隐藏最上方的呼叫按钮区域。 |
 | personalPage  | String | hh-im | 无 | 否 | 点击左上角图标跳转页面，例如“/pages/my/my”，不设置该属性，或该属性值为空字符串，则点击图标跳转到默认的个人页面。 |
 | personalIconVisible  | Boolen | hh-im | true | 否 | 是否显示左上角图标。 |
-| dept  | Enum | hh-call | 无 | 是 | **`600002`**：呼叫医生咨询成人问题<br />**`600000`**：呼叫医生咨询儿童问题 |
-| style | Object | hh-call | 无 | 否 | 界面样式，详见下方“style参数说明” |
-| cameraTimeoutSeconds       | Integer | hh-call | 10 | 否 | 启动摄像头超时(单位：秒)，当因某些原因导致微信无法启动摄像头时，会提示用户，并退出呼叫 |
-| cameraTimeoutMessage        | String | hh-call | 打开摄像头失败，请重启微信再呼叫 | 否 | 启动摄像头超时后提示用户的信息内容 |
-| playTimeoutSeconds        | Integer | hh-call | 10 | 否 | 播放医生画面超时(单位：秒)，当因某些原因导致微信无法播放医生画面时，会提示用户，并退出呼叫 |
-| playTimeoutMessage        | String | hh-call | 播放视频失败，请重启微信再呼叫 | 否 | 播放医生画面超时后提示用户的信息内容 |
-| weakNetworkTimeout        | Integer | hh-call | 6 | 否 | 弱网监控超时时间(单位：秒)，当小程序与服务器通信往返消息总耗时大于设置的超时时间时，认为当前是弱网环境，会主动终止当前呼叫。 |
-| ringtone        | String | hh-call | 无 | 否 | 呼叫医生时的振铃音，支持传入文件的url地址，支持mp3格式音频文件，url需在小程序的“downloadFile合法域名”范围内。 该音频文件第一次使用时会下载到小程序本地存储中(key:ringFile)，如更换其他音频文件，需调用wx.clearStorage()或wx.removeStorage()清理缓存后，新的音频文件方可生效  |
+| dept  | Enum | hh-rtc | 无 | 是 | **`600002`**：呼叫医生咨询成人问题<br />**`600000`**：呼叫医生咨询儿童问题 |
+| style | Object | hh-rtc | 无 | 否 | 界面样式，详见下方“style参数说明” |
+| cameraTimeoutSeconds       | Integer | hh-rtc | 10 | 否 | 启动摄像头超时(单位：秒)，当因某些原因导致微信无法启动摄像头时，会提示用户，并退出呼叫 |
+| cameraTimeoutMessage        | String | hh-rtc | 打开摄像头失败，请重启微信再呼叫 | 否 | 启动摄像头超时后提示用户的信息内容 |
+| playTimeoutSeconds        | Integer | hh-rtc | 10 | 否 | 播放医生画面超时(单位：秒)，当因某些原因导致微信无法播放医生画面时，会提示用户，并退出呼叫 |
+| playTimeoutMessage        | String | hh-rtc | 播放视频失败，请重启微信再呼叫 | 否 | 播放医生画面超时后提示用户的信息内容 |
+| weakNetworkTimeout        | Integer | hh-rtc | 6 | 否 | 弱网监控超时时间(单位：秒)，当小程序与服务器通信往返消息总耗时大于设置的超时时间时，认为当前是弱网环境，会主动终止当前呼叫。 |
+| ringtone        | String | hh-rtc | 无 | 否 | 呼叫医生时的振铃音，支持传入文件的url地址，支持mp3格式音频文件，url需在小程序的“downloadFile合法域名”范围内。 该音频文件第一次使用时会下载到小程序本地存储中(key:ringFile)，如更换其他音频文件，需调用wx.clearStorage()或wx.removeStorage()清理缓存后，新的音频文件方可生效  |
 | viewModule  | Enum | hh-ehr | memberList | 否 | **`memberList`**: 显示家庭成员列表界面<br />**`ehrList`**: 显示家庭成员主账号健康档案列表界面<br />**`detail`**: 显示指定的健康档案详情，需与patient属性及medicRecordId配合使用 |
 | addMember | Boolen | hh-ehr |  true | 否 | 家庭成员列表下方是否显示添加新成员按钮 |
 | patient    | String | hh-ehr | 无        | 否 | 需要查看健康档案的实际患者的userToken值 |
@@ -254,8 +264,8 @@
 ## style参数说明
 | 属性         | 类型    | 组件 | 默认值 | 必填 | 说明                                                         |
 | ------------ | ------- | ---- | ------ | ---- | ------------------------------------------------------------ |
-| logoImage  | String    | hh-call| 无   | 否   | 与医生对话界面左上角的logo图片url，留空不显示logo。建议图片大小：470 * 120 px，png格式，背景透明 |
-| waittingText | String | hh-call| 预计接通时间:   | 否   | 在响铃界面倒计时秒数前方显示的文字    |
-| navigationBar  | Object    | hh-call,hh-im | 无     | 否   | **`bColor`** :标题栏背景色; **`fColor`** :标题栏文字颜色; **`text`** :标题栏文字                             |
+| logoImage  | String    | hh-rtc| 无   | 否   | 与医生对话界面左上角的logo图片url，留空不显示logo。建议图片大小：470 * 120 px，png格式，背景透明 |
+| waittingText | String | hh-rtc| 预计接通时间:   | 否   | 在响铃界面倒计时秒数前方显示的文字    |
+| navigationBar  | Object    | hh-rtc,hh-im | 无     | 否   | **`bColor`** :标题栏背景色; **`fColor`** :标题栏文字颜色; **`text`** :标题栏文字                             |
 
 

@@ -22,7 +22,7 @@
 		}
 	},
 	"compileType": "miniprogram",
-	"libVersion": "2.7.0",
+	"libVersion": "2.9.4",
 	"appid": "wx4cb4b02322574f52",
 	"projectname": "HHDoctorSDK.Demo.Wmp",
 	"debugOptions": {

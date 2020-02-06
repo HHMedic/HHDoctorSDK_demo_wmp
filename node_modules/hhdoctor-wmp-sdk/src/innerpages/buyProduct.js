@@ -17,7 +17,7 @@ Page({
       backgroundColor: '#ffffff'
     })
     wx.setNavigationBarTitle({
-      title: '选择会员方案',
+      title: '请选择',
     })
     if (options) {
       if (options.payPage) {

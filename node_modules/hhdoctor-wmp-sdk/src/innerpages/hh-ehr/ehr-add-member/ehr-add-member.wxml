@@ -1,0 +1,57 @@
+<!--components/innerpages/hh-ehr/ehr-add-member/ehr-add-member.wxml-->
+<form bindsubmit='bindMemberSubmit'>
+<view class='page'>
+  <view class='member-theme'>
+    <image src='/images/avatar.png' class='member-avatar'></image>
+  </view>
+  <view class='member-inputs'>
+   <!-- 填写姓名 -->
+    <view class='inputs-item bottom' >
+      <text class='inputs-text'>姓名</text> 
+      <input placeholder="请输入成员姓名"  placeholder-class="placeholder" class='inputs-input' 
+            bindinput="bindInput"
+            bindblur="bindBlur"
+            maxlength='20'
+            value='{{inputVal}}'
+      ></input> 
+    </view>
+    <!-- 填写关系 -->
+    <view class='inputs-item bottom'>
+      <text class='inputs-text'>关系</text> 
+      <picker  range="{{relations}}"  bindchange="bindPickerRelation"  class='picker' value='{{relationIdx}}'>
+        <view class='{{relations[relationIdx]?"picker-text":"placeholder"}}'>{{relations[relationIdx] || '请选择与成员关系'}}</view>
+      </picker>
+    </view>
+      <!-- 填写性别 -->
+    <view class='inputs-item bottom'>
+      <text class='inputs-text'> 性别</text> 
+      <picker  value="{{genderIdx}}"  range="{{gender}}"  bindchange="bindPickerGender"  class='picker'>
+        <view class='{{gender[genderIdx]?"picker-text":"placeholder"}}' > {{gender[genderIdx] || '请选择性别'}} </view>
+      </picker>
+    </view>
+      <!-- 生日 -->
+    <view class='inputs-item'>
+      <text class='inputs-text'>生日</text> 
+      <picker  mode="date" value="{{date}}" bindchange="bindPickerDate" class='picker'>
+        <view class='{{date?"picker-text":"placeholder"}}' >{{date || '请选择出生年月'}}</view>
+      </picker>
+    </view>
+    </view>
+    <!-- 是否允许成员独立登录 -->
+    <member-login name='loginname' 
+          wx:if='{{showAccount}}' 
+          bind:isLoginChecked='bindIsLoginChecked' 
+          isLoginChecked='{{isLoginChecked}}' 
+          defaultVal='{{loginname}}' 
+          isedit='{{isedit}}' 
+          isAccount='{{item.isAccount}}'
+    ></member-login>
+    <view class='member-saves'>
+      <button class='member-save'>保存</button>
+      <button class='member-call'>保存并呼叫医生</button>
+    </view>
+    <!-- <button class='member-submit' form-type="submit">确定</button> -->
+
+
+</view>
+</form>

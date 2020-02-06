@@ -1,0 +1,87 @@
+<!--components/innerpages/hh-ehr/ehr-filing-detail/ehr-filing-detail.wxml-->
+<view class='page'>
+ <!-- 一.患者信息 -->
+  <detail-item caption='患者信息'><view class='detail-line'>{{patientInfo}}</view></detail-item>
+
+
+<!-- 二.病例部分 -->
+<view wx:if='{{null!=medicRecord.medicRecordSummaryData || null!=medicRecord.medicRecordExamineData}}'>
+
+
+    <!--1.初步诊断-->
+   <detail-item caption='初步诊断' wx:if='{{medicRecord.medicRecordSummaryData.diagnose}}'>
+     <view class='detail-line'>{{medicRecord.medicRecordSummaryData.diagnose}}</view>
+  </detail-item>
+
+    <!--2.指导意见-->
+  <detail-item caption='指导意见' wx:if='{{medicRecord.medicRecordSummaryData.summary}}'>
+    <view class='detail-line'>{{medicRecord.medicRecordSummaryData.summary}}</view>
+  </detail-item>
+
+
+  <!--3.处方信息-->
+  <detail-item caption='所需药品' wx:if='{{medicRecord.medicRecordSummaryData.medications.length}}'>
+     <view class='detail-medicine' wx:for='{{medicRecord.medicRecordSummaryData.medications}}' wx:key=''>
+        <view class='detail-medicine-name'>{{item.name}}</view>
+        {{item.remark}}
+        <view class='detail-medicine-many'>x{{item.count}}</view>
+     </view>
+  </detail-item>
+
+  <!-- 4.主诉 -->
+  <detail-item caption='主诉' wx:if='{{medicRecord.medicRecordSummaryData!=null && medicRecord.medicRecordSummaryData.mainSuit && medicRecord.source=="self"}}'>
+    <view class='detail-line'>{{medicRecord.medicRecordSummaryData.mainSuit}}</view>
+  </detail-item>
+
+  <!--5.现病史(全科医生) or 病情小结(专家回复)-->
+   <detail-item 
+   wx:if='{{medicRecord.medicRecordSummaryData!=null && medicRecord.medicRecordSummaryData.diseaseDescn}}'
+   caption="{{(medicRecord.source=='famDoctor'|| medicRecord.source == 'self')?'现病史':'病情小结'}}"
+   >
+    <view class='detail-line'>
+        {{medicRecord.medicRecordSummaryData.diseaseDescn}}
+    </view>
+   </detail-item>
+
+     <!--6.资料部分-->
+   <detail-item caption='病历资料' 
+   wx:if='{{medicRecord.medicRecordExamineData!=null && medicRecord.medicRecordExamineData.checkPics.length || medicRecord.medicRecordExamineData.medicRecordPics.length || medicRecord.medicRecordExamineData.dicomPics.length || medicRecord.medicRecordExamineData.dicoms.length || medicRecord.medicRecordExamineData.pathologies.length}}'>
+      <scroll-view class='filing-scroll' scroll-x>
+        <list-images name='病例'  
+            imgUrls='{{medicRecord.medicRecordExamineData.checkPics}}' 
+            wx:if='{{medicRecord.medicRecordExamineData.checkPics.length}}' >
+        </list-images> 
+        <list-images name='检查报告'  
+            imgUrls='{{medicRecord.medicRecordExamineData.medicRecordPics}}' 
+            wx:if='{{medicRecord.medicRecordExamineData.medicRecordPics.length}}' >
+        </list-images> 
+         <list-images name='影像胶片'  
+            imgUrls='{{medicRecord.medicRecordExamineData.dicomPics}}' 
+            wx:if='{{medicRecord.medicRecordExamineData.dicomPics.length}}' >
+        </list-images> 
+         <list-images name='DICOM'  
+            imgUrls='{{medicRecord.medicRecordExamineData.dicoms}}' 
+            wx:if='{{medicRecord.medicRecordExamineData.dicoms.length}}' >
+        </list-images> 
+         <list-images name='病理信息'  
+            imgUrls='{{medicRecord.medicRecordExamineData.pathologies}}' 
+            wx:if='{{medicRecord.medicRecordExamineData.pathologies.length}}' >
+        </list-images> 
+      </scroll-view>
+  </detail-item>
+
+  <!--7.既往史-->
+   <detail-item caption='既往史' wx:if='{{medicRecord.medicRecordSummaryData!=null && medicRecord.medicRecordSummaryData.pastHis}}'>
+    <view class='detail-line'>{{medicRecord.medicRecordSummaryData.pastHis}}</view>
+   </detail-item>
+</view>
+
+<!-- 三.专家部分  -->
+<view wx:if='{{medicRecord.summaryTalkList.length}}'>
+  <detail-item caption='专家回复'>
+    <view class='reply-box'>
+        <filing-detail-reply summaryTalkList="{{medicRecord.summaryTalkList}}"></filing-detail-reply>
+    </view>
+  </detail-item>
+</view>
+</view>

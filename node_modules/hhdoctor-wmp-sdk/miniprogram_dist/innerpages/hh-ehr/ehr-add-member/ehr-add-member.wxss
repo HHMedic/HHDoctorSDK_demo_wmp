@@ -1,0 +1,129 @@
+/* components/innerpages/hh-ehr/ehr-add-member/ehr-add-member.wxss */
+.page{
+  background:#f2f2f2;
+  min-height:100vh;
+  box-sizing: border-box;
+  border-top:1px solid #eee;
+}
+.member-theme{
+  height:302rpx;
+  background:#fff;
+  display:flex;
+  align-items: center;
+  justify-content: center;
+}
+.member-avatar{
+  width:166rpx;
+  height:166rpx;
+  display:block;
+  border-radius:50%;
+}
+.inputs-text{
+  margin-right:27rpx;
+
+}
+.member-inputs{
+  margin-top:10rpx;
+  background:#fff;
+  padding: 0 30rpx;
+  font-size:32rpx;
+  font-family:PingFang SC;
+  font-weight:400;
+  color:rgba(50,50,50,1);
+}
+
+
+.member-submit::after{
+  content:'';
+  border:none;
+}
+.member-submit{
+  width:710rpx;
+  height:88rpx;
+  line-height:88rpx;
+  font-size:32rpx;
+  font-family:PingFang SC;
+  font-weight:400;
+  color:rgba(255,255,255,1);
+  background:#3c91ee;
+  position:absolute;
+  bottom:60rpx;
+  left:20rpx;
+}
+
+.member-inputs{
+  margin-top:10rpx;
+  background:#fff;
+  padding: 0 30rpx;
+  font-size:30rpx;
+  font-family:PingFang SC;
+  font-weight:400;
+  color:rgba(50,50,50,1);
+}
+.inputs-item{
+  display:flex;
+  height:100rpx;
+  box-sizing: border-box;
+  position:relative;
+  align-items: center;
+  margin-top:10rpx;
+}
+.inputs-text{
+  margin-right:27rpx;
+  font-size:32rpx;
+}
+.inputs-input{
+  height:100rpx;
+  width:500rpx;
+
+}
+.inputs-input,.picker-text{color:#333;}
+.placeholder{
+  color:rgba(200,200,200,1);
+}
+.bottom{
+   border-bottom:1px solid #E6E6E6;
+}
+
+.picker-arrow::after{
+  content:'';
+  display:block;
+  width:17rpx;
+  height:26rpx;
+  background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAAeBAMAAAA4FegcAAAAD1BMVEWCjKpHcEx/f3+Ci6qAi6rvDskzAAAABXRSTlP5AAKhOvXbtOkAAABgSURBVBjTXZDBDYAwDAMjsQBFDEDFBp2A/acicYwt0dfpqqZ24pgDZ497ffRsk3TGIg3KJMokyqKWRS1BkCDIppJNJUkpSSmvP/lWLzxFk/2bEjiVkjq9Grmlm3sb2tAL2+4V623vGo0AAAAASUVORK5CYII=) no-repeat;
+  background-size:cover;
+  position:absolute;
+  right:30rpx;
+  top:40rpx;
+}
+.picker{
+  width:570rpx;
+}
+.member-saves{
+  display:flex;
+  position:fixed;
+  justify-content: space-around;
+  width:750rpx;
+  bottom:60rpx;
+}
+.member-save,.member-call{
+  width:332rpx;
+  height:88rpx;
+  font-size:34rpx;
+}
+.member-save{
+  color:#0592F5;
+}
+.member-call{
+  color:#fff;
+  background:#0592F5;
+}
+.member-save::after{
+  border:1px solid rgba(212, 212, 212, 1);
+}
+.member-call::after{
+  border:none;
+}
+
+
+

@@ -1,1 +1,1 @@
-<hhLive id="live" class="live" request="{{hhRequest}}" bindclose="onClose" bindinputcomment="onInputComment" bindliveinfoupdated="onLiveInfoUpdated" bindlivelistempty="onLiveListEmpty" ></hhLive>
+<hhLive id="live" class="live" request="{{hhRequest}}" base-path="/components/" bindclose="onClose" bindinputcomment="onInputComment" bindliveinfoupdated="onLiveInfoUpdated" bindlivelistempty="onLiveListEmpty" ></hhLive>

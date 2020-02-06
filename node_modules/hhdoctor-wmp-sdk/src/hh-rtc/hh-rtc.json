@@ -1,0 +1,12 @@
+{
+  "component": true,
+  "renderingMode": "seperated",
+  "usingComponents": {
+    "webrtc-room": "../webrtc-room/webrtc-room",
+    "hh-live":"../hh-live/hh-live"
+  },
+  "navigationStyle": "custom",
+  "disableScroll": true,
+  "disableSwipeBack": true
+    
+}

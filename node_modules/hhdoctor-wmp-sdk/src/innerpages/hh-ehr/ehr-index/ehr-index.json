@@ -1,0 +1,9 @@
+{
+  "navigationStyle": "default",
+  "navigationBarBackgroundColor": "#fff",
+  "navigationBarTitleText": "家庭成员",
+  "navigationBarTextStyle": "black",
+  "usingComponents": {
+    
+  }
+}

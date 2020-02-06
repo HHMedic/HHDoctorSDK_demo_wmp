@@ -1,0 +1,9 @@
+{
+  "navigationStyle": "default",
+  "navigationBarBackgroundColor": "#fff",
+  "navigationBarTitleText": "添加家庭成员",
+  "navigationBarTextStyle": "black",
+  "usingComponents": {
+    "member-login":"./member-login/member-login"
+  }
+}
