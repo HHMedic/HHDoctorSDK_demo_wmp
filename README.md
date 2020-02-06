@@ -166,7 +166,7 @@
     }
     ```
 
-### 2.hh-sdk组件
+### 2.hh-rtc组件
   - **功能** ：呼叫视频医生
 
   - **入口** ：hhdoctor-wmp-sdk/hh-rtc/hh-rtc
