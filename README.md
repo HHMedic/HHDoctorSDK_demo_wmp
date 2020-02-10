@@ -146,7 +146,28 @@
 
 ## SDK说明
 
-### 1.hh-im组件
+### 1. hhDoctor组件
+
+使用视频医生小程序的第一步，需要初始化hhDoctor组件，并调用login()方法进行登录，登录成功后方可使用下方的hh-im、hh-rtc等组件。hhDoctor.login()方法全局调用一次即可，建议在获取到当前微信用户的userToken信息后执行。如执行hhDoctor.login()方法失败，建议给出提示信息。示例代码：
+
+```
+const hhDoctor = require('./miniprogram_npm/hhdoctor-wmp-sdk/hhDoctor.js')
+
+hhDoctorLogin() {
+    hhDoctor.logout();
+    return hhDoctor.login({
+      profileName: profileName,     //test:测试环境   prod:生产环境
+      subDomain: '',                //根据实际情况填写
+      sdkProductId: sdkProductId,   //和缓分配的sdkProductId
+      userToken: userToken,         //调用和缓服务器接口注册用户后得到的userToken
+      openId: openId,               //当前用户openId
+      callPage: '/pages/call/call'  //呼叫页面，在此注册页面后可支持医生回拨
+    })
+}
+
+```
+
+### 2. hh-im组件
 
   - **功能** ：联系医助、查看病历档案
 
@@ -166,7 +187,7 @@
     }
     ```
 
-### 2.hh-rtc组件
+### 3. hh-rtc组件
   - **功能** ：呼叫视频医生
 
   - **入口** ：hhdoctor-wmp-sdk/hh-rtc/hh-rtc
@@ -199,7 +220,7 @@
     ```
   
     
-### 3.hh-ehr组件
+### 4. hh-ehr组件
 
  - **功能** :查看病历档案
 
@@ -210,7 +231,7 @@
    - ***`request`*** :Object，请求参数，说明见下方。
    
    
-### 4.hh-sdkcontext组件
+### 5. hh-sdkcontext组件
 
  - **功能** :hhSdk实例，通过this.selectComponent(ID)获取，以调用hhSdk内部封装好的方法，使用方法可参考pages/index/custom页面
 
