@@ -157,7 +157,7 @@ hhDoctorLogin() {
     hhDoctor.logout();
     return hhDoctor.login({
       profileName: profileName,     //test:测试环境   prod:生产环境
-      subDomain: '',                //根据实际情况填写
+      subDomain: 'mp',                //根据实际情况填写
       sdkProductId: sdkProductId,   //和缓分配的sdkProductId
       userToken: userToken,         //调用和缓服务器接口注册用户后得到的userToken
       openId: openId,               //当前用户openId
