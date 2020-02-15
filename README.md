@@ -74,6 +74,8 @@
   - 初始化成功后，执行命令加载SDK：`npm i hhdoctor-wmp-sdk --production`
 
     ![](https://imgs.hh-medic.com/icon/wmp/sdk/WX20190107-182251.png)
+    
+  - 使用小程序IDE打开package.json文件，确保dependencies.hhdoctor-wmp-sdk为最新版本（如2.0.0）
 
 ### 4. npm构建
 
