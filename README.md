@@ -4,7 +4,7 @@
 
 开发者也可直接克隆当前仓库，使用微信开发者工具导入本项目后，执行以下步骤，快速浏览相关功能：
 *  点击IDE右上角的“详情”，修改AppID。
-*  使用命令提示符或终端，进入当前项目所在本地目录，执行命令更新SDK：`npm i hhdoctor-wmp-sdk --production`。
+*  使用命令提示符或终端，进入当前项目所在本地目录，执行命令更新SDK：`npm i hhdoctor-wmp-sdk@latest --production`。
 *  点击IDE菜单中的“工具”-“构建 npm”。
 
 ## 旧版本SDK文档
@@ -71,11 +71,11 @@
 
     ![](https://imgs.hh-medic.com/icon/wmp/sdk/WX20190107-181152.png)
 
-  - 初始化成功后，执行命令加载SDK：`npm i hhdoctor-wmp-sdk --production`
+  - 初始化成功后，执行命令加载SDK：`npm i hhdoctor-wmp-sdk@latest --production`
 
     ![](https://imgs.hh-medic.com/icon/wmp/sdk/WX20190107-182251.png)
     
-  - 使用小程序IDE打开package.json文件，确保dependencies.hhdoctor-wmp-sdk为最新版本（如2.0.0）
+  - 使用小程序IDE打开package.json文件，确保dependencies.hhdoctor-wmp-sdk为最新版本。如不确定是否为最新版本请联系和缓的技术支持人员。
 
 ### 4. npm构建
 
