@@ -48,7 +48,7 @@ hhDoctorLogin() {
 
 在浏览器打开[微信公众号后台](https://mp.weixin.qq.com/)，依次点击【开发】-【开发设置】，找到“服务器域名”，在“request合法域名”下添加以下域名：
 ```
-https://official.opensso.tencent-cloud.com
+https://pingtas.qq.com
 https://yun.tim.qq.com
 https://cloud.tencent.com
 https://webim.tim.qq.com
