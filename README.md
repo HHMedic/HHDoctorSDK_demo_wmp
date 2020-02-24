@@ -111,7 +111,7 @@
   ```
     https://mp.hh-medic.com
     https://test.hh-medic.com
-    https://official.opensso.tencent-cloud.com
+    https://pingtas.qq.com
     https://yun.tim.qq.com
     https://cloud.tencent.com
     https://webim.tim.qq.com
