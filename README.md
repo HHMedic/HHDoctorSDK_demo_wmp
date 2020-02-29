@@ -138,6 +138,7 @@
 ### 4.在"业务域名”下增加如下配置：
   ```
     https://mp.hh-medic.com
+    https://sec.hh-medic.com
 
   ```
 ### 5.在"开发"-"接口设置"下打开相应权限
