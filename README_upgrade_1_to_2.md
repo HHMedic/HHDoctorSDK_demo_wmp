@@ -50,6 +50,7 @@ hhDoctorLogin() {
 ```
 https://pingtas.qq.com
 https://yun.tim.qq.com
+https://official.opensso.tencent-cloud.com
 https://cloud.tencent.com
 https://webim.tim.qq.com
 ```
