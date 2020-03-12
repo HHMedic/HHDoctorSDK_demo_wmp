@@ -12,5 +12,3 @@
  - ***`miniProgramType`*** :微信小程序类型，默认是线上版本：
   - iOS：`.release`
   - Android:`WXLaunchMiniProgram.Req.MINIPTOGRAM_TYPE_RELEASE`
-
-  
