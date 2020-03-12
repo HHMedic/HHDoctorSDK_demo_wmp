@@ -8,7 +8,7 @@
 
 ### 2.navigator组件参数：
 ```
-      <navigator target="miniProgram" open-type="navigate" app-id="wx4cb4b02322574f52" path="pages/newIndex/newIndex?sdkProductId={{sdkProductId}}&userToken={{userToken}}" extra-data="" version="release">
+      <navigator target="miniProgram" open-type="navigate" app-id="wx15e414719996d59f" path="pages/newIndex/newIndex?sdkProductId={{sdkProductId}}&userToken={{userToken}}" extra-data="" version="release">
         呼叫视频医生
       </navigator>
 ```
