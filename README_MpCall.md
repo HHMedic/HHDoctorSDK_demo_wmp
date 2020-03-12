@@ -4,7 +4,7 @@
 
 ### 1.在小程序页面中加入navigator组件，组件说明文档：https://developers.weixin.qq.com/miniprogram/dev/component/navigator.html。
 
-请务必在app.json中增加要跳转的目的小程序appId（wx4cb4b02322574f52），文档参考：https://developers.weixin.qq.com/miniprogram/dev/framework/config.html#全局配置
+请务必在app.json中增加要跳转的目的小程序appId（wx15e414719996d59f），文档参考：https://developers.weixin.qq.com/miniprogram/dev/framework/config.html#全局配置
 
 ### 2.navigator组件参数：
 ```
