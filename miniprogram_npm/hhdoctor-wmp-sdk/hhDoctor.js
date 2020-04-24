@@ -57,7 +57,6 @@ function login(options) {
       _status.appShow = true;
       addLog('1', 'life:onAppShow')
     });
-
     tim = TIM.create({
       SDKAppID
     });
@@ -100,6 +99,10 @@ function logout() {
     if (!tim) {
       resolve();
     }
+    tim.off(TIM.EVENT.ERROR, onTimError);
+    tim.off(TIM.EVENT.SDK_READY, onTimReady);
+    tim.off(TIM.EVENT.SDK_NOT_READY, onTimNotReady);
+    tim.off(TIM.EVENT.MESSAGE_RECEIVED, onMessageReceived);
     tim.logout();
     tim = null;
     if (app.globalData && app.globalData._hhTim) {
@@ -170,7 +173,7 @@ function getAsstInfo() {
 /** 上报日志到服务器 */
 function addLog(type, content, orderId) {
   //apis.requestRtcLog(type, content, orderId)
-  doAddLog(type, content, orderId).then().catch(() => {})
+  doAddLog(type, content, orderId).then().catch(() => { })
 }
 
 function doAddLog(type, content, orderId) {
@@ -201,9 +204,10 @@ function reportActive() {
     clearInterval(_intervals.reportActive);
     _intervals.reportActive = null;
   }
-  _intervals.reportActive = setInterval(function() {
+  apis.requestRtcLog(1, '_reportActive', '');
+  _intervals.reportActive = setInterval(function () {
     apis.requestRtcLog(1, '_reportActive', '');
-  }, 3000);
+  }, 60000);
 }
 
 function getTim() {
@@ -243,7 +247,7 @@ function getUserInfo() {
           reject();
         }
       },
-      fail: function() {
+      fail: function () {
         reject();
       }
     })
@@ -255,13 +259,16 @@ function getUserInfo() {
 function initTIM() {
   return new Promise((resolve, reject) => {
     tim.setLogLevel('test' == _options.profileName ? 1 : 4);
+    tim.on(TIM.EVENT.ERROR, onTimError);
+    tim.on(TIM.EVENT.SDK_READY, onTimReady);
+    tim.on(TIM.EVENT.SDK_NOT_READY, onTimNotReady);
     tim.on(TIM.EVENT.MESSAGE_RECEIVED, onMessageReceived);
     tim.login({
-        userID: _options.userId,
-        userSig: _options.userSig
-      })
+      userID: _options.userId,
+      userSig: _options.userSig
+    })
       .then((imResponse) => {
-        tim.on(TIM.EVENT.SDK_READY, function() {
+        tim.on(TIM.EVENT.SDK_READY, function () {
           app.globalData._hhTim = tim;
           resolve(imResponse);
         })
@@ -283,6 +290,16 @@ function onMessageReceived(e) {
     }
     parseMsg(e.data[i]);
   }
+}
+
+function onTimError(e) {
+  addLog('1', 'timError:' + JSON.stringify(e))
+}
+function onTimReady(e) {
+  addLog('1', 'timReady:' + JSON.stringify(e))
+}
+function onTimNotReady(e) {
+  addLog('1', 'timNotReady:' + JSON.stringify(e))
 }
 
 function parseMsg(data) {
@@ -377,7 +394,7 @@ function getDoctorInfo(msg) {
           reject();
         }
       },
-      fail: function() {
+      fail: function () {
         reject();
       }
     })
@@ -387,7 +404,7 @@ function getDoctorInfo(msg) {
 /** 生成新的sessionId和日志编号 */
 function refreshSession(timeout) {
   if (!timeout) timeout = 1;
-  setTimeout(function() {
+  setTimeout(function () {
     _sessionId = _options.userToken + Math.random().toString(36).substr(2).substr(0, 8);
     _logId = 0;
   }, timeout)
@@ -404,6 +421,7 @@ function getPublicParams() {
 }
 
 app = getApp();
+console.log(getApp())
 module.exports = {
   login: login,
   logout: logout,
@@ -413,8 +431,10 @@ module.exports = {
   getUserId,
   getProduct,
   getUserSig,
+  getUserInfo,
   getUserPhoto,
   getAsstInfo,
   addLog,
-  refreshSession
+  refreshSession,
+  getPublicParams
 }

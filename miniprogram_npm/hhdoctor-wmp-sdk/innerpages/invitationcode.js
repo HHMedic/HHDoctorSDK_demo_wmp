@@ -13,21 +13,23 @@ Page({
     ispassword: false,
     num: 1,
     flag: false,
-    errMsg: ''
+    errMsg: '',
+    keyboardOptions: {
+      maxLength: 6
+    }
   },
-
   /**
    * 页面事件
    */
   handleFocus(e) {
-    var inputValue = e.detail.value;
+    var inputValue = e.detail.text;
 
     that.setData({
       values: inputValue
     })
     if (that.data.values.length === 6) {
       let url = getApp().globalData._hhSdkOptions._host.wmpHost + 'wmp/activationCode' +
-        '?code=' + e.detail.value +
+        '?code=' + e.detail.text +
         '&userToken=' + that.data.request.userToken +
         '&sdkProductId=' + that.data.request.sdkProductId
       wx.showLoading({
@@ -38,14 +40,14 @@ Page({
         url: url,
         data: {},
         method: 'POST',
-        success: function(res) {
+        success: function (res) {
           wx.hideLoading();
           if (res && res.data && 200 == res.data.status) {
             wx.showModal({
               title: '提示',
               content: res.data.message ? res.data.message : '激活成功',
               showCancel: false,
-              success: function() {
+              success: function () {
                 wx.navigateBack({
                   delta: 1
                 })
@@ -83,7 +85,7 @@ Page({
     //console.log(getApp(), "pppp")
   },
 
-  onLoad: function(options) {
+  onLoad: function (options) {
     that = this;
     if (!options || !options.sdkProductId || !options.userToken) {
       wx.navigateBack({

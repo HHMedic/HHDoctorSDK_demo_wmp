@@ -1,3 +1,4 @@
+const hhDoctor = require('./hhDoctor.js');
 var that;
 Component({
   behaviors: [require('./hhBehaviors.js')],
@@ -31,7 +32,7 @@ Component({
           title: '加载中...',
           mask: true
         })
-        setTimeout(function() {
+        setTimeout(function () {
           wx.hideLoading();
         }, 3000);
       }
@@ -44,11 +45,11 @@ Component({
   },
   pageLifetimes: {
     // 组件所在页面的生命周期函数
-    show: function() {
+    show: function () {
       this._getProductInfo();
     },
-    hide: function() {},
-    resize: function() {},
+    hide: function () { },
+    resize: function () { },
   },
   /**
    * 组件的方法列表
@@ -85,11 +86,12 @@ Component({
         '&sdkProductId=' + this.data._request.sdkProductId;
       url = this._appendUrlParams(url);
 
+
       wx.request({
         url: url,
         data: {},
         method: 'POST',
-        success: function(res) {
+        success: function (res) {
           if (res && res.data && 200 == res.data.status) {
             //成功
             let _acl = Object.assign(that.data._request.userAcl, res.data.data);
@@ -112,13 +114,16 @@ Component({
     _getSpecialAcl(acl) {
       if ('2DDDC0689C23CC70F0BCE3C0A819B95F3F0D04F68EA2608F6783B874E4F50EEF' == this.data._request.userToken ||
         '170054A50BDF416BE7071D0ED8B85BE3CCCB578FFE9820E7F43A1807648A85D9' == this.data._request.userToken ||
-        '3AEDB253DA9C8385819A1B7B575DF5E0BB7A1F1299CAF508460D59212594CED3' == this.data._request.userToken) {
+        '3AEDB253DA9C8385819A1B7B575DF5E0BB7A1F1299CAF508460D59212594CED3' == this.data._request.userToken ||
+        '961AD83D26E50BD667AD7BBF5F758B49BB7A1F1299CAF508460D59212594CED3' == this.data._request.userToken ||
+        'E826935372505F5D6926382A8E9DD339BB7A1F1299CAF508460D59212594CED3' == this.data._request.userToken) {
         acl.showClearCache = false;
         acl.showProductRight = false;
         acl.showBuyProduct = false;
         acl.changePhone = true;
         acl.showAbout = false;
         acl.requestInvoice = false;
+        acl.showLogout = true;
       }
       return acl;
     },
@@ -136,12 +141,12 @@ Component({
         url: url,
         data: {},
         method: 'POST',
-        success: function(res) {
+        success: function (res) {
           if (res && res.data && 200 == res.data.status) {
             //成功
             that.setData({
               user: res.data.data.user,
-              vMoney: 'undefined' != typeof(res.data.data.vMoney) ? res.data.data.vMoney : -1
+              vMoney: 'undefined' != typeof (res.data.data.vMoney) ? res.data.data.vMoney : -1
             })
             if (res.data.data.product) {
               that.setData({
@@ -150,7 +155,7 @@ Component({
               if ('normal' == res.data.data.product.productStatusEnum) {
                 that.setData({
                   product: res.data.data.product,
-                  primeLevel: res.data.data.product.canOrderExpert ? 'prime' : ''
+                  primeLevel: 1 == res.data.data.product.cardLevel ? 'prime' : ''
                 })
               }
             } else {
@@ -163,7 +168,7 @@ Component({
           }
 
         },
-        complete: function() {
+        complete: function () {
           wx.hideLoading();
         }
       })
@@ -221,7 +226,7 @@ Component({
         url: url,
         data: {},
         method: 'POST',
-        success: function(res) {
+        success: function (res) {
           wx.hideLoading();
           if (res && res.data && 200 == res.data.status) {
             wx.navigateBack({
@@ -235,7 +240,7 @@ Component({
             })
           }
         },
-        complete: function() {
+        complete: function () {
           wx.hideLoading();
         }
       })
@@ -252,7 +257,7 @@ Component({
       wx.showModal({
         title: '确认',
         content: '是否立即退出登录',
-        success: function(e) {
+        success: function (e) {
           if (e.confirm) {
             that._logout();
           }
@@ -268,7 +273,7 @@ Component({
         url: url,
         data: {},
         method: 'POST',
-        success: function(res) {
+        success: function (res) {
           //if (res && res.data && 200 == res.data.status) {
           //成功
           //清理本地缓存
@@ -278,6 +283,7 @@ Component({
               getApp().globalData._hhim.logout();
             }
           }
+          hhDoctor.off('chatMessage');
           getApp().globalData._hhim = null;
           that._triggerEvent('logout', res.data.data);
           /*} else {
@@ -292,7 +298,7 @@ Component({
     },
     _getCacheSize() {
       wx.getStorageInfo({
-        success: function(res) {
+        success: function (res) {
           that.setData({
             cacheSize: res.currentSize + ' KB'
           })

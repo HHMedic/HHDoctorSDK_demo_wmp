@@ -1,0 +1,51 @@
+.keyboard-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #c2c2c2;
+  box-sizing: border-box;
+  padding: 5px;
+}
+
+.keyboard-row {
+  width: 100%;
+  height: 50px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin-top: 5px;
+}
+
+.keyboard-row:first-child {
+  margin-top: 0px;
+}
+
+.key-item {
+  width: 9%;
+  height: 100%;
+  margin-left: 5px;
+}
+
+.key-item.disabled {
+  color: #c2c2c2;
+}
+
+.key-item:first-child {
+  margin-left: 0px;
+}
+
+.key-item.double {
+  width: 13%;
+}
+
+.key-item.big {
+  width: 18%;
+}
+
+.key-item.super {
+  flex-grow: 1;
+}

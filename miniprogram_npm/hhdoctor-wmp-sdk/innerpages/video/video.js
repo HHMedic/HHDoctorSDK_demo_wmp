@@ -11,7 +11,7 @@ Page({
   /**
    * 生命周期函数--监听页面加载
    */
-  onLoad: function(options) {
+  onLoad: function (options) {
     that = this;
     wx.hideShareMenu();
     if ('WMP_SHARE_LIVE' == options.liveSource) {
@@ -27,49 +27,49 @@ Page({
   /**
    * 生命周期函数--监听页面初次渲染完成
    */
-  onReady: function() {
+  onReady: function () {
 
   },
 
   /**
    * 生命周期函数--监听页面显示
    */
-  onShow: function() {
+  onShow: function () {
 
   },
 
   /**
    * 生命周期函数--监听页面隐藏
    */
-  onHide: function() {
+  onHide: function () {
 
   },
 
   /**
    * 生命周期函数--监听页面卸载
    */
-  onUnload: function() {
+  onUnload: function () {
 
   },
 
   /**
    * 页面相关事件处理函数--监听用户下拉动作
    */
-  onPullDownRefresh: function() {
+  onPullDownRefresh: function () {
 
   },
 
   /**
    * 页面上拉触底事件的处理函数
    */
-  onReachBottom: function() {
+  onReachBottom: function () {
 
   },
 
   /**
    * 用户点击右上角分享
    */
-  onShareAppMessage: function() {
+  onShareAppMessage: function () {
     let live = this.selectComponent('#live');
     if (live) live.startShare();
     let pageUrl = live.getBasePath() + 'innerpages/video/video' +
@@ -77,8 +77,10 @@ Page({
       '&videoType=live' +
       '&videoId=' + that.data.liveInfo.id +
       '&liveSource=WMP_SHARE_LIVE' +
-      //'&sdkProductId=' + that.data.hhRequest.sdkProductId;
-      '&sdkProductId=3009';
+      '&sdkProductId=' + getApp().globalData._hhSdkOptions._sdkProductId +
+      '&profileName=' + getApp().globalData._hhSdkOptions._profileName +
+      '&subDomain=' + getApp().globalData._hhSdkOptions._subDomain;
+    console.log(pageUrl);
     return {
       title: '我在看健康科普界的“李佳琪”，快来看',
       imageUrl: that.data.liveInfo.imageUrl + '?x-oss-process=image/resize,m_pad,h_320,w_400',
@@ -116,7 +118,7 @@ Page({
         showCancel: true,
         cancelText: '取消',
         confirmText: '前往注册',
-        success: function(res) {
+        success: function (res) {
           if (res.confirm) {
             that.redirectToReg();
             return;
@@ -160,7 +162,7 @@ Page({
         showCancel: true,
         cancelText: '取消',
         confirmText: '前往注册',
-        success: function(res) {
+        success: function (res) {
           if (res.confirm) {
             that.redirectToReg();
           }
@@ -180,7 +182,7 @@ Page({
       content: msg,
       showCancel: unRegUser,
       confirmText: unRegUser ? '前往注册' : '返回',
-      success: function(res) {
+      success: function (res) {
         if (res.confirm && unRegUser) {
           that.redirectToReg();
         } else {

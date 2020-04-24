@@ -11,6 +11,7 @@ let workbenchList = [];
 let self;
 let receivedMsgs = [];
 let audioContext = null;
+let reloading3005 =false;
 Component({
   behaviors: [require('../hhBehaviors.js'), require('./rtcBehaviors.js')],
   properties: {},
@@ -66,13 +67,27 @@ Component({
     netErrNum: 0,
     loading: false,
     interruptCount: 0,
+    playCount:0,
     waittingVideoTips: false,
     minBitrate: 50,
     maxBitrate: 200,
-    statusErr: [-4, -5, -7, -9, -10, -1301, -1302, -1303, -1304, -1305, -1306, -1307, -1318, 1021],
+    statusErr: [-4, -5, -7, -9, -10, -1301, -1302, -1303, -1304, -1305, -1306, -1307, -1318, 1021,-2301],
     statusRecon: [-6, 3005],
     statusPlay: [2001, 2002, 2003, 2004],
-    pushCount: 0
+    pushCount: 0,
+    transferTime1:null,
+    transferTime2:null,
+    isPushTimer:null,
+    playTimeout:null,
+    acceptTimer:null,
+    interval:null,
+    roomTimer:null,
+    isClickHangUp:false,
+    evaluateData:null,
+    callintTip: '医生连线中，请耐心等待...', 
+    callintTipQueue: '拨号中...', 
+    callintTipTransfer: '拨号中...' ,
+    realPatientUuid:''
   },
   lifetimes: {
     attached: function() {
@@ -85,31 +100,33 @@ Component({
       })
     },
     detached: function() {
+     // 既不是我自己点击挂断又不是工作台挂断也不是压后台已执行挂断
+     if (!this.data.isClickHangUp && !this.data.isWorkbenchHangUp && !self.data.isHideHangUp) {
+      // 组件卸载时 左滑 onhide已执行过 非自己点击挂断 非工作台挂断的情况下
+      self.data.createOrderPromise.then(res=>{
+        self.requestRtcLog('1', 'life:detached-卸载页面执行挂断', self.data.orderid)
+        self.getClearTimes()
+        self.aboutHangUpSomething('页面卸载', 'noBack');
+        console.log('既不是我自己点击挂断又不是工作台挂断也不是压后台已执行挂断')
+      })
+  
+     }
+
       // 在组件实例被从页面节点树移除时执行
       hhDoctor.off('messageReceived');
       wx.offMemoryWarning();
       wx.offNetworkStatusChange();
       self.data.orderList = [];
-      // 既不是我自己点击挂断又不是工作台挂断也不是压后台已执行挂断
-      if (!this.data.isClickHangUp && !this.data.isWorkbenchHangUp && !self.data.isHideHangUp) {
-        // 组件卸载时 左滑 onhide已执行过 非自己点击挂断 非工作台挂断的情况下
-        this.aboutHangUpSomething('页面卸载', 'left');
-        console.log('既不是我自己点击挂断又不是工作台挂断也不是压后台已执行挂断')
-      }
-      self.requestRtcLog('1', 'life:detached')
-      console.log('组件卸载')
-      clearTimeout(self.data.transferTime1);
-      clearTimeout(self.data.transferTime2);
-      clearTimeout(self.data.playTimeout);
-      clearInterval(self.data.isPushTimer);
-      clearInterval(self.data.acceptTimer);
-      self.getAudioStop();
+      self.getClearTimes()
+      self.requestRtcLog('1', 'life:detached', self.data.orderid)
+    
     },
   },
   pageLifetimes: {
     show: function() {
       console.log('onshow - show')
       self.data.isOnHide = false;
+      console.log(self)
       self.rtcPreview();
       if (self.data.status == 3) {
         self.setData({
@@ -127,11 +144,13 @@ Component({
       console.log('onhide ---- hide')
       self.getAudioStop();
       self.data.isOnHide = true;
-
+      console.log(self.data.createOrderPromise)
       if (!this.data.isChoosePhoto && !this.data.isClickHangUp) {
         self.data.isHideHangUp = true;
-        self.requestRtcLog('1', 'life:onhide-压后台执行挂断')
-        this.aboutHangUpSomething('用户压后台挂断');
+        self.data.createOrderPromise.then(res=>{
+          self.requestRtcLog('1', 'life:onhide-压后台执行挂断', self.data.orderid)
+          this.aboutHangUpSomething('用户压后台挂断');
+        })
       }
       if (this.data.status == 3 && this.data.isChoosePhoto) {
         this.sendMessage(this.data.command.SWITCH_TO_AUDIO);
@@ -141,7 +160,8 @@ Component({
       }
       clearInterval(self.data.isPushTimer);
       clearInterval(self.data.acceptTimer);
-      self.requestRtcLog('1', 'life:onHide')
+      self.data.isPushTimer = null;
+      self.requestRtcLog('1', 'life:onHide', self.data.orderid)
 
     },
   },
@@ -159,18 +179,32 @@ Component({
       self._triggerEvent('login', {
         login: true
       });
+      console.log(this.data._request)
       self._checkAuthorize().then(res => {
-        self.requestRtcLog(1, 'authorize: check success');
+        self.requestRtcLog(1, 'authorize: check success', self.data.orderid);
+        console.log('授权-res',res)
         self.componentOnload();
       }).catch(res => {
+        console.log('授权-catch',res)
+
         if (self.data._request.dept.indexOf('F') == 0) {
           self.sendMessage(self.data.command.busy);
         }
-        self.requestRtcLog(1, 'authorize: check fail');
+        self.requestRtcLog(1, 'authorize: check fail', self.data.orderid);
         self.setData({
           isAuthBox: true
         })
       })
+    },
+    getClearTimes(){
+      clearTimeout(self.data.transferTime1);
+      clearTimeout(self.data.transferTime2);
+      clearTimeout(self.data.playTimeout);
+      clearInterval(self.data.isPushTimer);
+      clearInterval(self.data.acceptTimer);
+      clearInterval(self.data.interval);
+      clearTimeout(self.data.roomTimer);
+      self.getAudioStop();     
     },
     componentOnload() {
       console.log('start call....', this.data._request);
@@ -188,10 +222,18 @@ Component({
         self.requestRtcLog(1, 'onImMessage:' + JSON.stringify(e), self.data.orderid);
         e.map((item, index) => {
           let obj = JSON.parse(item.payload.data);
+          if(self.data.preReceivedCommand == obj.command && obj.command!='waitUserInfo'){
+            return;
+          }
+          self.data.preReceivedCommand = obj.command;
           workbenchList[obj.command] && workbenchList[obj.command](obj.orderId, obj, item.from, item.to);
           console.log('workbenchlist-obj.orderId', obj.orderId)
         })
       })
+        let realPatientUuid = self.data._request.uuid || '';
+        self.setData({realPatientUuid}) //选择成员呼叫需携带成员id 进入评价页需传入成员或用户id
+      
+    
       if (self.data._request.dept.indexOf('F') == 0) {
         self.workbenchCall(self.data._request.orderid);
       } else {
@@ -211,7 +253,8 @@ Component({
       if (self.data.isOnHide) {
         return
       }
-      apis.requestCreateFamOrder(deptId ? deptId : self.data._request.dept, famOrderId, self.data.systeminfo.platform, self.data.systeminfo.SDKVersion).then(res => {
+   
+      self.data.createOrderPromise = apis.requestCreateFamOrder(deptId ? deptId : self.data._request.dept, famOrderId, self.data.systeminfo.platform, self.data.systeminfo.SDKVersion, self.data.realPatientUuid).then(res => {
         wx.hideLoading();
         if (res.status == 200) {
           let orderid = res.data.order.orderid ? res.data.order.orderid : ''
@@ -231,7 +274,10 @@ Component({
             doctor: res.data.doctor || null,
             netErrNum: 0,
             minBitrate: res.data.preCallResponse.pusherMinBitrate,
-            maxBitrate: res.data.preCallResponse.pusherMaxBitrate
+            maxBitrate: res.data.preCallResponse.pusherMaxBitrate,
+            callintTip: res.data.preCallResponse.callingTip || '医生连线中，请耐心等待...', 
+            callintTipQueue: res.data.preCallResponse.callingTipQueue || '拨号中...', 
+            callintTipTransfer: res.data.preCallResponse.callingTipTransfer || '拨号中...' ,
           }, () => {
             self.requestRtcLog(1, 'preCall response:' + '响应成功', self.data.orderid)
             if (self.data.isOnHide) {
@@ -263,6 +309,7 @@ Component({
           wx.showModal({
             title: '提示',
             content: res.message || '请求出错',
+            showCancel:false,
             success(res) {
               if (res.confirm) {
                 wx.navigateBack();
@@ -283,15 +330,15 @@ Component({
         isLivePusher: false
       })
 
-      let interval = setInterval(function() {
+      self.data.interval = setInterval(function() {
         if (self.data.status != 2) {
           //已经开始呼叫后已经退出
-          clearInterval(interval);
+          clearInterval(self.data.interval);
           return;
         }
         msgTimeSeconds--;
         if (msgTimeSeconds == 0) {
-          clearInterval(interval);
+          clearInterval(self.data.interval);
           self.setData({
             waitBox: false,
             waitPlay: true
@@ -323,7 +370,7 @@ Component({
         success: function(res) {
           if (res.confirm) {
             self.requestRtcLog('1', 'call wait: 用户确认进入直播页', self.data.orderid)
-            self.aboutHangUpSomething('用户进入直播页', 'left')
+            self.aboutHangUpSomething('用户进入直播页', 'noBack')
             let pageUrl = self.data.basePath + 'innerpages/video/video?' + self._getPublicRequestParams() + '&liveSource=WMP_CALLING_LIVE' +
               '&videoType=live' +
               '&videoId=' + e.detail.id;
@@ -338,6 +385,10 @@ Component({
     workbenchAccept(orderid, obj) {
       console.log('工作台接听orderid', orderid)
       if (orderid == self.data.orderid) {
+        if(self.data.isWorkbenchAccept){
+          return;
+        }
+        self.clearOrderStatus();
         self.getAudioStop();
         self.data.isWorkbenchAccept = true;
         setTimeout(res => {
@@ -355,8 +406,9 @@ Component({
       }
     },
     //2.IM--工作台忙碌状态
-    workbenchBusy() {
-      wx.navigateBack()
+    workbenchBusy(orderid,obj) {
+      this.aboutHangUpSomething('医生忙碌返回busy');
+      
     },
     //3.IM--排队中显示排队等待
     workbenchWait(orderid, obj) {
@@ -376,8 +428,10 @@ Component({
         status: 1,
         playerBackgroundImg: obj.doctor.photourl
       })
-      setTimeout(() => {
-        self.getJoinRoom()
+      self.requestRtcLog('1', 'call wait:收到分配医生准备就绪', orderid)
+
+      self.data.roomTimer = setTimeout(() => {
+        self.getJoinRoom();
       }, 300)
     },
     //5.IM--工作台呼入(被呼) -- 通过doctor条件判定 1.医生 2.专家打来 3.正在接听状态 
@@ -420,7 +474,6 @@ Component({
     },
     //6.IM--医生转呼 
     workbenchTransfer(orderid, obj) {
-      console.log('医生转呼')
       isTransfer = true;
       self.setData({
         status: 0,
@@ -428,17 +481,21 @@ Component({
         startPlay: false,
         muted: true,
         playerBackgroundImg: self.data.bgImgs.defaultImg,
-        loading: true
-      })
-
+        loading: true,
+        preCommand:''
+      })      
+      self.data.isWorkbenchAccept = false;
       self.getAudioStop();
-      self.requestHangUp('HANGUP', '医生转呼');
+      self.requestHangUp('HANGUP', '医生转呼','noBack');
       self.rtcStop();
       self.data.transferTime1 = setTimeout(() => {
         self.setData({
           status: 1
         })
-        let d = JSON.stringify(obj)
+        if(self.data.realPatientUuid){
+          obj.realPatientUuid = self.data._request.uuid || '';
+        }
+        let d = JSON.stringify(obj);
         apis.requestDoctor(d).then(res => {
           if (res.status == 200) {
             app.globalData.orderId = self.data.orderid;
@@ -475,9 +532,12 @@ Component({
         startPlay: false,
         muted: true,
         playerBackgroundImg: self.data.bgImgs.defaultImg,
-        loading: true
+        loading: true,
+        preCommand:''
       })
-      self.requestHangUp('HANGUP', '客服转呼');
+      self.clearOrderStatus();
+      self.data.isWorkbenchAccept = false;
+      self.requestHangUp('HANGUP', '客服转呼', 'noBack');
       self.getAudioStop();
       self.rtcStop();
       self.data.transferTime2 = setTimeout(() => {
@@ -486,6 +546,9 @@ Component({
     },
     //7. 工作台挂断
     workbenchInterrupt(orderid, obj) {
+      if(self.data.isClickHangUp){
+        return;
+      }
       if (self.data.orderList.indexOf(obj.orderId) != -1) {
         // 工作台执行挂断 转呼 就会返回interrupt
         self.setData({
@@ -519,7 +582,7 @@ Component({
         isClickHangUp: true
       })
       self.aboutHangUpSomething('用户主动点击挂断');
-      self.requestRtcLog('1', 'user click hangup:用户主动点击挂断' + type)
+      self.requestRtcLog('1', 'user click hangup:用户主动点击挂断' + type, self.data.orderid)
     },
 
     // 回拨挂断-拒接(回拨)
@@ -545,58 +608,71 @@ Component({
     },
     //进入房间
     getJoinRoom() {
-      self.rtcStart();
-      self.data.isPushTimer = setInterval(() => {
-        if (self.data.isBeginPush) {
-          clearInterval(self.data.isPushTimer);
-          self.data.pushCount = 0;
-          self.getAudioStart();
-          self.sendMessage(self.data.command.call);
-          return;
-        }
-        self.data.pushCount++
+      self.requestRtcLog('1', 'getJoinRoom-isClickHangUp:'+self.data.isClickHangUp, self.data.orderid)
+      if(self.data.isClickHangUp){
+        return;
+      }
+      self.requestRtcLog('1', 'getJoinRoom-isPushTimer:'+self.data.isPushTimer, self.data.orderid)
+      if(!self.data.isPushTimer){
+        self.requestRtcLog('1', 'join room:开始执行getJoinRoom', self.data.orderid)
+        self.rtcStart();
+        self.data.isPushTimer = setInterval(() => {
+          // 进房成功
+          if (self.data.isBeginPush) {
+            clearInterval(self.data.isPushTimer);
+            self.data.isPushTimer=null;
+            self.data.pushCount = 0;
+            self.requestRtcLog('1', 'join room:成功进入房间', self.data.orderid)
+            self.getAudioStart();
+            self.sendMessage(self.data.command.call);
+            return;
+          }
+          self.data.pushCount++
           if (self.data.pushCount > 10) {
             clearInterval(self.data.isPushTimer);
             self.data.pushCount = 0;
-            // self.aboutHangUpSomething('连接服务器超时','left');
+            // self.aboutHangUpSomething('连接服务器超时','noBack');
+            self.requestRtcLog('1', 'join room:连接服务器超时(进房超时)', self.data.orderid)
+            self.aboutHangUpSomething('连接服务器超时','noBack');
             wx.showModal({
               title: '提示',
               content: '连接服务器超时,建议重启微信再试~',
               showCancel: false,
               success: function(res) {
-                if (res.confirm) {
-                  self.aboutHangUpSomething('连接服务器超时');
-                }
+                wx.navigateBack()
               }
             })
           }
-      }, 500)
+        }, 500)
+      }
+ 
     },
 
     // TIM-----向工作台发送消息
     sendMessage(command, newOrderid, fromId) {
       if (self.data.orderid) {
-        let orderId = (command == 'busy' && newOrderid) ? newOrderid : self.data.orderid
+        if(self.data.preCommand==command){
+          return;
+        }
+        let orderId = (command == 'busy' && newOrderid) ? newOrderid : self.data.orderid;
+        let serviceType = (self.data.doctor && self.data.doctor.serviceTypeStatus == 'zhuanke') ?'zhuanke':self.data._request.serviceType;
         let msgData = {
           command,
           orderId,
+          serviceTypeStatus:serviceType,
           uuid: self.data.userID
         }
         let uuid = self.data.doctor ? self.data.doctor.login.uuid : 0
         let toUser = (command == 'busy' && fromId) ? fromId : uuid;
+        self.requestRtcLog('1', 'sendMessage start:' + command+'；type:'+serviceType, self.data.orderid)
+        self.setData({preCommand:command})
         hhDoctor.sendMessage(toUser, msgData, orderId).then(res => {
-          self.requestRtcLog('1', 'sendMessage success:' + command, self.data.orderid)
+          self.requestRtcLog('1', 'sendMessage success:' + command+';type:'+serviceType, self.data.orderid)
           if (command == 'call') {
             isWaitRing = true;
-            // 如果是医生转呼医生则不再监听此接口
+            // 如果不是医生转呼医生
             if (!self.data.isDoctorTransfer) {
-              self.data.acceptTimer = setInterval(res => {
-                if (self.data.isWorkbenchAccept) {
-                  clearInterval(self.data.acceptTimer);
-                } else {
-                  self.requestGetOrderStatus(self.data.orderid);
-                }
-              }, 5000)
+                self.requestGetOrderStatus(self.data.orderid); 
             }
           }
           if (command == 'interrupt') {
@@ -622,14 +698,26 @@ Component({
     },
     // 向工作台发送call消息，检测发送状态
     requestGetOrderStatus(orderId) {
-      self.requestRtcLog('1', 'getOrderStatus:开始检查医生接听状态')
-      apis.requestGetOrderStatus(orderId).then(res => {
-        if (res.data) {
-          self.requestRtcLog('1', 'getOrderStatus:' + res.data);
+      self.data.acceptTimer = setInterval(res => {
+        // 5s之后 工作台已接听则无需继续往下走
+        if(self.data.isWorkbenchAccept || self.data.status ==3){
           clearInterval(self.data.acceptTimer);
-          self.workbenchAccept(orderId, res.data);
+          return;
         }
-      })
+        self.requestRtcLog('1', 'getOrderStatus:开始检查医生接听状态', self.data.orderid)
+        apis.requestGetOrderStatus(orderId).then(res => {
+          if (res.data) {
+            self.requestRtcLog('1', 'getOrderStatus:' + res.data, self.data.orderid);
+            clearInterval(self.data.acceptTimer);
+            self.workbenchAccept(orderId, res.data);
+          }
+        })
+      },6000)
+    },
+    // 清空医生检查状态
+    clearOrderStatus(){
+      clearInterval(self.data.acceptTimer);
+      self.data.acceptTimer=null;
     },
     /** 监听webrtc事件*/
     onRoomEvent(e) {
@@ -656,7 +744,7 @@ Component({
           }
           if (self.data.statusErr.indexOf(e.detail.code) != -1) {
             this.data.isErrorModalShow = true;
-            self.aboutHangUpSomething(e.detail.detail, 'left');
+            self.aboutHangUpSomething(e.detail.detail, 'noBack');
             setTimeout(res => {
               wx.showToast({
                 title: e.detail.detail,
@@ -668,11 +756,16 @@ Component({
             setTimeout(res => {
               wx.navigateBack({})
             }, 2000)
+
           }
 
           if (3 == self.data.status &&
-            (e.detail.code == 3005 || e.detail.code == -6)) {
-            self.requestRtcLog('1', 'onRoomEvent:3005推拉流失败', self.data.orderid)
+            (e.detail.code == 3005||e.detail.code == 3003 || e.detail.code == -6)) {
+            self.requestRtcLog('1', 'onRoomEvent:3005/3003推拉流失败', self.data.orderid)
+            if(reloading3005){
+              return;
+            }
+            reloading3005 = true;
             wx.showLoading({
               title: '网络开小差了...'
             })
@@ -680,14 +773,30 @@ Component({
             self.rtcStart();
             setTimeout(res => {
               wx.hideLoading();
+              reloading3005 = false;
               self.rtcPlay();
             }, 3000)
           }
           break;
       }
     },
+    //监听推流码率较低事件
+    // onPushBitrate(e){
+      //非进入相册 视频码率持续为0 输出时间间隔？ 视频状态中
+      // console.log('返回的码率',e)
+      // if(e.detail.value==0 && !this.data.isChoosePhoto && self.data.status == 3){
+      //   self.data.bitrateCount++
+      //   console.log('self.data.bitrateCount',self.data.bitrateCount)
+      //   if(self.data.bitrateCount>200){
+      //     //挂断
+      //     self.aboutHangUpSomething('用户端持续停止视频推流');
+      //   }
+      // }else{
+      //   self.data.bitrateCount = 0;
+      // }
+    // },
     //点击挂断 左滑 压后台 拍照需要处理的事情 转呼单独处理
-    aboutHangUpSomething: function(reason, left) {
+    aboutHangUpSomething: function(reason, isBack) {
       self.rtcStop();
       self.getAudioStop();
       console.log(reason + '-执行aboutHangUpSomething');
@@ -698,45 +807,65 @@ Component({
           if (reason != '工作台已挂断' || reason != '服务器通知挂断') {
             self.sendMessage(self.data.command.call_cancel)
           };
-          self.requestHangUp('CANCEL', reason);
+          self.requestHangUp('CANCEL', reason,isBack);
           break;
         case 3:
           if (reason != '工作台已挂断' || reason != '服务器通知挂断') {
             self.sendMessage(self.data.command.interrupt)
           };
-          self.requestHangUp('HANGUP', reason);
+          self.requestHangUp('HANGUP', reason,isBack);
           break;
         case 4:
         case 5:
-        case 6:
           if (reason != '工作台已挂断' || reason != '服务器通知挂断') {
             self.sendMessage(self.data.command.REJECT)
           };
-          self.requestHangUp('HANGUP', reason);
+          self.requestHangUp('HANGUP', reason,isBack);
           break;
-      }
-      if (left != 'left') {
-        wx.navigateBack();
       }
     },
     //主呼-挂断http提交 type挂断类型:CANCEL HANGUP  transfer:是否为转呼  
-    requestHangUp: function(type, reason) {
+    requestHangUp: function(type, reason, isBack) {
+      if(!self.data.orderid){
+        return;
+      }
+      wx.showLoading({
+        mask:true
+      })
+      self.requestRtcLog('1', '挂断原因:' +reason + '(' + self.data.statusText[self.data.status] + ')', self.data.orderid);
       let videoTime = 0;
       if ((self.data.status == 0 || self.data.status == 3) &&
         self.data.videoTimeStart) {
         videoTime = parseInt((new Date().getTime() - self.data.videoTimeStart) / 1000);
       }
-
       let reasonText = encodeURIComponent(reason + '(' + self.data.statusText[self.data.status] + ')');
-      let params = `?famOrderId=${self.data.orderid}&hangupType=${type}&serviceType=${self.data._request.serviceType}&videoTime=${videoTime}&reason=${reasonText}`
+      let serviceType = (self.data.doctor && self.data.doctor.serviceTypeStatus == 'zhuanke') ?'zhuanke':self.data._request.serviceType;
+      let params = `?famOrderId=${self.data.orderid}&hangupType=${type}&serviceType=${serviceType}&videoTime=${videoTime}&reason=${reasonText}`
+      console.log('挂断传参===>',params)
       apis.requestHangUp(params).then(res => {
+        wx.hideLoading();
+        console.log('hangup===>>>',res)
         self.setData({
           videoTimeStart: '',
           videoTime: '00:00'
         })
         self.requestRtcLog('1', 'request hangup:' + type + '-' + self.data.statusText[self.data.status], self.data.orderid)
         app.globalData.orderId = '';
-        if (res.status !== 200) {
+        if (res.status == 200) {
+          // 用户挂断且有评价结果
+          if(res.data && res.data.question && self.data.isClickHangUp){
+            self.setData({
+              isEvaluate:true,
+              evaluateData:res.data
+            })
+          }else{
+              // 非转呼挂断
+              if (isBack != 'noBack') {
+                wx.navigateBack();
+              }
+            
+          }
+       }else{
           wx.showToast({
             title: res.message,
             icon: 'none',
@@ -774,8 +903,6 @@ Component({
         audioContext.loop = true;
         audioContext.volume = 1;
       }
-
-      // this.audioContext.loop = true;
       audioContext.offEnded(this.onAudioEnded);
       audioContext.onEnded(this.onAudioEnded);
       audioContext.play();
@@ -808,8 +935,10 @@ Component({
     },
     rtcStop() {
       self.data.isBeginPush = false;
-      self.data.isWorkbenchAccept = false;
       self.data.pushCount = 0;
+      self.data.playCount=0;
+      self.clearOrderStatus();//清空检查状态
+      clearTimeout(self.data.playTimeout);
       if (!self.data.webrtcroomCom) {
         self.data.webrtcroomCom = self.selectComponent('#webrtcroom');
       }
@@ -828,11 +957,16 @@ Component({
         })
         self.data.webrtcroomCom.startPlay();
         clearTimeout(self.data.playTimeout);
+        self.data.playTimeout=null;
+        self.data.playCount++
+        if(self.data.playCount>5){
+          return;
+        }
         self.data.playTimeout = setTimeout(() => {
           if (!self.data.isPlayStart) {
             self.rtcPlay();
           }
-        }, 1500)
+        }, 2000)
       }
     },
     rtcPreview() {

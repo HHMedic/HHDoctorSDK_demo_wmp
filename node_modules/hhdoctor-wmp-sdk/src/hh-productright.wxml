@@ -2,7 +2,7 @@
 
 <view class='panel top'>
   <view class='top-background'></view>
-  <template is='{{product.canOrderExpert?"productPrime":"product"}}' data='{{...product,selectedPid:selectedPid,sdkProductId:_request.sdkProductId,productComment}}'></template>
+  <template is='{{1==product.cardLevel?"productPrime":"product"}}' data='{{...product,selectedPid:selectedPid,sdkProductId:_request.sdkProductId,productComment}}'></template>
 </view>
 
 <rightList class='rigth-list' product='{{product}}' base-path='{{basePath}}'></rightList>
@@ -17,6 +17,8 @@
     <!-- 描述信息 -->
     <view class='card-desc-list'>
       <view class='card-desc'>{{productComment[0]}}</view>
+      <view class='card-desc'>{{productComment[1]}}</view>
+      <view wx:if="{{userCnt>0}}" class='card-desc'>可添加{{userCnt}}名成员共享权益</view>
     </view>
     <!-- 实际价格 -->
     <view wx:if="{{productServiceName}}" class='card-price'>
@@ -41,7 +43,8 @@
     <view class='card-title prime'>{{productServiceName}}</view>
     <view class='card-desc-list'>
       <view class='card-desc prime'>{{productComment[0]}}</view>
-      <view class='card-desc prime key'>{{productComment[1]}}</view>
+      <view class='card-desc prime'>{{productComment[1]}}</view>
+      <view wx:if="{{userCnt>0}}" class='card-desc prime'>可添加{{userCnt}}名成员共享权益</view>
     </view>
     <!-- 实际价格 -->
     <view class='card-price'>

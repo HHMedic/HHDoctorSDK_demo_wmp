@@ -103,13 +103,13 @@ page {
 .card-desc-list {
   position: absolute;
   left: 25px;
-  top: 60px;
+  top: 55px;
 }
 
 .card-desc {
-  font-size: 16px;
-  line-height: 16px;
-  margin-top: 13px;
+  font-size: 14px;
+  line-height: 14px;
+  margin-top: 12px;
   margin-left: 12px;
   position: relative;
 }

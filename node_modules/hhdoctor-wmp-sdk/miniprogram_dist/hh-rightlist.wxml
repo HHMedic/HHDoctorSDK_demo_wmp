@@ -4,7 +4,7 @@
   </view>
 
 
-  <block wx:for='{{product.productDetail}}' wx:for-item='detail' wx:key=''>
+  <block wx:for='{{product.productDetail}}' wx:for-item='detail' wx:key='index'>
     <view class='right-row'>
       <image class='right-icon' src='{{detail.logo}}'></image>
       <view class='right-item'>

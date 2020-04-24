@@ -1,0 +1,43 @@
+<!--pages/demonstrate/demonstrate.wxml-->
+<view class='pages' >
+  <!-- 呼叫中。。。 -->
+  <view class='call-box' wx:if='{{isCall && showWaitting}}'>
+    <view class='demo-tip demo-tip-one'>
+      <text class='demo-tip-text'>即将进入演示模式</text>
+    </view>
+    <view class='call-status'>呼叫中...</view>
+    <view class='call-cancel call-text' bindtap='bindCancelHangup'>取消</view>
+  </view>
+
+  <!-- 已接听 -->
+  <view class='on-the-line' wx:if='{{!isCall}}'>
+      <image src='{{logoImage}}' class='logo' mode='widthFix' wx:if='{{logoImage}}'></image>
+      <view class='demo-tip'>
+        <text class='demo-tip-text' wx:if='{{msgTip}}'>{{msgTip}}</text>
+      </view>
+    <video id="myVideo" 
+    src="{{videoUrl}}" 
+    controls="{{controls}}"
+    show-center-play-btn='{{false}}'
+    enable-progress-gesture='{{false}}'
+    class='video'
+    bindended='bindVideoEnd'
+    object-fit='{{objectFit}}'
+    loop='{{videoLoop}}'
+    ></video>
+
+    <view class='call-mask'></view>
+    <view class='call-hangup call-text' catchtap="bindHangUp" wx:if='{{showHangupBtn}}'>挂断</view>
+    <view class='call-doctor call-text' catchtap="bindCallDoctor" wx:if='{{isVideoEnd && showCallBtn}}'>呼叫医生</view>
+
+  </view>
+ 
+  <!-- 视频区 -->
+  <live-pusher  mode="RTC" class='live-pusher'  id='myLivePusher' wx:if='{{isAuth && showPusher}}' />
+
+   <!-- 未授权 -->
+  <!-- <view class='auth-box' wx:if='{{!isAuth}}'>
+    <view class='auth-text'>您未授权小程序使用您的麦克风或摄像头，无法使用相应功能</view>
+    <button class='auth-button' open-type="openSetting">现在去授权</button>
+  </view> -->
+</view>

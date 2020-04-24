@@ -380,6 +380,7 @@
   border-radius:10px;
   color:#fff;
   font-size:32rpx;
+  margin-bottom:25rpx;
 }
 
 

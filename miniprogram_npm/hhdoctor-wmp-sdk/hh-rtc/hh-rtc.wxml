@@ -1,6 +1,6 @@
 <!--components/hh-rtc/hh-rtc.wxml-->
-<view class="container-box">
-  <view class="camera-box">
+<view class="container-box"  >
+  <view class="camera-box" wx:if='{{!isEvaluate}}'>
     <webrtc-room id="webrtcroom" 
     template="{{template}}" 
     enableCamera="{{enableCamera}}" 
@@ -13,7 +13,9 @@
     debug="{{debug}}" 
     bindRoomEvent="onRoomEvent" 
     bindIMEvent="onIMEvent" 
-    playerBackgroundImg='{{playerBackgroundImg+"?x-oss-process=image/resize,m_fixed,w_750"}}'        enableIM="{{enableIM}}" 
+    bindPushBitrate='onPushBitrate'
+    playerBackgroundImg='{{playerBackgroundImg+"?x-oss-process=image/resize,m_fixed,w_750"}}'        
+    enableIM="{{enableIM}}" 
     smallViewRight="{{smallViewRight}}"
       smallViewTop="{{smallViewTop}}" smallViewWidth="{{smallViewWidth}}" smallViewHeight="{{smallViewHeight}}" members="{{members}}" systeminfo='{{systeminfo}}' startPlay='{{startPlay}}' isLivePusher='{{isLivePusher}}' orderid='{{orderid}}' minBitrate='{{minBitrate}}'
       maxBitrate='{{maxBitrate}}' status='{{status}}' loading='{{loading}}' waitPlay='{{waitPlay}}'>
@@ -45,7 +47,7 @@
         <cover-view slot="{{template}}" class='room-box'>
           <cover-view class='room-modal' wx:if='{{doctor.name}}'>
             <cover-view class='room-name'> {{doctor.name}} </cover-view>
-            <cover-view class='room-status'>{{doctor.name?'呼叫中...':'拨号中...'}}</cover-view>
+            <cover-view class='room-status'>{{doctor.name? callintTip : callintTipTransfer}}</cover-view> 
             <cover-view class='room-icon'>
               <cover-image src='{{icons.hangup}}' class='room-image' catchtap='bindHangUp' data-type='call_cancel'></cover-image>
               <cover-view class='room-cancel'>取消</cover-view>
@@ -68,7 +70,7 @@
           <!-- 初始不展示end -->
           <cover-view class='room-modal'>
             <cover-view class='room-wait'>{{waitUserInfoText? waitUserInfoText:'目前咨询人数较多,感谢耐心等待'}}</cover-view>
-            <cover-view class='room-status'>拨号中...</cover-view>
+            <cover-view class='room-status'>{{callintTipQueue}}</cover-view> 
             <cover-view class='room-icon'>
               <cover-image src='{{icons.hangup}}' class='room-image' catchtap='bindHangUp' data-type='call_cancel'></cover-image>
               <cover-view class='room-cancel'>取消</cover-view>
@@ -197,9 +199,21 @@
       <block wx:if='{{isAuthBox && _request.userToken && "unreg"!=_request.userToken}}'>
         <cover-view class='auth-box' slot='{{template}}'>
           <cover-view class='auth-text'>您未授权小程序使用您的麦克风或摄像头，无法使用相应功能</cover-view>
-          <button class='auth-button' open-type="openSetting" catchtap='bindAuthButton'>现在去授权</button>
+          <button class='auth-button' open-type="openSetting" >现在去授权</button>
+          <button class='auth-button' catchtap='bindAuthButton'>我已授权，重新呼叫</button>
         </cover-view>
       </block>
     </webrtc-room>
+
+  </view>
+  <!-- wx:if='{{isEvaluate}}' -->
+  <view class='evaluate-box' wx:if='{{isEvaluate}}'>
+    <hh-evaluate 
+    request='{{_request}}'
+    evaluateData='{{evaluateData}}' 
+    famOrderId='{{orderid}}' 
+    uuid='{{realPatientUuid}}'
+    photoUrl='{{playerBackgroundImg}}'
+    ></hh-evaluate>
   </view>
 </view>

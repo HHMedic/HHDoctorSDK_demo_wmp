@@ -105,7 +105,7 @@ Component({
       wx.setKeepScreenOn({
         keepScreenOn: true
       })
-      if (self.data._request.enableLiveShare) {
+      if (self.data&&self.data._request.enableLiveShare) {
         wx.showShareMenu({
           withShareTicket: true
         })

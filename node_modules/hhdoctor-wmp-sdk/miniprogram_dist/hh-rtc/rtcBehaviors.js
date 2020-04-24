@@ -99,7 +99,7 @@ module.exports = Behavior({
     },
     //1.点击授权按钮
     bindAuthButton: function() {
-      wx.navigateBack({})
+      wx.navigateBack()
     },
     _addMonitorLog() {
       let self = this;
@@ -121,6 +121,7 @@ module.exports = Behavior({
       wx.onNetworkStatusChange(function(res) {
         if (!res.isConnected) {
           console.log('网络状态变化：已断开');
+          self.requestRtcLog('1', 'networkStatusChange:' + JSON.stringify(res));
         } else {
           console.log('网络状态变化：已连接');
           self.requestRtcLog('1', 'networkStatusChange:' + JSON.stringify(res));

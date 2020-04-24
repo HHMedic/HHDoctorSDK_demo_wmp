@@ -6,6 +6,8 @@ const bgm = wx.getBackgroundAudioManager();
 const rm = wx.getRecorderManager();
 const hhDoctor = require('./hhDoctor.js');
 const msgUtil = require('./utils/msgUtil.js');
+const apis = require("./utils/api.js");
+
 
 var that;
 var hhim;
@@ -37,7 +39,7 @@ Component({
       rm.onStop(that._onRecordStop);
       pageIsShowing = true;
     },
-    ready() {},
+    ready() { },
     detached() {
       pageIsShowing = false;
       that._clearAllIntervalHandler();
@@ -47,10 +49,14 @@ Component({
 
   pageLifetimes: {
     show() {
+      console.log('this.data._request.sdkProductId', this.data._request)
+
       pageIsShowing = true;
       wx.setKeepScreenOn({
         keepScreenOn: true
       })
+      this.setData({ sceneNum: wx.getLaunchOptionsSync().scene })
+      console.log(this.data.sceneNum)
       // that._getLiveListCycle();
       if (!hhim) {
         return;
@@ -61,11 +67,23 @@ Component({
         that._viewIm();
       }
       that._getLiveListCycle();
+      that._checkRecordAuth();
+      this.getMember();
+      if (hhDoctor && hhDoctor.getUserId()) {
+        hhDoctor.getUserInfo()
+          .then(() => {
+            this.setData({
+              userCnt: hhDoctor.getProduct() ? hhDoctor.getProduct().userCnt : 0
+            })
+
+          })
+      }
     },
     hide() {
       pageIsShowing = false;
       if (hhim) hhim.on('close', null);
       that._clearAllIntervalHandler();
+      that.setData({ isAuthBox: false })
     }
   },
 
@@ -78,9 +96,10 @@ Component({
     host: {},
     navStyle: 'custom',
     sysInfo: null, //小程序系统信息
+    memberCallTop: -1200,
     msgPanelTop: 120, //中部消息列表顶部
     msgPanelHeight: 100, //中部消息列表高度
-    livePanelHeight: 110,
+    livePanelHeight: 130,
     bottomHeight: 50, //底部输入和工具栏高度
     callBtnTop: 35,
     mainBtnHeight: 64,
@@ -93,6 +112,7 @@ Component({
     recordBtnTip: '按住 说话', //录音按纽的提示文字
     recordCancel: false, //是否取消录音
     animationData: null, //顶部按纽栏动画对象
+    animationMemberData: null,
     utilsAnimation: null, //工具栏动画对象
     disconnAnimation: null,
     wxMbb: null, //右上角胶囊信息
@@ -116,7 +136,13 @@ Component({
     roomNo: '123',
     userID: '',
     tapTime: '',
-    template: 'bigsmall'
+    template: 'bigsmall',
+    isShowModal: false,//补全信息的弹窗开关
+    isRecordAuth: true,//是否开启录音权限
+    isAuthBox: false,//默认不显示授权弹出层
+    isLoading: false,
+    modalMsgData: { source: 'member', content: '请补充该成员的年龄等信息，才可呼叫医生', confirmText: '立即补充' },//disclaimer member 目前只有补充成员信息和免责声明用到该组件
+    isAgreeExplain: true,//呼叫协议
   },
 
   /**
@@ -129,6 +155,16 @@ Component({
       firstShow = true;
 
       that._resize();
+      /*if ('custom' == this.data.navStyle) {
+        mHeight = this.data.wxMbb.top + (this.data._request.callPage ? 102 : 38);
+      } else if (!this.data._request.callPage) {
+        mHeight = 0;
+      }
+      this.setData({
+        msgPanelTop: mHeight,
+        msgPanelHeight: this.data.sysInfo.windowHeight - mHeight - safeArea - 50
+      })*/
+      hhDoctor.off('chatMessage');
       hhDoctor.on('chatMessage', that._onImMsg);
       that._applyStyle();
       that._addMonitor();
@@ -136,13 +172,74 @@ Component({
       that._getLiveListCycle();
       apiUtil.reportTrace(-1, 'live', 'WMP_OPEN');
       that._getHistoryMsg();
+      this.getMember();
+      console.log(hhDoctor.getProduct())
+      this.setData({
+        userCnt: hhDoctor.getProduct() ? hhDoctor.getProduct().userCnt : 0,
+        explainUrl: encodeURIComponent(getApp().globalData._hhSdkOptions._host.wmpHost + 'wmp/license?type=2000')
+      })
+      console.log(this.data._request, this.data.userCnt)
+      that._checkRecordAuth();
+
     },
-    // 添加家庭成员
-    bindAddMember() {
-      wx.navigateTo({
-        url: '/components/innerpages/hh-ehr/ehr-add-member/ehr-add-member',
+    _checkRecordAuth() {
+      wx.getSetting({
+        success(res) {
+          console.log('录音检测', res.authSetting['scope.record'])
+          if (!res.authSetting['scope.record']) {
+            that.data.isRecordAuth = false;
+          } else {
+            that.data.isRecordAuth = true;
+          }
+        }
       })
     },
+    // 获取家庭成员
+    getMember: function () {
+      console.log('登录成功的状态下获取成员列表。。。。。。', this.data._request.userToken)
+      if (this.data._request.userToken == 'unreg') {
+        return;
+      }
+      wx.showLoading();
+      apis.requestGetMember().then(res => {
+        wx.hideLoading();
+        if (res.status == 200) {
+          let memberList = res.data.memberList;
+          let patient = res.data.patient;
+          memberList.unshift(patient)
+          this.setData({
+            memberList,
+            showAddBtn: res.data.showAddBtn,
+            showAccount: res.data.showAccount,
+            relationList: JSON.stringify(res.data.relationList),
+            isLoading: true
+          })
+        } else {
+          wx.showToast({
+            title: res.data.message,
+            icon: 'none',
+            duration: 1000
+          })
+        }
+      })
+
+
+    },
+    //添加家庭成员
+    bindAddFimily: function () {
+      let params = `?relationList=${this.data.relationList}&showAccount=${this.data.showAccount}&isIndex=true&pageUrl=${this.data._request.callPage}`;
+      wx.navigateTo({
+        url: `${this.data.basePath}innerpages/hh-ehr/ehr-add-member/ehr-add-member${params}`
+      })
+    },
+    //是否同意呼叫协议点击
+    _bindIsAgreeExplain() {
+      that.setData({
+        isAgreeExplain: !that.data.isAgreeExplain
+      })
+    },
+
+
     _onImMsg(msg) {
       that._parseMsg(msg);
     },
@@ -202,7 +299,7 @@ Component({
         onMsg: that._receiveMsg,
         //onCall: that._onCall,
         onClose: that._onWsClose
-      }, function(res) {
+      }, function (res) {
         if (200 == res.status) {
           that.setData({
             disConnected: false
@@ -238,7 +335,7 @@ Component({
           disConnected: true
         })
       }
-      setTimeout(function() {
+      setTimeout(function () {
         if (hhim && hhim.loginStatus()) {
           return;
         }
@@ -249,7 +346,7 @@ Component({
     },
 
     _addMonitor() {
-      wx.onNetworkStatusChange(function(res) {
+      wx.onNetworkStatusChange(function (res) {
         if (!res.isConnected) {
           that.setData({
             disConnected: true
@@ -259,7 +356,7 @@ Component({
             getApp().globalData._hhim = null;
           }
         } else if (that.data.disConnected) {
-          setTimeout(function() {
+          setTimeout(function () {
             getApp().globalData._hhim = null;
             that._viewIm();
           }, 500)
@@ -305,6 +402,7 @@ Component({
     /** 解析收到的消息 */
     _parseMsg(msg) {
       msg = msgUtil.parseMsgReceive(msg);
+      console.log('msg解析收到的消息',msg)
       if (!msg.head || !msg.name) {
         let asst = hhDoctor.getAsstInfo();
         msg.head = asst.photo + '';
@@ -369,7 +467,12 @@ Component({
       for (var i = 0; i < msgList.length; i++) {
         var msg = this._precessMsg(msgList[i]);
         if (!this.data._request.callPage &&
+          msg.text &&
           msg.text.indexOf('呼叫') >= 0) {
+          continue;
+        }
+        if (!this.data._request.callPage &&
+          'card' == msg.type) {
           continue;
         }
         list.push(msg);
@@ -420,7 +523,7 @@ Component({
         url: url,
         data: {},
         method: 'POST',
-        success: function(res) {
+        success: function (res) {
           if (res && res.data && 200 == res.data.status) {
             //成功
             if (1 == res.data.data.famOrderDrug.isPay) {
@@ -442,7 +545,7 @@ Component({
           url: url,
           data: {},
           method: 'POST',
-          success: function(res) {
+          success: function (res) {
             if (res && res.data &&
               200 == res.data.status &&
               !res.data.data) {
@@ -451,7 +554,7 @@ Component({
               reject();
             }
           },
-          fail: function() {
+          fail: function () {
             reject();
           }
         })
@@ -489,24 +592,35 @@ Component({
       if (visible == this.data.callBtnsVisible) {
         return;
       }
+
       var animation = wx.createAnimation({
         duration: 250,
         timingFunction: 'ease-in-out',
       })
-
-      var topPx = visible ? this.data.msgPanelTop : this.data.callBtnTop;
+      // 选择成员列表弹出动画
+      this.data.memberCallTop = this.data.msgPanelTop;
+      var topPx = visible ? this.data.memberCallTop : -(this.data.memberList.length * 98 + 178);
       animation.top(topPx).step();
       this.setData({
         callBtnsVisible: visible,
-        animationData: animation.export(),
+        animationMemberData: animation.export(),
       })
-      if (1 == this.data.demo) {
-        setTimeout(function() {
-          that.setData({
-            showDemoTip: !visible
-          })
-        }, visible ? 0 : 250)
-      }
+
+      // var topPx = visible ? this.data.msgPanelTop : this.data.callBtnTop;
+      // animation.top(topPx).step();
+      // this.setData({
+      //   callBtnsVisible: visible,
+      //   animationData: animation.export(),
+      // })
+
+
+      // if (1 == this.data.demo) {
+      //   setTimeout(function () {
+      //     that.setData({
+      //       showDemoTip: !visible
+      //     })
+      //   }, visible ? 0 : 250)
+      // }
     },
 
     /** 显示或隐藏底部的工具栏 */
@@ -532,9 +646,40 @@ Component({
       })
       return false;
     },
+    //检查成员信息是否补全
+    checkMemberMessage(e) {
+      let obj = {}
+      obj['birthday'] = e.currentTarget.dataset.birthday;
+      obj['name'] = e.currentTarget.dataset.name;
+      obj['sex'] = e.currentTarget.dataset.sex;
+      for (var key in obj) {
+        if (obj[key] == '' || !obj[key]) {
+          return false;
+        }
+      }
+      return true;
+    },
+    _bindMyConfirm(e) {      
+      that.setData({
+        isShowModal: false
+      })
+      switch (e.currentTarget.dataset.type){
+        case 'member':
+          let params = '?isUpdate=' + true + '&pageUrl=' + that.data._request.callPage + '&memberUuid=' + that.data.memberUuid;
+        wx.navigateTo({
+          url: `/components/innerpages/hh-ehr/ehr-add-member/ehr-add-member${params}`
+        })
+        break;
+        case 'disclaimer':
+          console.log(that.data.modalMsgData.params)
+          that._viewMedixcine(that.data.modalMsgData.params.drugid, that.data.modalMsgData.params.redirectPage)
+        break;
+      }
+    },
 
     /** 点击呼叫医生 */
     _callDoctor(e) {
+      console.log(this.data._request)
       this._hideBtn();
       if (!this.data._request.callPage) {
         return;
@@ -546,13 +691,15 @@ Component({
       wx.showLoading({
         title: '连接中...',
       })
+      let uuid = e.currentTarget.dataset.uuid ? e.currentTarget.dataset.uuid : getApp().globalData.uuid;
 
       if (1 == that.data.demoStatus) {
-        that._callDemo(e.currentTarget.dataset.dept, 4);
+       
+        that._callDemo(e.currentTarget.dataset.dept, 4,uuid);
         return;
       }
       var callTimeout = 0;
-      var callInterval = setInterval(function() {
+      var callInterval = setInterval(function () {
         if (callTimeout >= 5000) {
           //超时，显示提示信息
           wx.hideLoading();
@@ -562,7 +709,7 @@ Component({
             title: '网络不给力',
             content: '建议切换网络或稍后呼叫医生',
             showCancel: false,
-            success: function() {
+            success: function () {
               that._onWsClose();
               // wx.navigateBack({
               //   delta: 1
@@ -579,8 +726,33 @@ Component({
           //检查是否是黑名单
           that._checkBlackList()
             .then(() => {
-              //正式呼叫
-              var pageUrl = that.data._request.callPage + '?' + that._getPublicRequestParams() + '&dept=' + e.currentTarget.dataset.dept;
+              //用户是否同意视频医生协议
+              if (!that.data.isAgreeExplain) {
+                wx.showModal({
+                  title: '提示',
+                  content: '同意《视频医生服务说明》后\n可发起咨询',
+                  showCancel: false,
+                  confirmColor: '#0592F5',
+                  confirmText: '我知道了',
+                  success() {
+                    calling = false;
+                  }
+                })
+                return;
+              }
+              //检查信息是否补全
+              if (!that.checkMemberMessage(e)) {
+                that.setData({
+                  modalMsgData: { source: 'member', content: '请补充该成员的年龄等信息，才可呼叫医生', confirmText: '立即补充' },
+                  isShowModal: true,
+                  memberUuid: e.currentTarget.dataset.uuid
+                })
+                calling = false;
+                return;
+              }
+              //正式呼叫 如果是选择成员 就传成员id 否则就传自己的 以供评价使用
+              // let uuid = e.currentTarget.dataset.uuid ? e.currentTarget.dataset.uuid : getApp().globalData.uuid;
+              let pageUrl = that.data._request.callPage + '?' + that._getPublicRequestParams() + '&dept=' + e.currentTarget.dataset.dept + '&uuid=' + uuid;
               wx.navigateTo({
                 url: pageUrl
               })
@@ -588,7 +760,7 @@ Component({
             })
             .catch(() => {
               //进入演示模式
-              that._callDemo(e.currentTarget.dataset.dept, 5);
+              that._callDemo(e.currentTarget.dataset.dept, 5,uuid);
               calling = false;
             })
 
@@ -617,8 +789,8 @@ Component({
       // })
     },
 
-    _callDemo(deptId, type) {
-      var pageUrl = that.data._request.demoPage + '?' + that._getPublicRequestParams() + '&dept=' + deptId + '&openType=' + type;
+    _callDemo(deptId, type,uuid) {
+      var pageUrl = that.data._request.demoPage + '?' + that._getPublicRequestParams() + '&dept=' + deptId + '&openType=' + type+'&uuid='+uuid;
       wx.navigateTo({
         url: pageUrl
       })
@@ -654,6 +826,19 @@ Component({
 
     /** 开始录音 */
     _startRecord(e) {
+      if (!that.data.isRecordAuth) {
+        that.setData({ isAuthBox: true })
+        wx.authorize({
+          scope: 'scope.record',
+          success(s) {
+            that.setData({
+              isAuthBox: false,
+              isRecordAuth: true
+            })
+          }
+        })
+        return;
+      }
       if (recording) {
         wx.showToast({
           title: '录音中请稍候',
@@ -661,6 +846,7 @@ Component({
         })
         return;
       }
+
       this.setData({
         recordBtnTip: '松开 结束',
         recordMaskVisible: '',
@@ -674,6 +860,9 @@ Component({
 
     /** 停止录音 */
     _stopRecord(e) {
+      if (!that.data.isRecordAuth) {
+        return;
+      }
       this._doStopRecord()
         .then(() => {
           that.setData({
@@ -686,7 +875,7 @@ Component({
 
     _doStopRecord() {
       return new Promise((resolve, reject) => {
-        let t = setInterval(function() {
+        let t = setInterval(function () {
           if (recording) {
             clearInterval(t);
             rm.stop();
@@ -777,12 +966,12 @@ Component({
         count: imgCount,
         sizeType: ['original'],
         sourceType: [e.currentTarget.dataset.type],
-        success: function(res) {
+        success: function (res) {
           wx.showLoading({
             title: '发送中...'
           })
           hhim.sendImages(res.tempFilePaths, that._sendCallback);
-          setTimeout(function() {
+          setTimeout(function () {
             wx.hideLoading();
           }, imgCount * 2000);
         },
@@ -943,8 +1132,20 @@ Component({
         safeAreaHight: safeArea
       })
     },
+    _naviToApp(){
+      //从小程序跳转过来的      
+      if(this.data.sceneNum==1037){
+        wx.navigateBackMiniProgram();
+      }
+      //从上一个页面进来的
+      if(this.data.sceneNum==1001){
+        wx.navigateBack();
+      }
+
+    },
 
     _viewPers() {
+      console.log('个人中心')
       var pageUrl = this.data._request.personalPage ? this.data._request.personalPage : this.data.basePath + 'innerpages/my';
       pageUrl += '?' + this._getPublicRequestParams();
       if (!this.data._request.personalPage) {
@@ -980,13 +1181,21 @@ Component({
         url: pageUrl,
       })
     },
-
+    //点击药卡
     _buyMedicine(e) {
       this._logInfo('buyMedicine...');
       if (!e.currentTarget.dataset.trans) {
         return;
       }
-      this._viewMedicine(e.currentTarget.dataset.drugid, this.data._request.redirectPage);
+      console.log('是否有carturl======>',e.currentTarget.dataset.carturl)
+      if (e.currentTarget.dataset.carturl){
+        let carturl = e.currentTarget.dataset.carturl+'&thirdId='+getApp().globalData.openId
+        // console.log(getApp().globalData.openId)
+        this._viewMedicineMiaoHealth(carturl);
+        console.log('carturl',carturl)
+      }else{
+        this._viewMedicine(e.currentTarget.dataset.drugid, this.data._request.redirectPage);
+      }
     },
 
     _tapExtendBtn(e) {
@@ -1017,7 +1226,7 @@ Component({
         url: url,
         data: {},
         method: 'POST',
-        success: function(res) {
+        success: function (res) {
           wx.hideLoading();
           if (res && res.data && 200 == res.data.status) {
             //成功
@@ -1029,7 +1238,7 @@ Component({
             })
           }
         },
-        fail: function() {
+        fail: function () {
           wx.hideLoading();
           wx.showModal({
             title: '出错了',
@@ -1046,7 +1255,7 @@ Component({
         intervalHandler.liveList = null;
       }*/
       that._getLiveList();
-      intervalHandler.liveList = setInterval(function() {
+      intervalHandler.liveList = setInterval(function () {
         that._getLiveList();
       }, 30000)
     },
@@ -1065,14 +1274,14 @@ Component({
         url: url,
         data: {},
         method: 'POST',
-        success: function(res) {
+        success: function (res) {
           wx.hideLoading();
           if (res && res.data) {
             that._filterLiveList(res.data.list)
           }
 
         },
-        fail: function() {
+        fail: function () {
           that.setData({
             livePanelHeight: 0
           })
@@ -1093,7 +1302,7 @@ Component({
         liveList: liveList
       })
       that.setData({
-        livePanelHeight: that.data.liveList.length > 0 ? 110 : 0
+        livePanelHeight: that.data.liveList.length > 0 ? 130 : 0
       })
     },
     _tapLive(e) {
@@ -1128,7 +1337,7 @@ Component({
     },
 
     _clearAllIntervalHandler() {
-      Object.keys(intervalHandler).forEach(function(key) {
+      Object.keys(intervalHandler).forEach(function (key) {
         that._clearIntervalHandler(intervalHandler[key]);
       });
     },

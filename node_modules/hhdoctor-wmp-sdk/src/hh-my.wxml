@@ -56,7 +56,7 @@
       <view class='menu-remark'></view>
       <view class='menu-arrow'></view>
     </view>
-    <view class='menu-item' catchtap='_viewAddress' wx:if='{{_request.addressPage && _request.userAcl.showAddress}}'>
+    <view class='menu-item' catchtap='_viewAddress' wx:if='{{_request.userAcl.showAddress}}'>
       <view class='menu-icon address'></view>
       <view class='menu-name'>地址管理</view>
       <view class='menu-remark'></view>
@@ -112,7 +112,7 @@
       <view class='menu-arrow'></view>
     </view>
   </view>
-  <view class='menu-item logout' catchtap='_logoutConfirm' wx:if='{{_request.userAcl.showLogout}}'>
+  <view class='menu-item logout' catchtap='_logoutConfirm'  wx:if='{{_request.userAcl.showLogout}}'>
     退出登录
   </view>
 </view>

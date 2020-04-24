@@ -8,17 +8,23 @@ var APIURLs = {
   getEhrList: "ehr/v2/api/getEhrList", //获取档案list
   getEhrDetail: "ehr/v2/api/getEhrDetail", //获取档案详情,
   createFamOrder: 'trtc/createFamOrder', //trtc-begin 创建订单
-  hangup: 'trtc/hangup', //挂断呼叫
-  rtcLog: 'trtc/log', //上报日志
-  transfer: 'wmp/transferCall', //获取转呼医生信息
-  addAttatch: 'trtc/addAttatch', //上传图片成功后上传附件
-  callResponse: 'trtc/callResponse', //回拨接听调取的接口
+  hangup: 'trtc/hangup', //rtc-挂断呼叫
+  rtcLog: 'trtc/log', //rtc-上报日志
+  transfer: 'wmp/transferCall', //rtc-获取转呼医生信息
+  addAttatch: 'trtc/addAttatch', //trc-上传图片成功后上传附件
+  callResponse: 'trtc/callResponse', //rtc-回拨接听调取的接口
   sendMessage: 'trtc/sendMessage',
-  getOrderStatus: 'trtc/getOrderStatus'//检测订单消息状态
+  getOrderStatus: 'trtc/getOrderStatus',//rtc-检测订单消息状态
+  commitQuestion:'trtc/commitQuestion',//rtc-评价提交问题
+  commitFeedback:'trtc/commitFeedback',//rtc-星级评价 匿名提交
+  changeDoctor:'trtc/changeDoctor',//rtc-换个医生问问
+
 };
 
+
+
 function getEhrUrl(url) {
-  return app.globalData._hhSdkOptions._host.ehrHost + url;
+  return getApp().globalData._hhSdkOptions._host.ehrHost + url;
 }
 // ehr
 function getUploadUrl() {
@@ -38,30 +44,39 @@ function getRtcUploadUrl() {
 
 function request(url, data) {
   return new Promise(function(resolve, reject) {
-    data['sdkProductId'] = app.globalData._hhSdkOptions._sdkProductId;
-    data['userToken'] = app.globalData._hhSdkOptions._userToken
+    data['sdkProductId'] = getApp().globalData._hhSdkOptions._sdkProductId;
+    data['userToken'] = getApp().globalData._hhSdkOptions._userToken
     wx.request({
-      url: getRealUrl(url),
+      url: getEhrUrl(url),
       data: data,
       method: "POST",
       success(res) {
         if (res.statusCode == 200) {
           resolve(res.data);
         } else {
-          wx.showModal({
-            title: '提示',
-            content: res && res.data && res.data.error || "网络请求错误",
-            showCancel: false
-          });
+         
+            wx.showModal({
+              title: '提示',
+              content: res && res.data && res.data.error || "网络请求错误",
+              showCancel: false,
+            });
+          
           reject(res);
         }
       },
       fail(res) {
-        wx.showModal({
-          title: '提示',
-          content: res && res.data && res.data.error || "网络请求错误",
-          showCancel: false
-        });
+          wx.showModal({
+            title: '提示',
+            content: res && res.data && res.data.error || "网络请求错误",
+            showCancel: false,
+            success(){
+              wx.reLaunch({
+                url: '/pages/index/error'
+              })
+            }
+
+          });
+        
         reject(res);
       }
     });
@@ -125,21 +140,32 @@ function requestRtc(url, data, isLog) {
           resolve(res.data);
         } else {
           if (!isLog) {
-            wx.showModal({
-              title: '提示',
-              content: res && res.data && res.data.error || "网络请求错误",
-              showCancel: false
-            });
+              wx.showModal({
+                title: '提示',
+                content: res && res.data && res.data.error || "网络请求错误",
+                showCancel: false,
+                success(){
+                  wx.reLaunch({
+                    url: '/pages/index/error',
+                  })
+                }
+              });
           }
           reject(res);
         }
       },
       fail(res) {
         if (!isLog) {
+          wx.hideLoading()
           wx.showModal({
             title: '提示',
             content: res && res.data && res.data.error || "网络请求错误",
-            showCancel: false
+            showCancel: false,
+            success(){
+              wx.reLaunch({
+                url: '/pages/index/error',
+              })
+            }
           });
         }
         reject(res);
@@ -150,11 +176,12 @@ function requestRtc(url, data, isLog) {
 
 //rtc-1.创建订单
 // ?dept = ${ this.data._request.dept }`
-function requestCreateFamOrder(dept, famOrderId, platform, sdkVersion) {
+function requestCreateFamOrder(dept, famOrderId, platform, sdkVersion,realPatientUuid) {
   let query = `sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}`
-
+  
   let orderid = famOrderId ? `&famOrderId=${famOrderId}` : ''
-  let url = `?dept=${dept}&platform=${platform}&sdkVersion=${sdkVersion}+&${query}`
+  let uuid = realPatientUuid?`&realPatientUuid=${realPatientUuid}`:''
+  let url = `?dept=${dept}&platform=${platform}&sdkVersion=${sdkVersion}${uuid}&${query}`
   return requestRtc(APIURLs.createFamOrder + url + orderid, {})
 }
 //rtc-2.挂断呼叫
@@ -203,6 +230,23 @@ function requestGetOrderStatus(orderId){
   let url = `?sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}&famOrderId=${orderId}`;
   return requestRtc(APIURLs.getOrderStatus + url, {})
 }
+//evaluate-1 提交问题
+function requestCommitQuestion(questionId,answer,famOrderId){
+  let url = `?sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}&famOrderId=${famOrderId}&questionId=${questionId}&answer=${answer}`;
+  return requestRtc(APIURLs.commitQuestion+url,{})
+}
+//evaluate-2 星级评价 匿名提交
+function requestCommitFeedback(params){
+  let url = `?sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}`;
+  return requestRtc(APIURLs.commitFeedback+url+params,{})
+}
+function requestChangeDoctor(famOrderId){
+  let url = `?sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}&famOrderId=${famOrderId}`;
+  return requestRtc(APIURLs.changeDoctor+url,{})
+
+
+}
+
 
 module.exports = {
   getUploadUrl,
@@ -221,5 +265,8 @@ module.exports = {
   requestAddAttatch,
   requestCallResponse,
   requestSendMessage,
-  requestGetOrderStatus
+  requestGetOrderStatus,
+  requestCommitQuestion,
+  requestCommitFeedback,
+  requestChangeDoctor
 }

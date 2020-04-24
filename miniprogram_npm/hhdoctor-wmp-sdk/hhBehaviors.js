@@ -35,6 +35,7 @@ module.exports = Behavior({
       ehrPage: null,
       personalPage: '',
       personalIconVisible: true,
+      naviToAppIconVisible: false,
       medicinePage: null,
       addressPage: '',
       payPage: '',
@@ -315,7 +316,7 @@ module.exports = Behavior({
         this.data._request.openId,
         account.miniProgram.appId,
         requestHis,
-        function(res) {
+        function (res) {
           if (res) {
             that._logInfo('登录成功');
             //登录成功
@@ -364,6 +365,14 @@ module.exports = Behavior({
         '&version=' + this.data._sdkVersion +
         '&_=' + new Date().getTime();
       var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(vParam);
+      wx.navigateTo({
+        url: pageUrl
+      })
+    },
+
+    _viewMedicineMiaoHealth(cartUrl){
+      console.log('cartUrl',cartUrl)
+      var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(cartUrl)
       wx.navigateTo({
         url: pageUrl
       })
@@ -464,6 +473,9 @@ module.exports = Behavior({
       wx.navigateTo({
         url: pageUrl
       })
+      // wx.navigateTo({
+      //   url: '/components/innerpages/hh-ehr/ehr-index/ehr-index',
+      // })
     },
 
 

@@ -1,6 +1,9 @@
 // components/innerpages/hh-ehr/ehr-add-member/ehr-add-member.js
 const app = getApp();
 const apis = require("../../../utils/api.js");
+const hhDoctor = require('../../../hhDoctor.js');
+
+
 Page({
 
   /**
@@ -15,7 +18,8 @@ Page({
     relationIdx:-1,
     genderIdx:-1,
     date:'',
-    isAccount:false
+    isAccount:false,
+    memberUuid:0
   },
   
   /**
@@ -30,11 +34,19 @@ Page({
     this.setData({ 
       relationList, 
       relations, 
-      isedit: options.isedit || false, 
+      isedit: options.isedit || false, //编辑成员
+      isIndex:options.isIndex ||false,//首页进入添加成员
+      isUpdate:options.isUpdate ||false,//首页进入补充成员信息
       item,
       showAccount: options.showAccount,
-      isAccount: item?item.isAccount: false
+      isAccount: item?item.isAccount: false,
+      pageUrl:options.pageUrl || '',
+      endDate:this.formatBirth(Date.now())
       })
+    if(options.isUpdate){
+      this.data.memberUuid=options.memberUuid,
+      wx.setNavigationBarTitle({title: '补充成员信息'});
+    }
     if(options.isedit){
       this.getLoadEdit(item);
     }
@@ -47,6 +59,7 @@ Page({
     })
     let genderIdx = (item.sex == '男') ? 0 : (item.sex == '女') ? 1:-1;
     this.setData({
+      memberUuid:item.uuid,
       inputVal:item.name,
       relationIdx:this.data.relationIdx,
       genderIdx,
@@ -144,9 +157,11 @@ Page({
     const loginname= e.detail.value.loginname;
     let member = {
       name: this.data.inputVal,
-      relation: this.data.relations[this.data.relationIdx],
       gender: this.data.gender[this.data.genderIdx],
       birthday: this.data.date
+    }
+    if(!this.data.isUpdate){
+      member['relation']=this.data.relations[this.data.relationIdx]
     }
     if (!member.name){
       wx.showToast({
@@ -155,7 +170,7 @@ Page({
       })
       return;
     }
-    if (!member.relation){
+    if (!member.relation && !this.data.isUpdate){
       wx.showToast({
         title: '请选择与成员关系',
         icon: 'none'
@@ -177,7 +192,7 @@ Page({
       return;
     }
 
-    if (this.data.isLoginChecked && !this.data.isedit){
+    if (this.data.isLoginChecked && !this.data.isedit && !this.data.isUpdate){
       if(!loginname){
         wx.showToast({
           title: '请输入独立登录手机号',
@@ -193,22 +208,32 @@ Page({
       }
        member['loginname']=loginname;
     }
-    
-    // if(this.data.isedit){
-    //   this.requestUpdateMember(member)
-    // }else{
-    //   this.requestAddUserMember(member);
+    let saveType = e.detail.target.dataset.type || fasle;
 
-    // }
+      // 编辑页或成员列表页首页进入添加成员
+      if(this.data.isedit||this.data.isUpdate){
+        this.requestUpdateMember(member,this.data.memberUuid)
+      }
+      if(this.data.isIndex||this.data.isAddEhr){
+        this.requestAddUserMember(member,saveType);
+      }
+       
   },
+
   //更新成员信息
-  requestUpdateMember: function(member){
+  requestUpdateMember: function(member,memberUuid){
     wx.showLoading({mask:true})
-    let memberUuid = this.data.item.uuid;
     apis.requestUpdateMember(member, memberUuid).then(res=>{
       wx.hideLoading();
       if(res.status == 200){
-        wx.navigateBack({})
+        if(this.data.isUpdate){//保存并呼叫
+          var pageUrl =  this.data.pageUrl+ '?' + hhDoctor.getPublicParams()+ '&dept=600002'+'&uuid='+ memberUuid;
+          wx.redirectTo({
+            url: pageUrl
+          })
+        }else{
+          wx.navigateBack({})
+        }
       }else{
         wx.showToast({
           title: res.message,
@@ -220,17 +245,33 @@ Page({
     })
   },
   //添加成员
-  requestAddUserMember: function (member){
+  requestAddUserMember: function (member,saveType){
     wx.showLoading({mask:true});
     apis.requestAddUserMember(member).then(res=>{
       wx.hideLoading();
       if(res.status == 200){
-        if (res.data.isAccount){ 
-          wx.redirectTo({
-            url: '/components/innerpages/hh-ehr/ehr-account/ehr-account'
-          })
-        }else{
-          wx.navigateBack();
+        console.log(this.data.pageUrl,res)
+        switch(saveType){
+          case 'save' :
+            wx.redirectTo({
+              url: '/pages/index/index',
+            })
+            break;
+          case 'saveCall':
+            //跳转呼叫页  需修改  
+            var pageUrl =  this.data.pageUrl+ '?' + hhDoctor.getPublicParams()+ '&dept=600002'+'&uuid='+ res.data.uuid;
+            wx.redirectTo({
+              url: pageUrl
+            })
+            break;
+          default:
+            if (res.data.isAccount){ 
+              wx.redirectTo({
+                url: '/components/innerpages/hh-ehr/ehr-account/ehr-account'
+              })
+            }else{
+              wx.navigateBack();
+            }
         }
       }else{
         wx.showToast({
@@ -240,5 +281,6 @@ Page({
         })
       }
     })
-  }
+  },
+
 })

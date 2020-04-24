@@ -100,6 +100,7 @@ Page({
         X: touchMoveX,
         Y: touchMoveY
       });
+      
     that.data.memberList.forEach(function(v, i) {
       v.isTouchMove = false
 

@@ -2,7 +2,7 @@
 <form bindsubmit='bindMemberSubmit'>
 <view class='page'>
   <view class='member-theme'>
-    <image src='/images/avatar.png' class='member-avatar'></image>
+    <image src='../../../images/avatar.png' class='member-avatar'></image>
   </view>
   <view class='member-inputs'>
    <!-- 填写姓名 -->
@@ -16,7 +16,7 @@
       ></input> 
     </view>
     <!-- 填写关系 -->
-    <view class='inputs-item bottom'>
+    <view class='inputs-item bottom' wx:if='{{relationList.length}}'>
       <text class='inputs-text'>关系</text> 
       <picker  range="{{relations}}"  bindchange="bindPickerRelation"  class='picker' value='{{relationIdx}}'>
         <view class='{{relations[relationIdx]?"picker-text":"placeholder"}}'>{{relations[relationIdx] || '请选择与成员关系'}}</view>
@@ -32,7 +32,10 @@
       <!-- 生日 -->
     <view class='inputs-item'>
       <text class='inputs-text'>生日</text> 
-      <picker  mode="date" value="{{date}}" bindchange="bindPickerDate" class='picker'>
+      <picker  mode="date" value="{{date}}"
+      start="1900-01-01" 
+      end="{{endDate}}"
+      bindchange="bindPickerDate" class='picker'>
         <view class='{{date?"picker-text":"placeholder"}}' >{{date || '请选择出生年月'}}</view>
       </picker>
     </view>
@@ -46,11 +49,14 @@
           isedit='{{isedit}}' 
           isAccount='{{item.isAccount}}'
     ></member-login>
-    <view class='member-saves'>
-      <button class='member-save'>保存</button>
-      <button class='member-call'>保存并呼叫医生</button>
+    <view class='member-saves' wx:if='{{isIndex}}'>
+      <button class='member-save' form-type="submit" data-type='save'>保存</button>
+      <button class='member-call' form-type="submit"  data-type='saveCall'>保存并呼叫医生</button>
     </view>
-    <!-- <button class='member-submit' form-type="submit">确定</button> -->
+    <view wx:elif='{{isUpdate}}'>
+        <button class='member-submit' form-type="submit" data-type='updateCall'>保存并呼叫医生</button>
+    </view>
+    <button class='member-submit' form-type="submit" wx:else>确定</button>
 
 
 </view>

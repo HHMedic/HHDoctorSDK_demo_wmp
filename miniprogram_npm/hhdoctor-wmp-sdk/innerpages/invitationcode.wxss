@@ -13,7 +13,7 @@ page {
 }
 
 .content {
-  margin-top: 327rpx;
+  margin-top: 227rpx;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -21,7 +21,7 @@ page {
   align-items: center;
   padding: 0 60rpx;
   box-sizing: border-box;
-  margin-bottom: 87rpx;
+  margin-bottom: 57rpx;
 }
 
 .ipt_list {
@@ -77,4 +77,11 @@ page {
   font-weight:400;
   color:#F53205;
   line-height:57rpx;
+}
+
+.kb {
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+  width: 100%;
 }

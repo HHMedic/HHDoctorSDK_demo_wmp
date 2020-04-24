@@ -15,7 +15,7 @@ Component({
     _name: 'hh-buyproduct',
     selectedPid: -1,
     productList: [],
-    productComment:[]
+    productComment: []
   },
   lifetimes: {
     attached() {
@@ -31,7 +31,38 @@ Component({
    */
   methods: {
     _requestComplete() {
-      this._getProductInfo();
+      this._checkPublished()
+        .then(() => {
+          this._getProductInfo();
+        })
+        .catch(err => {
+          wx.showModal({
+            title: '提示',
+            content: '当前系统不支持购买会员，请使用邀请码或在安卓系统下购买',
+            showCancel: false,
+            confirmText: '我知道了',
+            success(res) {
+              wx.navigateBack({
+                delta: 1
+              })
+            }
+          })
+
+        })
+    },
+    _checkPublished() {
+      return new Promise((resolve, reject) => {
+        if ('undefined' == getApp().globalData.isPublished
+          || getApp().globalData.isPublished) {
+          resolve();
+          return;
+        }
+        if (this.data.sysInfo.system.toLowerCase().indexOf('ios') < 0) {
+          resolve();
+          return;
+        }
+        else reject()
+      })
     },
     _getProductInfo() {
       wx.showLoading({
@@ -45,13 +76,13 @@ Component({
         url: url,
         data: {},
         method: 'POST',
-        success: function(res) {
+        success: function (res) {
           wx.hideLoading();
           if (res && res.data && 200 == res.data.status) {
             //成功
             that.setData({
               productList: res.data.data,
-              productComment: ['7×24小时视频看医生','知名专家会诊咨询']
+              productComment: ['7×24小时视频看医生', '知名专家会诊咨询']
             })
             if (that.data.productList &&
               1 == that.data.productList.length) {

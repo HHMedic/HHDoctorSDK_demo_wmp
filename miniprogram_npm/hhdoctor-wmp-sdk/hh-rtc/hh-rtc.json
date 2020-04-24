@@ -3,7 +3,8 @@
   "renderingMode": "seperated",
   "usingComponents": {
     "webrtc-room": "../webrtc-room/webrtc-room",
-    "hh-live":"../hh-live/hh-live"
+    "hh-live":"../hh-live/hh-live",
+    "hh-evaluate":"../hh-evaluate/hh-evaluate"
   },
   "navigationStyle": "custom",
   "disableScroll": true,

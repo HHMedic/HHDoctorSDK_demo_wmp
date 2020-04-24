@@ -18,6 +18,10 @@ Page({
     that = this;
     if (options.url) {
       url = decodeURIComponent(options.url);
+      console.log('url',url)
+      this.setData({
+        viewSrc: url||''
+      })
     } else {
       wx.navigateBack({
         delta: 1
@@ -37,9 +41,7 @@ Page({
    */
   onShow: function() {
     console.log(url);
-    this.setData({
-      viewSrc: url
-    })
+    
   },
 
   /**

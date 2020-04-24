@@ -38,7 +38,13 @@ function doRequest(url, method, data) {
         wx.showModal({
           title: '提示',
           content: res && res.data && res.data.error || "网络请求错误",
-          showCancel: false
+          showCancel: false,
+          success(){
+            wx.reLaunch({
+              url: '/pages/index/error'
+            })
+          }
+
         });
         reject();
       }

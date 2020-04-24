@@ -106,13 +106,13 @@ page {
 .card-desc-list {
   position: absolute;
   left: 25px;
-  top: 60px;
+  top: 55px;
 }
 
 .card-desc {
-  font-size: 16px;
-  line-height: 16px;
-  margin-top: 13px;
+  font-size: 14px;
+  line-height: 14px;
+  margin-top: 12px;
   margin-left: 12px;
   position: relative;
 }
@@ -326,8 +326,8 @@ page {
 
 .view-right {
   position: absolute;
-  right: 34px;
-  top: 24px;
+  left: 120px;
+  bottom: 18px;
   width: 75px;
   height: 20px;
   line-height: 20px;

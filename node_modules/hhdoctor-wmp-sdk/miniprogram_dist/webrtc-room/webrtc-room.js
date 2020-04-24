@@ -447,7 +447,7 @@ Component({
     start: function() {
       self = this;
       self.data.hasExitRoom = false;
-      self.requestRtcLog('2', '开始调用sdk-start')
+      self.requestRtcLog('2', '开始调用sdk-start', self.data.orderid)
       self.requestSigServer(self.data.userSig, self.data.privateMapKey);
       if (this.data.enableIM) {
         this.initIm(); // 初始化IM
@@ -462,7 +462,7 @@ Component({
         })
       }
       self.data.members.forEach(function(val) {
-        self.requestRtcLog('3', '医生player.play()')
+        self.requestRtcLog('3', '医生player.play()', self.data.orderid)
         val.playerContext && val.playerContext.play();
       });
     },
@@ -552,7 +552,7 @@ Component({
         members: self.data.members
       });
       console.log('退出房间self.data.members', self.data.members)
-      self.requestRtcLog('1', 'sdk-exitRoom')
+      self.requestRtcLog('1', 'sdk-exitRoom', self.data.orderid)
     },
 
     postErrorEvent: function(errCode, errMsg) {
@@ -579,7 +579,7 @@ Component({
 
       var url = this.data.useCloud ? 'https://official.opensso.tencent-cloud.com/v4/openim/jsonvideoapp' : 'https://yun.tim.qq.com/v4/openim/jsonvideoapp';
       url += '?sdkappid=' + sdkAppID + "&identifier=" + userID + "&usersig=" + userSig + "&random=" + Date.now() + "&contenttype=json";
-      self.requestRtcLog('2', '开始执行requestSigServer')
+      self.requestRtcLog('2', '开始执行requestSigServer', self.data.orderid)
       var reqHead = {
         "Cmd": 1,
         "SeqNo": 1,
@@ -600,6 +600,7 @@ Component({
           "ReqHead": reqHead,
           "ReqBody": reqBody
         },
+        timeout:3000,
         method: "POST",
         success: function(res) {
           console.log("requestSigServer success:", res);
@@ -622,7 +623,7 @@ Component({
 
           var roomSig = JSON.stringify(res.data["RspBody"]);
           var pushUrl = "room://cloud.tencent.com?sdkappid=" + sdkAppID + "&roomid=" + roomID + "&userid=" + userID + "&roomsig=" + encodeURIComponent(roomSig);
-          self.requestRtcLog('2', '生成推流地址:' + pushUrl)
+          self.requestRtcLog('2', '生成推流地址:' + pushUrl, self.data.orderid)
 
 
           // 如果有配置纯音频推流或者recordId参数
@@ -665,7 +666,7 @@ Component({
         },
         fail: function(res) {
           console.log("requestSigServer fail:", res);
-          self.requestRtcLog('2', 'requestSigServer fail：' + JSON.stringify(res))
+          self.requestRtcLog('2', 'requestSigServer fail：' + JSON.stringify(res), self.data.orderid)
           self.postErrorEvent(1021, '网络中断,请重新呼叫~');
           self.data.requestSigFailCount++;
           // 重试1次后还是错误，则抛出错误
@@ -895,7 +896,7 @@ Component({
           {
             console.log('收到5000: ', code);
             // 收到5000就退房
-            self.exitRoom();
+            // self.exitRoom();
             break;
           }
         case 1018:
@@ -934,7 +935,10 @@ Component({
             //self.exitRom();
             break;
           }
-     
+          case 3003:
+          {
+            self.postErrorEvent(3003, '网络故障');
+          }
         default:
           {
             // console.log('推流情况：', code);
@@ -953,7 +957,7 @@ Component({
       self.requestRtcLog('2', 'error' + JSON.stringify(detail), self.data.orderid)
       detail.errCode == 10001 ? (detail.errMsg = '未获取到摄像头功能权限，请删除小程序后重新打开') : '';
       detail.errCode == 10002 ? (detail.errMsg = '未获取到录音功能权限，请删除小程序后重新打开') : '';
-      self.postErrorEvent(self.data.ERROR_CAMERA_MIC_PERMISSION, detail.errMsg || '未获取到摄像头、录音功能权限，请删除小程序后重新打开')
+      // self.postErrorEvent(self.data.ERROR_CAMERA_MIC_PERMISSION, detail.errMsg || '未获取到摄像头、录音功能权限，请删除小程序后重新打开')
     },
 
     //播放器live-player回调
@@ -986,7 +990,8 @@ Component({
             case -2301:
               {
                 console.error('网络连接断开，且重新连接亦不能恢复，播放器已停止播放', val);
-                self.delPusher(val);
+                // self.delPusher(val);
+                self.postErrorEvent(3005, '经多次自动重连失败，放弃连接');
                 break;
               }
             case 3005:
@@ -1167,6 +1172,10 @@ Component({
       self = this;
       let info = e.detail.info;
       let fps = Math.ceil(info.videoFPS)
+        //将值传给父元素
+        // self.triggerEvent('PushBitrate',{
+        //   value:info.videoBitrate
+        // })
       self.requestRtcLog('2', 'netinfo:' + `{"vbr":${info.videoBitrate},"abr":${info.audioBitrate},"fps":${fps},"spd":${info.netSpeed},"vw":${info.videoWidth},"vh":${info.videoHeight}}`, self.data.orderid)
     },
     /** 上报日志 */

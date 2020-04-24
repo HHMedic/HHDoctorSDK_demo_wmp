@@ -1,4 +1,6 @@
 {
-  "usingComponents": {},
+  "usingComponents": {
+    "keyboard": "../keyboard/keyboard"
+  },
   "navigationBarTitleText": "邀请码激活"
 }
