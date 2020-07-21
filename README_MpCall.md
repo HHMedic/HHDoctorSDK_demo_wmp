@@ -16,6 +16,6 @@
 ### 3.步骤2中的参数说明如下：
  - ***`sdkProductId`*** :和缓分配的sdkProductId。
  - ***`userToken`*** :服务端注册用户接口返回的userToken。
- 
+ - ***`version`*** :release:线上生产小程序     trial:体验版小程序
 
   
