@@ -6,8 +6,8 @@
 }
 
 button {
-  width: 300px;
-  margin-top: 10px;
+  width: 600rpx;
+  margin-top: 10rpx;
   color: #fff;
   background-color: #0592f5;
 }

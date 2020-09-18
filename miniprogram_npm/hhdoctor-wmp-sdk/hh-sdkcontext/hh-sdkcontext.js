@@ -20,7 +20,7 @@ Component({
     attached() {
       that = this;
     },
-    ready() {}
+    ready() { }
   },
   /**
    * 组件的方法列表
@@ -31,7 +31,7 @@ Component({
         return;
       }
       var _t = 0;
-      var checkInterval = setInterval(function() {
+      var checkInterval = setInterval(function () {
         if (!that.data._requestComplete) {
           if (_t > that.data._timeOut) {
             //超时
@@ -68,6 +68,15 @@ Component({
         case 'addressList':
           this._viewAddressList();
           break;
+        case 'ehrMemberList':
+          this._viewEhrMemberList();
+          break;
+        case 'ehrList':
+          this._viewEhrList(options.patient, options.nickname);
+          break;
+        case 'ehrDetail':
+          this._viewEhrDetail(options.patient, options.medicRecordId);
+          break;
         default:
           return;
       }
@@ -82,6 +91,25 @@ Component({
       wx.navigateTo({
         url: pageUrl
       })
-    }
+    },
+
+    _viewEhrMemberList() {
+      let page = this.data.basePath + 'innerpages/ehr-family/ehr-family'
+      wx.navigateTo({
+        url: page,
+      })
+    },
+    _viewEhrList(patient, nickname) {
+      let page = this.data.basePath + 'innerpages/ehr-filings/ehr-filings?memberUserToken=' + patient + '&nickname=' + nickname
+      wx.navigateTo({
+        url: page
+      })
+    },
+    _viewEhrDetail(patient, medicRecordId) {
+      let page = this.data.basePath + 'innerpages/ehr-filingdetail/ehr-filingdetail?id=' + medicRecordId + '&memberUserToken=' + patient
+      wx.navigateTo({
+        url: page,
+      })
+    },
   }
 })

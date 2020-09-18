@@ -1,4 +1,4 @@
-# 和缓视频医生微信小程序SDK使用指南（3.0.0）
+# 和缓视频医生微信小程序SDK使用指南（2.1.0）
 
 和缓视频医生微信小程序SDK（**本SDK**）为小程序自定义组件形式，使用npm方式发布。本文引导开发者从零开始，一步一步搭建起和缓视频医生基本功能框架。如果开发者是在现有项目中集成本SDK，可直接从第2步开始阅读。
 
@@ -14,8 +14,6 @@
  查看0.*版本文档请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_0.1.md) 
 
  查看1.*版本文档请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_1.0.md) 
-
- 查看2.*版本文档请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_2.0.md) 
  
 ## 特别说明（重点关注事项）
 
@@ -25,19 +23,17 @@
 
 3. 微信小程序IDE模拟器不支持livePusher和livePlayer组件，因此无法体验视频呼叫功能，请在真机中预览或进行真机调试。
 
-4. 本项目所使用userToken和sdkProductId为演示专用，无法应用到测试或生产环境。
+4. 本项目所使用uuid和sdkProductId为演示专用，无法应用到测试或生产环境。
 
-5. 如使用购药功能，需提供小程序AppId及小程序的主体信息给和缓接口人，以绑定支付功能，绑定成功后方可正常使用。详细绑定步骤请咨询和缓接口人。
+5. 如使用购药功能，需提供小程序appid及小程序的主体信息给和缓接口人，以绑定支付功能，绑定成功后方可正常使用。详细绑定步骤请咨询和缓接口人。
 
 6. 小程序开发完成后，需提交微信审核，审核通过后方可正式上线。如贵方小程序属首次提交审核，请务必预留充足的审核时间（至少预留1周审核时间，特殊情况下可能需要2周）。如在上线审核过程中遇到问题，可咨询和缓接口人寻求更多建议。
 
-7. 在小程序后台“设置”-“基本设置”下，将“基础库最低版本设置”设置为2.10.0或更高版本。
+7. 在小程序后台“设置”-“基本设置”下，将“基础库最低版本设置”设置为2.9.4或更高版本。
 
 8. 生产环境与测试环境的sdkProductId可以通用，但用户数据是完全隔离的，请勿将测试环境的userToken数据应用到生产环境，反之亦然。
 
-9. 如果您是从 `1.*` 版本SDK升级到 `2.*` 版本SDK，请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_upgrade_1_to_2.md)查看升级指南。
-
-10. 如果您是从 `2.*` 版本SDK升级到 `3.*` 版本SDK，请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_upgrade_2_to_3.md)查看升级指南。
+8. 如果您是从 `1.*` 版本SDK升级到 `2.*` 版本SDK，请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_upgrade_1_to_2.md)查看升级指南。
 
 ---
 
@@ -179,7 +175,7 @@ hhDoctorLogin() {
 
   - **功能** ：联系医助、查看病历档案
 
-  - **入口** ：hhdoctor-wmp-sdk/hh-im/hh-im
+  - **入口** ：hhdoctor-wmp-sdk/hh-im
 
   - **参数说明**： 
 
@@ -195,10 +191,10 @@ hhDoctorLogin() {
     }
     ```
 
-### 3. hh-trtc组件
+### 3. hh-rtc组件
   - **功能** ：呼叫视频医生
 
-  - **入口** ：hhdoctor-wmp-sdk/hh-trtc/hh-trtc
+  - **入口** ：hhdoctor-wmp-sdk/hh-rtc/hh-rtc
 
   - **参数说明** ：
 
@@ -226,14 +222,24 @@ hhDoctorLogin() {
       videoDur:Integer  //视频持续时长,单位：秒。
     }
     ```
+  
+    
+### 4. hh-ehr组件
 
+ - **功能** :查看病历档案
 
+ - **入口** : hhdoctor-wmp-sdk/hh-ehr
+
+ - **参数说明** ：
+
+   - ***`request`*** :Object，请求参数，说明见下方。
+   
    
 ### 5. hh-sdkcontext组件
 
  - **功能** :hhSdk实例，通过this.selectComponent(ID)获取，以调用hhSdk内部封装好的方法，使用方法可参考pages/index/custom页面
 
- - **入口** : hhdoctor-wmp-sdk/hh-sdkcontext/hh-sdkcontext
+ - **入口** : hhdoctor-wmp-sdk/hh-sdkcontext
 
  - **参数说明** ：
 

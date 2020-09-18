@@ -49,11 +49,11 @@ Page({
         let self = this;
         wx.getNetworkType({
             success: (res) => {
-              if(res.networkType=='none'){
-                self.setData({ isConnect: false})
-              }
+                if (res.networkType == 'none') {
+                    self.setData({ isConnect: false })
+                }
             }
-          })
+        })
         this.getMember();
         this.setData({
             userCnt: hhDoctor.getProduct() ? hhDoctor.getProduct().userCnt : 0
@@ -125,9 +125,9 @@ Page({
                 X: startX,
                 Y: startY
             }, {
-                    X: touchMoveX,
-                    Y: touchMoveY
-                });
+                X: touchMoveX,
+                Y: touchMoveY
+            });
 
         that.data.memberList.forEach(function (v, i) {
             v.isTouchMove = false
@@ -181,7 +181,7 @@ Page({
                     showAccount: res.data.showAccount,
                     relationList: JSON.stringify(res.data.relationList),
                     deleteCount: res.data.deleteCount,
-                    isLoading:true
+                    isLoading: true
                 })
             } else {
                 wx.showToast({
@@ -190,20 +190,20 @@ Page({
                     duration: 1000
                 })
             }
-        }).catch(err=>{
+        }).catch(err => {
             wx.hideLoading();
         })
     },
-    _bindMyConfirm(){
+    _bindMyConfirm() {
         let self = this;
         self.setData({
-            isShowModal:false
+            isShowModal: false
         })
         switch (self.data.modalMsgData.source) {
             case 'member':
-                let params = '?isUpdate=' + true + '&pageUrl=/pages/room/room' + '&memberUuid=' + self.data.memberUuid + '&item=' + JSON.stringify(self.data.storeMsg);
+                let params = '?isUpdate=' + true + '&pageUrl=' + hhDoctor.getOptions.callPage + '&memberUuid=' + self.data.memberUuid + '&item=' + JSON.stringify(self.data.storeMsg);
                 wx.navigateTo({
-                    url: `/components/innerpages/ehr-addmember/ehr-addmember${params}`
+                    url: `../ehr-addmember/ehr-addmember${params}`
                 })
                 break;
             case 'addmember': self.navigateAddMember();
@@ -221,7 +221,7 @@ Page({
         let userNum = this.data.userCnt - (this.data.memberList.length - 1) - this.data.deleteCount;
         let modalCon = this.data.deleteCount > 0 ? `还可添加${userNum}成员（删除已添加成员后仍占用名额，已删除${this.data.deleteCount}成员），确定添加吗？` : `还可添加${userNum}成员（删除已添加成员后仍占用名额），确定添加吗？`
         this.setData({
-            isShowModal:true,
+            isShowModal: true,
             modalMsgData: { source: 'addmember', content: modalCon, confirmText: '确定添加' }
         })
     },
@@ -231,10 +231,10 @@ Page({
         wx.navigateTo({
             url: `../ehr-addmember/ehr-addmember${params}`
         });
-   
+
     },
     //编辑家庭成员信息
-    bindFillingEdit (e) {
+    bindFillingEdit(e) {
         let item = JSON.stringify(e.currentTarget.dataset.item);
         let params = `?relationList=${this.data.relationList}&showAccount=${this.data.showAccount}&item=${item}&isedit=true`;
         wx.navigateTo({
@@ -297,10 +297,10 @@ Page({
         }
         this.setData({
             modalMsgData: { source: 'delmember', content: '删除该成员后仍占用成员名额，确定删除吗？', confirmText: '确定删除' },
-            isShowModal:true,
+            isShowModal: true,
             memberUuid
         })
-        
+
 
     },
     //删除函数

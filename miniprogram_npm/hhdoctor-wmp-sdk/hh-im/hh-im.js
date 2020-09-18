@@ -68,7 +68,7 @@ Component({
       that._checkRecordAuth();
       this.getMember();
       this.checkNetStatus();
-   
+
     },
 
     hide() {
@@ -136,14 +136,14 @@ Component({
     modalMsgData: { source: 'member', content: '请补充该成员的年龄等信息，才可呼叫医生', confirmText: '立即补充' },//disclaimer member 目前只有补充成员信息和免责声明用到该组件
     isAgreeExplain: true,//呼叫协议
     deleteCount: 0,//删除成员的个数 
-    userToken:'',
-    sdkProductId:'',
-    memberList:[],
-    patient:null,
-    parent:null,
-    isEnterFace:false,//是否打开人脸识别
-    callPageUrl:'',
-    showAddBtn:false
+    userToken: '',
+    sdkProductId: '',
+    memberList: [],
+    patient: null,
+    parent: null,
+    isEnterFace: false,//是否打开人脸识别
+    callPageUrl: '',
+    showAddBtn: false
 
   },
 
@@ -177,44 +177,44 @@ Component({
       this.setData({
         userCnt: hhDoctor.getProduct() ? hhDoctor.getProduct().userCnt : 0,
         explainUrl: encodeURIComponent(getApp().globalData._hhSdkOptions._host.wmpHost + 'wmp/license?type=2000'),
-        userToken:this.data._request.userToken,
+        userToken: this.data._request.userToken,
         sdkProductId: this.data._request.sdkProductId,
       })
       that._checkSceneNum();
       that._checkRecordAuth();
 
     },
-    checkNetStatus(){
+    checkNetStatus() {
       wx.getNetworkType({
         success: (res) => {
-          if(res.networkType=='none'){
-            that.setData({disConnected:true})
-            setTimeout(res=>{
+          if (res.networkType == 'none') {
+            that.setData({ disConnected: true })
+            setTimeout(res => {
               that.checkNetStatus()
-            },500)
-          }else{
-            that.setData({disConnected:false})
+            }, 500)
+          } else {
+            that.setData({ disConnected: false })
           }
         },
       })
     },
     //检测来源
-    _checkSceneNum(){
-        let self = this;
-        let forbiddenScene = getApp().globalData.loginUser?getApp().globalData.loginUser.loadcfg.forbiddenScene:'';
-        console.log(forbiddenScene)
+    _checkSceneNum() {
+      let self = this;
+      let forbiddenScene = getApp().globalData.loginUser ? getApp().globalData.loginUser.loadcfg.forbiddenScene : '';
+      console.log(forbiddenScene)
 
-        if (!forbiddenScene && !forbiddenScene.length){
-            return;
+      if (!forbiddenScene && !forbiddenScene.length) {
+        return;
+      }
+      for (var i = 0; i < forbiddenScene.length; i++) {
+        if (forbiddenScene[i].scene == self.data.sceneNum) {
+          wx.reLaunch({
+            url: '/pages/error/error?msg=' + forbiddenScene[i].msg + '&btnText=' + (forbiddenScene[i].btnText ? forbiddenScene[i].btnText : '退出')
+          })
+          return;
         }
-        for (var i = 0; i < forbiddenScene.length; i++) {
-            if (forbiddenScene[i].scene == self.data.sceneNum) {
-                wx.reLaunch({
-                    url: '/pages/error/error?msg=' + forbiddenScene[i].msg+'&btnText='+(forbiddenScene[i].btnText?forbiddenScene[i].btnText:'退出')
-                })
-                return;
-            }
-        }
+      }
     },
     _checkRecordAuth() {
       wx.getSetting({
@@ -244,29 +244,29 @@ Component({
             showAddBtn: res.data.showAddBtn,
             showAccount: res.data.showAccount,
             relationList: JSON.stringify(res.data.relationList),
-            deleteCount: res.data.deleteCount, 
-            patient:res.data.patient,
-            parent:res.data.parent?res.data.parent:null,
-            isLoading: true ,
+            deleteCount: res.data.deleteCount,
+            patient: res.data.patient,
+            parent: res.data.parent ? res.data.parent : null,
+            isLoading: true,
           })
-            if (hhDoctor && hhDoctor.getUserId()) {
-                hhDoctor.getUserInfo()
-                    .then(() => {
-                        this.setData({
-                            userCnt: hhDoctor.getProduct() ? hhDoctor.getProduct().userCnt : 0
-                        })
-                    })
-            }
-          //首次是否弹出信息不全提示
-            let integrityCheck =getApp().globalData.loginUser.loadcfg.integrityCheck;
-            if (!this.checkMemberMessage(patient.name, patient.sex, patient.birthday) && integrityCheck){
+          if (hhDoctor && hhDoctor.getUserId()) {
+            hhDoctor.getUserInfo()
+              .then(() => {
                 this.setData({
-                    modalMsgData: { source: 'member', content: '检测到您的信息不全，请补充您的年龄信息，才可呼叫医生', confirmText: '立即补充' },
-                    isShowModal: true,
-                    memberUuid: this.data.memberList[0].uuid
+                  userCnt: hhDoctor.getProduct() ? hhDoctor.getProduct().userCnt : 0
                 })
-            }
-           
+              })
+          }
+          //首次是否弹出信息不全提示
+          let integrityCheck = getApp().globalData.loginUser.loadcfg.integrityCheck;
+          if (!this.checkMemberMessage(patient.name, patient.sex, patient.birthday) && integrityCheck) {
+            this.setData({
+              modalMsgData: { source: 'member', content: '检测到您的信息不全，请补充您的年龄信息，才可呼叫医生', confirmText: '立即补充' },
+              isShowModal: true,
+              memberUuid: this.data.memberList[0].uuid
+            })
+          }
+
         } else {
           wx.showToast({
             title: res.data.message,
@@ -274,12 +274,12 @@ Component({
             duration: 1000
           })
         }
-      }).catch(err=>{
-          wx.hideLoading();
+      }).catch(err => {
+        wx.hideLoading();
       })
     },
     //添加家庭成员
-    bindAddFimily: function () { 
+    bindAddFimily: function () {
       //检查自己信息是否补全
       if (!that.checkMemberMessage(that.data.memberList[0].name, that.data.memberList[0].sex, that.data.memberList[0].birthday)) {
         that.setData({
@@ -288,26 +288,26 @@ Component({
             content: '请补充自己的年龄等信息，才可添加成员',
             confirmText: '立即补充'
           },
-          isShowModal:true,
+          isShowModal: true,
           memberUuid: that.data.memberList[0].uuid
         })
         calling = false;
         return;
-      } 
-        if (!that.data.isAgreeExplain) {
-            wx.showModal({
-                title: '提示',
-                content: '同意《视频医生服务说明》后\n可添加成员',
-                showCancel: false,
-                confirmColor: '#0592F5',
-                confirmText: '我知道了',
-                success() {
-                    calling = false;
-                }
+      }
+      if (!that.data.isAgreeExplain) {
+        wx.showModal({
+          title: '提示',
+          content: '同意《视频医生服务说明》后\n可添加成员',
+          showCancel: false,
+          confirmColor: '#0592F5',
+          confirmText: '我知道了',
+          success() {
+            calling = false;
+          }
 
-            });
-            return;
-        }
+        });
+        return;
+      }
       if (this.data.userCnt == -1) {
         this.navigateAddMember();
         return;
@@ -320,7 +320,7 @@ Component({
       })
     },
     //跳转添加成员 
-    navigateAddMember() { 
+    navigateAddMember() {
       let params = `?relationList=${this.data.relationList}&showAccount=${this.data.showAccount}&isIndex=true&pageUrl=${this.data._request.callPage}`;
       wx.navigateTo({
         url: `${this.data.basePath}innerpages/ehr-addmember/ehr-addmember${params}`
@@ -441,7 +441,7 @@ Component({
     _addMonitor() {
       wx.onNetworkStatusChange(function (res) {
         if (!res.isConnected) {
-          that.setData({disConnected: true})
+          that.setData({ disConnected: true })
           if (getApp().globalData._hhim) {
             getApp().globalData._hhim.logout();
             getApp().globalData._hhim = null;
@@ -462,22 +462,22 @@ Component({
       wx.showLoading({
         title: '获取消息'
       })
-      setTimeout(()=>{
+      setTimeout(() => {
         let asst = hhDoctor.getAsstInfo();
         if (!asst || !asst.uuid) {
           that._getHistoryMsg();
           return;
         };
-          
+
         apiUtil.getHistoryMsg(asst.uuid).then((res) => {
           that._parseMsgHis(res);
           wx.hideLoading()
         }).catch(() => {
-            wx.hideLoading()
-  
+          wx.hideLoading()
+
         })
-      },1000)
-      
+      }, 1000)
+
     },
 
     /** 收到历史消息 */
@@ -723,14 +723,14 @@ Component({
       return false;
     },
     //检查成员信息是否补全
-    checkMemberMessage(name,sex,birthday) {
+    checkMemberMessage(name, sex, birthday) {
       let obj = {}
       obj['birthday'] = birthday;
       obj['name'] = name;
       obj['sex'] = sex;
-      this.setData({storeMsg:obj})
+      this.setData({ storeMsg: obj })
       for (var key in obj) {
-          if (obj[key] == '' || !obj[key] || obj[key] == '请完善信息以发起呼叫') {
+        if (obj[key] == '' || !obj[key] || obj[key] == '请完善信息以发起呼叫') {
           return false;
         }
       }
@@ -742,14 +742,14 @@ Component({
       })
       switch (e.currentTarget.dataset.type) {
         case 'member':
-              let params = '?isUpdate=' + true + '&pageUrl=' + that.data._request.callPage + '&memberUuid=' + that.data.memberUuid + '&item=' + JSON.stringify(that.data.storeMsg);
+          let params = '?isUpdate=' + true + '&pageUrl=' + that.data._request.callPage + '&memberUuid=' + that.data.memberUuid + '&item=' + JSON.stringify(that.data.storeMsg);
           wx.navigateTo({
-            url: `/components/innerpages/ehr-addmember/ehr-addmember${params}`
+            url: that.data.basePath + `innerpages/ehr-addmember/ehr-addmember${params}`
           })
           break;
-		   case 'addmember':that.navigateAddMember(); 
-			break; 
-         case 'disclaimer':
+        case 'addmember': that.navigateAddMember();
+          break;
+        case 'disclaimer':
           that._viewMedixcine(that.data.modalMsgData.params.drugid, that.data.modalMsgData.params.redirectPage)
           break;
       }
@@ -769,7 +769,7 @@ Component({
         title: '连接中...',
       })
       let uuid = e.currentTarget.dataset.uuid ? e.currentTarget.dataset.uuid : getApp().globalData.uuid;
-      
+
       var callTimeout = 0;
       var callInterval = setInterval(function () {
         if (callTimeout >= 5000) {
@@ -781,8 +781,8 @@ Component({
             title: '网络不给力',
             content: '建议切换网络或稍后呼叫医生',
             showCancel: false,
-            confirmText:'我知道了',
-            confirmColor:'#0592f5',
+            confirmText: '我知道了',
+            confirmColor: '#0592f5',
             success: function () {
               that._onWsClose();
               // wx.navigateBack({
@@ -818,7 +818,7 @@ Component({
               //检查信息是否补全
               if (!that.checkMemberMessage(e.currentTarget.dataset.name, e.currentTarget.dataset.sex, e.currentTarget.dataset.birthday)) {
                 that.setData({
-                    modalMsgData: { source: 'member', content: '请补充该成员的年龄等信息，才可呼叫医生', confirmText: '立即补充'},
+                  modalMsgData: { source: 'member', content: '请补充该成员的年龄等信息，才可呼叫医生', confirmText: '立即补充' },
                   isShowModal: true,
                   memberUuid: e.currentTarget.dataset.uuid
                 })
@@ -830,28 +830,28 @@ Component({
                 that._callDemo(e.currentTarget.dataset.dept, 4, uuid);
                 return;
               }
-                //获取时间戳
-                let timestamp = Date.parse(new Date());
-                let preTimeStamp = wx.getStorageSync('preTimeStamp') || 0;
-                let seconds = parseInt((timestamp - preTimeStamp) / 1000)
-                if (seconds < 8) {
-                    wx.showToast({
-                        title: '操作太频繁啦，稍后再试',
-                        icon: 'none',
-                        mask: true,
-                        duration: 3000
-                    })
-                    calling = false;
-                    return;
-                }
-                wx.setStorageSync('preTimeStamp', timestamp)
+              //获取时间戳
+              let timestamp = Date.parse(new Date());
+              let preTimeStamp = wx.getStorageSync('preTimeStamp') || 0;
+              let seconds = parseInt((timestamp - preTimeStamp) / 1000)
+              if (seconds < 8) {
+                wx.showToast({
+                  title: '操作太频繁啦，稍后再试',
+                  icon: 'none',
+                  mask: true,
+                  duration: 3000
+                })
+                calling = false;
+                return;
+              }
+              wx.setStorageSync('preTimeStamp', timestamp)
 
               //正式呼叫 如果是选择成员 就传成员id 否则就传自己的 以供评价使用
               let pageUrl = that.data._request.callPage + '?' + that._getPublicRequestParams() + '&dept=' + e.currentTarget.dataset.dept + '&uuid=' + uuid;
-              if(that.data._request.sdkProductId==10182){
+              if (that.data._request.sdkProductId == 10182) {
                 that.setData({
-                  isEnterFace:true,
-                  callPageUrl:pageUrl
+                  isEnterFace: true,
+                  callPageUrl: pageUrl
                 })
                 calling = false;
                 return;
@@ -873,60 +873,60 @@ Component({
         callTimeout += 100;
       }, 100)
     },
-    bindContinue(){
+    bindContinue() {
       that.setData({
-        isEnterFace:false     
+        isEnterFace: false
       })
       wx.navigateTo({
         url: that.data.callPageUrl
       })
     },
-    bindBeginFaceVerify(e){
+    bindBeginFaceVerify(e) {
       let self = this;
       self.setData({
-        isEnterFace:false
+        isEnterFace: false
       })
       wx.startFacialRecognitionVerify({
-        name:e.detail.username,
+        name: e.detail.username,
         idCardNumber: e.detail.cardid,
         checkAliveType: 2,
         success(res) {
-          console.log('success',res)
+          console.log('success', res)
           wx.navigateTo({
             url: self.data.callPageUrl
           })
         },
         fail(err) {
-          console.log('fail',err)
+          console.log('fail', err)
           //如果是被投保人刷脸失败 => 显示让投保人协助认证
           //如果是投保人协助认证刷脸失败 =>显示为被投保人自己刷脸 err.errCode==90100
-          if(self.data.parent.uuid!=self.data.patient.uuid){
-           let content = (e.detail.username==self.data.parent.name)?'可让被保人'+self.getStarName(self.data.patient.name)+'刷脸认证':'可让投保人'+self.getStarName(self.data.parent.name)+'刷脸帮助认证';
+          if (self.data.parent.uuid != self.data.patient.uuid) {
+            let content = (e.detail.username == self.data.parent.name) ? '可让被保人' + self.getStarName(self.data.patient.name) + '刷脸认证' : '可让投保人' + self.getStarName(self.data.parent.name) + '刷脸帮助认证';
             wx.showModal({
-              content: '若刷脸认证失败，'+content,
-              confirmText:'我知道了',
-              confirmColor:'#0592f5',
-              cancelColor:'#666',
-              showCancel:false,
-              success(){
-                
+              content: '若刷脸认证失败，' + content,
+              confirmText: '我知道了',
+              confirmColor: '#0592f5',
+              cancelColor: '#666',
+              showCancel: false,
+              success() {
+
               }
             })
           }
         },
-        complete(){
-         
+        complete() {
+
 
         }
-  
+
       })
     },
-    getStarName(str){
-      return '*'+str.substring(1,str.length)
+    getStarName(str) {
+      return '*' + str.substring(1, str.length)
     },
     //关闭人脸认证界面
-    bindCloseFaceVerify(){
-      this.setData({isEnterFace:false})
+    bindCloseFaceVerify() {
+      this.setData({ isEnterFace: false })
     },
 
     _callDemo(deptId, type, uuid) {
@@ -1131,16 +1131,16 @@ Component({
     /** 点击查看视频咨询总结卡片 */
     _viewSummary(e) {
 
-    //   this._viewEhr({
-    //     viewModule: 'detail',
-    //     patient: e.currentTarget.dataset.patient,
-    //     medicRecordId: e.currentTarget.dataset.mrid
-    //   });
-        let medicRecordId = e.currentTarget.dataset.mrid;
-        let patient = e.currentTarget.dataset.patient;
-        wx.navigateTo({
-            url: `${this.data.basePath}innerpages/ehr-filingdetail/ehr-filingdetail?id=${medicRecordId}&memberUuid=${patient}`
-        })
+      //   this._viewEhr({
+      //     viewModule: 'detail',
+      //     patient: e.currentTarget.dataset.patient,
+      //     medicRecordId: e.currentTarget.dataset.mrid
+      //   });
+      let medicRecordId = e.currentTarget.dataset.mrid;
+      let patient = e.currentTarget.dataset.patient;
+      wx.navigateTo({
+        url: `${this.data.basePath}innerpages/ehr-filingdetail/ehr-filingdetail?id=${medicRecordId}&memberUuid=${patient}`
+      })
     },
 
     _applyStyle() {
@@ -1302,7 +1302,7 @@ Component({
         url: pageUrl
       })
 
-  
+
     },
 
     _buyService(e) {
@@ -1310,7 +1310,7 @@ Component({
       this._viewPersonal('payselect');
     },
     _buyProduct() {
-        var pageUrl = this.data.basePath + 'innerpages/buyProduct/buyProduct?' + this._getPublicRequestParams() + '&payPage=' + this.data._request.payPage;
+      var pageUrl = this.data.basePath + 'innerpages/buyProduct/buyProduct?' + this._getPublicRequestParams() + '&payPage=' + this.data._request.payPage;
       wx.navigateTo({
         url: pageUrl,
       })
@@ -1321,35 +1321,35 @@ Component({
       if (!e.currentTarget.dataset.trans) {
         return;
       }
-    //  if (e.currentTarget.dataset.carturl) {
-    //     //妙药
-    //     let carturl = e.currentTarget.dataset.carturl + '&thirdId=' + getApp().globalData.openId
-    //     this._viewMedicineMiaoHealth(carturl);
-    //   }else{
-    //     //和缓
-    //     this._viewMedicine(e.currentTarget.dataset.drugid, this.data._request.redirectPage);
-    //   }
-    console.log(e)
-    if (this.data._request.sdkProductId == 10182){
-      let channelName = 'zhbx';//渠道名称 必传 固定值 不能修改
-      let orderId= e.currentTarget.dataset.drugid; //订单ID 必传
-      let appId = 'wxa090add7f8c97f94';
-      let appKey = '756c550269b379b35fc6a5de7912fe99';
-      let sign = md5(appKey + channelName + orderId); //签名 必传
-      let path = `pages/zhbx/pages/index/index?channelName=${channelName}&orderId=${orderId}&sign=${sign}`;
-      wx.navigateToMiniProgram({
-        appId: appId,
-        path: path,
-        envVersion: 'trial'//trial 体验版  release 正式版
-      })
-    }else if (e.currentTarget.dataset.carturl) {
-      //妙药
-      let carturl = e.currentTarget.dataset.carturl + '&thirdId=' + getApp().globalData.openId
-      this._viewMedicineMiaoHealth(carturl);
-    }else{
-      //和缓
-      this._viewMedicine(e.currentTarget.dataset.drugid, this.data._request.redirectPage);
-    }
+      //  if (e.currentTarget.dataset.carturl) {
+      //     //妙药
+      //     let carturl = e.currentTarget.dataset.carturl + '&thirdId=' + getApp().globalData.openId
+      //     this._viewMedicineMiaoHealth(carturl);
+      //   }else{
+      //     //和缓
+      //     this._viewMedicine(e.currentTarget.dataset.drugid, this.data._request.redirectPage);
+      //   }
+      console.log(e)
+      if (this.data._request.sdkProductId == 10182) {
+        let channelName = 'zhbx';//渠道名称 必传 固定值 不能修改
+        let orderId = e.currentTarget.dataset.drugid; //订单ID 必传
+        let appId = 'wxa090add7f8c97f94';
+        let appKey = '756c550269b379b35fc6a5de7912fe99';
+        let sign = md5(appKey + channelName + orderId); //签名 必传
+        let path = `pages/zhbx/pages/index/index?channelName=${channelName}&orderId=${orderId}&sign=${sign}`;
+        wx.navigateToMiniProgram({
+          appId: appId,
+          path: path,
+          envVersion: 'trial'//trial 体验版  release 正式版
+        })
+      } else if (e.currentTarget.dataset.carturl) {
+        //妙药
+        let carturl = e.currentTarget.dataset.carturl + '&thirdId=' + getApp().globalData.openId
+        this._viewMedicineMiaoHealth(carturl);
+      } else {
+        //和缓
+        this._viewMedicine(e.currentTarget.dataset.drugid, this.data._request.redirectPage);
+      }
     },
 
     _tapExtendBtn(e) {
