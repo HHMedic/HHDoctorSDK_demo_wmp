@@ -1,0 +1,62 @@
+<!--components/hh-trtc/hh-trtc.wxml-->
+<view class="page-room">
+	<view hidden='{{isEvaluate}}'>
+		<trtc-room id="trtc-component" config="{{rtcConfig}}" orderid='{{orderid}}'></trtc-room>
+		<view style='background-image:url(https://imgs.hh-medic.com/icon/wmp/bg-default.jpg)' class='page-bg'  wx:if='{{phase!=3}}'>
+		</view>
+		<!-- 过渡页0 -->
+		<phase-a style='display:{{phase==0?"block":"none"}}'></phase-a>
+		<!-- 呼叫中1 -->
+		<phase-b style='display:{{phase==1?"block":"none"}}' doctor='{{doctor}}' callTips='{{callTips}}' bind:hangUp='bindHangUp'></phase-b>
+		<!-- 排队中2 -->
+		<phase-c style='display:{{phase==2?"block":"none"}}' callTips='{{callTips}}' bind:hangUp='bindHangUp' waitTips='{{waitTips}}' ></phase-c>
+		<!-- 观看小视频6 -->
+		<block wx:if='{{phase==6}}'>
+			<hh-live request="{{_request}}"  class="hh-live"  bindclose="_onCloseVideo" bindinputcomment="_onInputComment"></hh-live>
+			<!-- <view class='room-modal-wait'>
+			  <view class='wait-text'>{{waitTips.waitUserInfoText? waitTips.waitUserInfoText:'目前咨询人数较多，感谢耐心等待'}}</view>
+			  <view class='wait-icon' catchtap='bindHangUp'></view>
+			</view> -->
+		</block>
+		<!-- 视频中3 -->
+		<phase-d  
+			style='display:{{phase==3?"block":"none"}}'
+			doctor='{{doctor}}' 
+			cameraTorch='{{cameraTorch}}'
+			order='{{order}}'
+		    videoTime='{{videoTime}}' 
+            expertAudio='{{expertAudio}}'
+            systeminfo='{{systeminfo}}'
+            request='{{_request}}'
+			bind:hangUp='bindHangUp' 
+			bind:enterCamera='bindEnterCamera'
+			bind:completeCamera='bindCompleteCamera'
+			bind:changeCamera='bindSwitchCamera'
+			bind:toggleTorch='bindToggleTorch'
+			bind:changeDoctor = 'bindChangeDoctor'
+			></phase-d>
+		<!-- 医生回拨4 -->
+		<phase-e style='display:{{phase==4?"block":"none"}}' doctor='{{doctor}}' bind:hangUp='bindHangUp' bind:accept='bindAccept'></phase-e>
+		<!-- 专家回拨5 -->
+		<phase-f style='display:{{phase==5?"block":"none"}}' doctor='{{doctor}}' bind:hangUp='bindHangUp' bind:accept='bindAccept'></phase-f>
+		<!-- 未授权弹窗 -->
+		<block wx:if='{{isAuthBox}}'>
+		  <cover-view class='auth-box' >
+		    <cover-view class='auth-text'>您未授权小程序使用您的麦克风或摄像头，无法使用相应功能</cover-view>
+		    <button class='auth-button' open-type="openSetting" >现在去授权</button>
+		    <button class='auth-button' catchtap='bindAuthButton'>我已授权，重新呼叫</button>
+		  </cover-view>
+		</block>
+	</view>
+
+	<view class='evaluate-box' wx:if='{{isEvaluate}}'>
+	  <hh-evaluate 
+	  request='{{_request}}'
+	  evaluateData='{{evaluateData}}' 
+	  famOrderId='{{orderid}}' 
+	  doctor='{{doctor}}'
+      uuid="{{realPatientUuid}}"
+	  ></hh-evaluate>
+	</view>
+    <trtc-modal title='{{modal.title}}' content='{{modal.content}}' isExitWx='{{modal.isExitWx}}' wx:if='{{isShowModalTip}}' bind:trtcModalConfirm='bindTrtcModalConfirm'></trtc-modal>
+</view>

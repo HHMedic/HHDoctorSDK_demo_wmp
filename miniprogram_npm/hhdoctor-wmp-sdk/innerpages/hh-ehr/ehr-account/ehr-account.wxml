@@ -1,6 +1,0 @@
-<!--components/innerpages/hh-ehr/ehr-account/ehr-account.wxml-->
-<view class='page'>
-    <view class='account-text'>独立账号已开通</view>
-    <text class='account-tip'>我们已发送短信通知对方，\n对方下载app后可直接登录使用</text>
-    <button class='account-button' bindtap='bindSuccess'>完成</button>
-</view>

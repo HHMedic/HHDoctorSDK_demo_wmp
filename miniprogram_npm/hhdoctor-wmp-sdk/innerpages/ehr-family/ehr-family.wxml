@@ -1,0 +1,44 @@
+<!--components/innerpages/ehr-family/ehr-family.wxml-->
+<view class='page' >
+    <view class='family-list'>
+          <view class="family-item {{item.isTouchMove ? 'touch-move-active' : ''}}" 
+          wx:for='{{memberList}}' 
+          wx:key='index' 
+          data-index="{{index}}" 
+          bindtap='bindItemNavigator'
+          data-uuid='{{item.uuid}}'
+          data-birthday='{{item.birthday}}'
+          data-sex='{{item.sex}}'
+          data-relation='{{item.relation}}'
+		  data-name='{{item.name}}'
+          data-nickname = '{{item.name}}'
+          bindtouchstart="touchstart" 
+          bindtouchmove="touchmove" >
+              <view class="family-content">
+                <view class='family-left'> 
+                    <image src='{{item.photourl}}' class='family-avatar'></image>
+                    <view class='family-text'>
+                      <text class='family-name'>{{item.name||''}} {{item.uuid==memberList[0].uuid?'(自己)':item.relation?'('+item.relation+')':'(其他)'}}</text>
+                      <view class='family-status' wx:if='{{item.isAccount && memberList.length>1}}'>独立登录</view>
+                    </view> 
+                 </view> 
+                <view class='family-edit' 
+                    catchtap='bindFillingEdit'  
+                    data-item='{{item}}'
+                    wx:if='{{item.uuid!=memberList[0].uuid}}'></view>
+              </view>
+              <view class="family-del" catchtap="bindDelete" 
+              data-uuid='{{item.uuid}}'   
+              data-isaccount='{{item.isAccount}}'
+              data-isself='{{item.relation}}'>删除</view>
+        </view>
+    </view>   
+    <!-- 添加成员入口 -->
+    <block wx:if='{{showAddBtn}}'>
+         <view class='family-add' catchtap='bindAddFimily' wx:if='{{(userCnt==-1||userCnt>(memberList.length-1+deleteCount))&&!memberList[0].isAccount&&isLoading}}'>添加家庭成员</view>
+    </block>
+    		<hhModal isShowModal="{{isShowModal}}"  modalData="{{modalMsgData}}" bind:myConfirm="_bindMyConfirm"
+			  bind:modalCancel="_bindModalCancel"></hhModal>
+
+</view>
+<hhNetwork wx:if='{{!isConnect}}'></hhNetwork>

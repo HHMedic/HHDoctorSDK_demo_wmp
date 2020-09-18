@@ -1,92 +1,204 @@
 <wxs module="math">
-  var abs = function(val) {
-    return Math.abs(val);
-  }
-  module.exports = {
-    abs: abs
-  };
+	var abs = function(val) {
+		return Math.abs(val);
+	}
+	module.exports = {
+		abs: abs
+	};
 </wxs>
 <view style='width:750rpx;height:{{height?height+"px":"100vh"}};'>
-  <template name="live">
-    <block wx:if="{{math.abs(current-index)<=1}}">
-      <live-player id="live-{{index}}" src="{{url}}" class="full-screen" autoplay="{{false}}" object-fit="fillCrop" bindstatechange="_onPlayerStateChange">
-        <template wx:if="{{current==index}}" is="ctrls" data="{{isResized,btnClosePosition,viewerPosition,showComments,inputting,liveInfo,viewers,doctorComment,subtitles,subtitlesLeft,logo}}"></template>
-      </live-player>
-    </block>
-  </template>
+	<template name="live">
+		<block wx:if="{{math.abs(current-index)<=1}}">
+			<live-player id="live-{{index}}" src="{{url}}" class="full-screen" autoplay="{{false}}" object-fit="{{landscape?'contain':(videoRatio>=1?'fillCrop':'contain')}}" bindstatechange="_onPlayerStateChange" bindnetstatus="_onPlayerNetStatus" catchtap="_triggerCleanScreen">
+				<template wx:if="{{current==index}}" is="ctrls" data="{{isResized,showCloseBtn,btnClosePosition,viewerPosition,showComments,inputting,liveInfo,viewers,doctorComment,subtitles,subtitlesLeft,logo,request,phoneData,landscape,cleanScreen,subtitlesAnimation}}"></template>
+			</live-player>
+		</block>
+	</template>
 
-  <template name="video">
-    <block wx:if="{{math.abs(current-index)<=1}}">
-      <video id="video-{{index}}" src="{{url}}" controls="{{false}}" enable-progress-gesture="{{false}}" enable-play-gesture="{{false}}" object-fit="cover" class="full-screen" bindplay="_onVideoPlay" bindended="_onVideoEnded">
-        <template wx:if="{{current==index}}" is="ctrls" data="{{isResized,btnClosePosition,showComments,inputting}}"></template>
-      </video>
-    </block>
-  </template>
+	<template name="video">
+		<block wx:if="{{math.abs(current-index)<=1}}">
+			<video id="video-{{index}}" src="{{url}}" controls="{{false}}" enable-progress-gesture="{{false}}" enable-play-gesture="{{false}}" object-fit="cover" class="full-screen" bindplay="_onVideoPlay" bindended="_onVideoEnded">
+				<template wx:if="{{current==index}}" is="ctrls" data="{{isResized,showCloseBtn,btnClosePosition,showComments,inputting,request,phoneData,landscape,cleanScreen,subtitlesAnimation}}"></template>
+			</video>
+		</block>
+	</template>
 
-  <template name="ctrls">
-    <cover-view id="subtitles" class="subtitles" style="top:{{viewerPosition.top}}px;left:{{subtitlesLeft}}px;">{{subtitles}}</cover-view>
-    <cover-image class="live-bg" src="https://imgs.hh-medic.com/icon/wmp/live-bg.png" style="height:{{viewerPosition.top+30}}px;" mode="aspectFit"></cover-image>
-    <cover-view wx:if="{{isResized}}" class="btn-close" style="top:{{btnClosePosition.top}}px;left:{{btnClosePosition.left}}px;" catchtap="_close">
-      <cover-image class="close-image" src="https://imgs.hh-medic.com/icon/wmp/close_50.png" mode="aspectFit"></cover-image>
-    </cover-view>
-    <cover-view class="live-info" style="height:{{logo.height}}px;">
-      <cover-image wx:if="{{logo.url}}" class="live-logo-image" src="{{logo.url}}"></cover-image>
-      <cover-view wx:if="{{isResized && viewers}}" class="viewer-count">{{viewers}}人观看</cover-view>
-    </cover-view>
-    <cover-view wx:if="{{showComments && !inputting && 1==liveInfo.liveStatus}}" class="input-panel" data-inputting="{{inputting}}" catchtap="_tapCommentInput">
-      <cover-image class="comment-image" src="https://imgs.hh-medic.com/icon/wmp/comment.png" mode="aspectFit"></cover-image>
-      <cover-view class="comment-tips">说点什么吧~</cover-view>
-    </cover-view>
-    <cover-view wx:if="{{2==liveInfo.liveStatus}}" class="swiper-guide live-finish">
-      <cover-image class="live-finish-icon" src="https://imgs.hh-medic.com/icon/wmp/video-icon.png" mode="aspectFit"></cover-image>
-      <cover-view class="live-finish-tips">直播已结束</cover-view>
-      <cover-view class="live-finish-back" catchtap="_close">返回</cover-view>
-    </cover-view>
-  </template>
+	<template name="ctrls">
+		<!-- <cover-view id="subtitles" class="subtitles" style="top:{{viewerPosition.top}}px;left:{{subtitlesLeft}}px;" animation="{{subtitlesAnimation}}">{{subtitles}}</cover-view> -->
+		<cover-image class="live-bg" src="https://imgs.hh-medic.com/icon/wmp/live-bg.png" style="height:{{viewerPosition.top+30}}px;" mode="aspectFit"></cover-image>
+		<cover-view wx:if="{{isResized && showCloseBtn}}" class="btn-close" style="top:{{btnClosePosition.top}}px;left:{{btnClosePosition.left}}px;" catchtap="_close">
+			<cover-image class="close-image" src="https://imgs.hh-medic.com/icon/wmp/close_50.png"></cover-image>
+		</cover-view>
+		<cover-view class="live-info" style="height:{{logo.height}}px;">
+			<cover-image wx:if="{{logo.url}}" class="live-logo-image {{landscape}}" src="{{cleanScreen?'':logo.url}}"></cover-image>
+			<cover-view wx:if="{{isResized && viewers}}" class="viewer-count">{{viewers}}人观看</cover-view>
+		</cover-view>
+		<button wx:if="{{showComments && !inputting && 1==liveInfo.liveStatus && !cleanScreen}}" class="input-panel {{landscape}}" data-inputting="{{inputting}}" open-type="{{'unreg'==request.userToken && !phoneData?'getPhoneNumber':''}}" bindgetphonenumber="_tapInputComment" catchtap="_tapInputComment">
+			<image class="comment-image" src="https://imgs.hh-medic.com/icon/wmp/comment.png" mode="aspectFit"></image>
+			<view class="comment-tips">说点什么吧~</view>
+		</button>
+		<cover-view wx:if="{{2==liveInfo.liveStatus}}" class="swiper-guide live-finish">
+			<cover-image class="live-finish-icon" src="https://imgs.hh-medic.com/icon/wmp/video-icon.png" mode="aspectFit"></cover-image>
+			<cover-view class="live-finish-tips">直播已结束</cover-view>
+			<cover-view class="live-finish-back" catchtap="_close">返回</cover-view>
+		</cover-view>
+	</template>
 
-  <swiper id="video-list" class="full-screen" indicator-dots="{{false}}" autoplay="{{false}}" vertical="{{true}}" duration="100" skip-hidden-item-layout="{{true}}" current="{{currentIndex}}" bindchange="_swiperChange" bindanimationfinish="_swiperanimationFinish"
-    bindtransition="_swiperTransition">
-    <block wx:for='{{liveList}}' wx:for-item='liveItem' wx:for-index="idx" wx:key='id'>
-      <swiper-item class="swiper-item ">
-        <template is="{{liveItem.type}}" data="{{...liveItem,index:idx,current:currentIndex,isResized,btnClosePosition,viewerPosition,showComments,inputting,liveInfo,viewers,doctorComment,subtitles,subtitlesLeft,logo}}"> </template>
-      </swiper-item>
-    </block>
-  </swiper>
+	<swiper id="video-list" class="full-screen" indicator-dots="{{false}}" autoplay="{{false}}" vertical="{{true}}" duration="100" skip-hidden-item-layout="{{true}}" current="{{currentIndex}}" bindchange="_swiperChange" bindanimationfinish="_swiperanimationFinish" bindtransition="_swiperTransition">
+		<block wx:for='{{liveList}}' wx:for-item='liveItem' wx:for-index="idx" wx:key='id'>
+			<swiper-item class="swiper-item ">
+				<template is="{{liveItem.type}}" data="{{...liveItem,index:idx,current:currentIndex,isResized,showCloseBtn,btnClosePosition,viewerPosition,showComments,inputting,liveInfo,viewers,doctorComment,subtitles,subtitlesLeft,logo,request:_request,phoneData,landscape,cleanScreen,subtitlesAnimation}}"> </template>
+			</swiper-item>
+		</block>
+	</swiper>
 
 
-  <scroll-view wx:if="{{drawInSameLayer && showComments}}" class="comments" scroll-y="{{true}}" scroll-into-view="comment-{{commentList.length-1}}">
-    <block wx:for='{{commentList}}' wx:for-item='comment' wx:for-index="idx" wx:key='id'>
-      <view id="comment-{{idx}}" class="comment-row">
-        <view class="comment">
-          <block wx:if="{{'tips'==comment.commentType}}">
-            <text class="comment-init">{{comment.comment}}</text>
-          </block>
-          <block wx:else>
-            <text class="comment-name">{{comment.userName}}:</text>{{comment.comment}}
-          </block>
-        </view>
-      </view>
-    </block>
-  </scroll-view>
+	<scroll-view wx:if="{{drawInSameLayer && showComments && !cleanScreen}}" class="comments {{landscape}}" scroll-y="{{true}}" scroll-into-view="comment-{{commentList.length-1}}">
+		<block wx:for='{{commentList}}' wx:for-item='comment' wx:for-index="idx" wx:key='id'>
+			<view id="comment-{{idx}}" class="comment-row">
+				<view class="comment">
+					<block wx:if="{{'tips'==comment.commentType}}">
+						<text class="comment-init">{{comment.comment}}</text>
+					</block>
+					<block wx:else>
+						<text class="comment-name">{{comment.userName}}:</text>{{comment.comment}}
+					</block>
+				</view>
+			</view>
+		</block>
+	</scroll-view>
 
-  <view wx:if="{{inputting}}">
-    <input class="input-ctrl" confirm-type="send" focus="{{inputting}}" placeholder="说点什么~" bindconfirm="_sendComment" bindblur="_cancelInput"></input>
-  </view>
+	<view wx:if="{{inputting}}">
+		<input class="input-ctrl" confirm-type="send" focus="{{inputting}}" placeholder="说点什么~" bindconfirm="_sendComment" bindblur="_cancelInput"></input>
+	</view>
 
-  <view wx:if="{{_request.enableLiveShare && isResized  && !inputting}}" class="share-panel">
-    <button class="btn-share" open-type="share"></button>
-  </view>
+	<view wx:if="{{_request.enableLiveShare && isResized  && !inputting && !cleanScreen}}" class="share-panel {{landscape}}">
+		<button class="btn-share" open-type="share"></button>
+	</view>
 
-  <!-- <view wx:if="{{doctorComment.userName && doctorComment.comment}}" class="doctor-commment" style="top:{{viewerPosition.top+30}}px;">
+	<!-- <view wx:if="{{doctorComment.userName && doctorComment.comment}}" class="doctor-commment" style="top:{{viewerPosition.top+30}}px;">
     <view class="doctor-commment-container">
       <text class="doctor-name">{{doctorComment.userName}}:</text> {{doctorComment.comment}}
     </view>
   </view> -->
 
-  <view wx:if="{{doctorComment.userName && doctorComment.comment}}" class="doctor-commment-new">
-    <view class="comment">
-      <text class="comment-name">{{doctorComment.userName}}:</text> {{doctorComment.comment}}
-    </view>
-  </view>
+	<view wx:if="{{doctorComment.userName && doctorComment.comment}}" class="doctor-commment-new">
+		<view class="comment">
+			<text class="comment-name">{{doctorComment.userName}}:</text> {{doctorComment.comment}}
+		</view>
+	</view>
 
+	<!-- 报名抽奖 -->
+	<button wx:if="{{'NOT_APPLY'==lottery.state}}" class="lottery not-apply" data-seckillid="{{lottery.stock.seckillId}}" open-type="{{'unreg'==request.userToken || !phoneData?'getPhoneNumber':''}}" bindgetphonenumber="_tapApplySeckill" catchtap="_tapApplySeckill">
+		<view class="lottery-not-apply-img image-norepeat gift-white"></view>
+		<view>报名抽奖</view>
+	</button>
+	<!-- 等待抽奖、抽奖倒计时 -->
+	<view wx:if="{{'READIED'==lottery.state && (-1 == lottery.stock.state || countdown)}}" class="lottery wait">
+		<view class="lottery-wait-img image-norepeat gift-red"></view>
+		<view>{{0==lottery.stock.state?'抽奖倒计时：'+countdown:'等待抽奖'}}</view>
+	</view>
+	<!-- 抽奖卡片 -->
+	<view wx:if="{{'READIED'==lottery.state}}" class="license-wrap {{showLottery?'':'hidden'}}">
+		<view class="lottery-wrap image-norepeat lottery-background">
+			<view class="lottery-close image-norepeat x-with-cycle" catchtap="_tapCloseLottery" data-exec="{{false}}"></view>
+			<view class="lottery-name">{{lottery.stock.name}}</view>
+			<view class="lottery-image-wrap">
+				<image src="{{lottery.stock.imageUrl}}" class="lottery-image"></image>
+			</view>
+			<view class="lottery-exec" catchtap="_tapCloseLottery" data-exec="{{true}}">立即抽奖</view>
+		</view>
+	</view>
+	<!-- 抽奖结果卡片 -->
+	<view wx:if="{{lotteryState}}" class="license-wrap">
+		<view class="lottery-result-wrap">
+			<view class="lottery-result-close image-norepeat x-with-cycle" catchtap="_tapCloseLotteryResult" data-address="{{false}}"></view>
+			<block wx:if="{{'SUCCESS'==lotteryState}}">
+				<view class="lottery-success-pos image-norepeat lottery-success"></view>
+				<view class="lottery-success-title">恭喜您获得</view>
+				<view class="lottery-success-name">{{lottery.stock.name}}</view>
+				<view wx:if="{{0==goodsCategory}}" class="lottery-succes-desc {{0==goodsCategory?'virtual':''}}">会员权益24小时内自动开通</view>
+				<view class="lottery-succes-desc {{0==goodsCategory?'virtual':''}}">稍后还有大奖，继续加油</view>
+			</block>
+			<block wx:if="{{'FAIL'==lotteryState}}">
+				<view class="lottery-fail image-norepeat emoji-cry"></view>
+				<view class="lottery-fail-title">未中奖</view>
+				<view class="lottery-fail-desc">稍后主播会继续抽大奖，继续加油</view>
+			</block>
+			<view class="lottery-result-btn" catchtap="_tapCloseLotteryResult" data-address="{{'SUCCESS'==lotteryState}}">{{('SUCCESS'==lotteryState && 1==goodsCategory)?'领取奖品':'我知道了'}}</view>
+		</view>
+	</view>
+
+	<!-- 地址列表 -->
+	<view wx:if="{{'LIST'==addressState}}" class="license-wrap">
+		<view class="address-wrap">
+			<view class="address-close image-norepeat x-with-cycle" catchtap="_tapCloseAddress"></view>
+			<view class="address-title">选择收货地址</view>
+			<view class="address-body-wrap">
+				<scroll-view class="address-list" scroll-y="{{true}}">
+					<radio-group class="" bindchange="_tapAddressList">
+						<view wx:for="{{addressList}}" wx:key="id" wx:for-item="address" class="address-item-wrap">
+							<radio class="radio" color="#2790FB" value="{{address.id}}"></radio>
+							<view class="address-detail-wrap">
+								<view class="address-detail-name">{{address.name}} {{address.phoneNum}}</view>
+								<view class="address-detail-add">{{address.address}}</view>
+							</view>
+						</view>
+					</radio-group>
+				</scroll-view>
+			</view>
+			<view class="address-btn-wrap">
+				<view class="address-btn new" catchtap="_tapAddAddress">新增地址</view>
+				<view class="address-btn selected {{newAddress&&newAddress.name&&newAddress.phoneNum&&newAddress.address?'':'disabled'}}" catchtap="_tapSetAddress">确定</view>
+			</view>
+		</view>
+	</view>
+
+	<!-- 新增地址 -->
+	<view wx:if="{{'NEW'==addressState}}" class="license-wrap">
+		<view class="address-wrap">
+			<view class="address-close image-norepeat x-with-cycle" catchtap="_tapCloseAddress"></view>
+			<view class="address-title">请填写收货地址</view>
+			<view class="address-body-wrap addnew">
+				<view class="input-wrap">
+					<view class="input-name">姓名</view>
+					<view class="input-item">
+						<input type="text" placeholder="请输入收货人姓名" bindinput="_inputNewAddress" data-name="name"></input>
+					</view>
+				</view>
+				<view class="input-wrap">
+					<view class="input-name">电话</view>
+					<view class="input-item">
+						<input type="text" placeholder="请输入收货人电话" bindinput="_inputNewAddress" data-name="phoneNum"></input>
+					</view>
+				</view>
+				<view class="input-wrap multi">
+					<view class="input-name">地址</view>
+					<view class="input-item multi {{platform}}">
+						<textarea placeholder-class="text-area-item" placeholder="请输入收货地址" bindinput="_inputNewAddress" data-name="address"></textarea>
+					</view>
+				</view>
+			</view>
+			<view class="address-btn-wrap">
+				<view class="address-btn selected big {{newAddress&&newAddress.name&&newAddress.phoneNum&&newAddress.address?'':'disabled'}}" catchtap="_tapSaveAddress">确定</view>
+			</view>
+		</view>
+	</view>
+
+	<view class="license-wrap" wx:if="{{showLicense}}">
+		<view class="license-panel">
+			<view class="license-close image-norepeat x-with-cycle" catchtap="_tapCloseLicense" data-accept="{{false}}"></view>
+			<scroll-view class="license-content-wrap" scroll-y="{{true}}">
+				<rich-text class="license-content" nodes="{{licenseNodes}}"></rich-text>
+			</scroll-view>
+			<button class="license-btn" catchtap="_tapCloseLicense" data-accept="{{true}}">我知道了</button>
+			<view class="license-agree-wrap">
+				<view class="license-agree-check image-norepeat ok-with-cycle"></view>
+				<view>同意</view>
+				<view class="license-name">注册协议</view>
+			</view>
+		</view>
+	</view>
+	<!-- 滚动字幕 -->
+	<view id="subtitles" class="subtitles" style="top:{{viewerPosition.top}}px;left:{{subtitlesLeft}}px;" animation="{{subtitlesAnimation}}">{{subtitles}}</view>
 </view>

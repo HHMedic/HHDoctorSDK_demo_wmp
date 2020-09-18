@@ -1,0 +1,398 @@
+page {
+  width: 100%;
+  background-color: #f2f2f2;
+  font-size: 15px;
+  color: #333;
+}
+
+.panel {
+  background-color: #f2f2f2;
+}
+
+.panel.top {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 15px 15px 10px 15px;
+  overflow: hidden;
+}
+
+.top-background {
+  position: absolute;
+  left: -50%;
+  top: -247.5px;
+  width: 200%;
+  height: 367px;
+  background: rgba(66, 69, 89, 1);
+  border-radius: 50%;
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  z-index: 9;
+  overflow: hidden;
+}
+
+.card-image {
+  position: relative;
+  width: 100%;
+}
+
+/* .card-image::after {
+  content: '';
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
+  width: 75px;
+  height: 80px;
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/card-normal-mark.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.card-image.prime::after {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/card-prime-mark.png");
+} */
+
+.view-right {
+  position: absolute;
+  right: -10px;
+  top: 10px;
+  width: 85px;
+  height: 20px;
+  background-color: #fff;
+  color: #0592f5;
+  line-height: 20px;
+  font-size: 12px;
+  text-align: center;
+  border-radius: 10px;
+  text-indent: -5px;
+}
+
+.view-right.prime {
+  background-color: #424559;
+  color: #fff;
+}
+
+.info {
+  display: flex;
+  flex-direction: row;
+  position: absolute;
+  left: 20px;
+  top: 25px;
+  color: #fff;
+}
+
+.info.prime {
+  color: #424559;
+}
+
+.head-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 50px;
+}
+
+.info-list {
+  margin-left: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.info-line {
+  margin-top: 5px;
+  display: flex;
+  flex-direction: row;
+  line-height: 20px;
+  align-items: center;
+}
+
+.user-name {
+  font-size: 15px;
+  max-width: 60px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-prod-icon {
+  margin-left: 14px;
+  width: 19px;
+  height: 20px;
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/card-v.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.user-prod-icon.prime {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/card-prime-v.png");
+}
+
+.user-prod-name {
+  font-size: 12px;
+  margin-left: 3px;
+}
+
+.info-line.date {
+  font-size: 13px;
+}
+
+.info-line.bean-remark {
+  margin-top: 10px;
+}
+
+.buy-btn {
+  margin-left: 11px;
+  width: 77px;
+  height: 18px;
+  line-height: 18px;
+  border-radius: 9px;
+  border: solid 0.5px rgba(255, 255, 255, 0.6);
+  text-align: center;
+}
+
+.buy-btn.prime {
+  border: solid 0.5px rgba(66, 69, 89, 0.6);
+}
+
+.buy-btn-panel {
+  position: absolute;
+  top: 89px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0px 60px;
+}
+
+.buy-btn-large {
+  width: 100%;
+  height: 35px;
+  line-height: 35px;
+  font-size: 15px;
+  border-radius: 17.5px;
+  text-align: center;
+}
+
+.buy-btn-large.prime {
+  color: #fff;
+  background-color: #424559;
+}
+
+.bean-remark {
+  font-size: 12px;
+}
+
+.bean-question {
+  margin-left: 10px;
+  width: 16px;
+  height: 16px;
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/question-light.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.bean-question.prime {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/question-dark.png");
+}
+
+.bean-count {
+  font-size: 18px;
+  font-weight: bolder;
+}
+
+.bean-count::after {
+  content: '个';
+  font-size: 12px;
+  font-weight: normal;
+  position: relative;
+  left: 4px;
+}
+
+.bean-list {
+  margin-left: 20px;
+  font-size: 12px;
+}
+
+.bean-arrow {
+  margin-left: 5px;
+  width: 5px;
+  height: 8px;
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/arrow-s-light.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.bean-arrow.prime {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/arrow-s-dark.png");
+}
+
+.panel.list {
+  width: 100%;
+  box-sizing: border-box;
+  padding-bottom: 5px;
+}
+
+.menu-group {
+  margin-top: 5px;
+  box-sizing: border-box;
+  padding-left: 16px;
+  background-color: #fff;
+}
+
+.menu-group:first-child {
+  margin-top: auto;
+}
+
+.menu-item {
+  width: 100%;
+  height: 50px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  padding-right: 16px;
+  border-bottom: solid 0.5px #dcdcdc;
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-item.logout {
+  margin-top: 10px;
+  padding-right: 0px;
+  border-bottom: none;
+  color: #0592f5;
+  background-color: #fff;
+}
+
+.menu-icon {
+  width: 19px;
+  height: 19px;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.menu-icon.ehr {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/ehr-2.png");
+}
+
+.menu-icon.order {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/icon-order.png");
+}
+
+.menu-icon.address {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/icon-address.png");
+}
+
+.menu-icon.code {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/icon-active.png");
+}
+
+.menu-icon.setting {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/icon-setting.png");
+}
+
+.menu-icon.about {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/icon-about.png");
+}
+
+.menu-icon.expertservice {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/icon-expert.png");
+}
+
+.menu-icon.invoicerequest {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/icon-invoicerequest.png");
+}
+
+.menu-icon.invoice {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/icon-invoice.png");
+}
+
+.menu-icon.clear {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/icon-clear.png");
+}
+
+.menu-name {
+  flex-grow: 1;
+  line-height: 50px;
+  margin-left: 9px;
+}
+
+.menu-remark {
+  color: #d2d2d2;
+}
+
+.menu-arrow {
+  width: 8px;
+  height: 13px;
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/arrow.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-left: 10px;
+}
+
+.mask {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 99;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 0px 15px;
+}
+
+.panel-tip {
+  width: 100%;
+  background-color: #fff;
+  color: #000;
+  border-radius: 10px;
+  box-sizing: border-box;
+  padding: 15px;
+  font-size: 15px;
+}
+
+.title {
+  margin-top: 15px;
+  margin-bottom: 10px;
+}
+
+.title:first-child {
+  margin-top: auto;
+}
+
+.section {
+  font-size: 14px;
+  color: #646464;
+  line-height: 20px;
+}
+
+.btn-box {
+  margin-top: 30px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0px 10px;
+}
+
+.btn {
+  width: 100%;
+  height: 40px;
+  border-radius: 5px;
+  background-color: #0592f5;
+  color: #fff;
+  line-height: 40px;
+  text-align: center;
+}

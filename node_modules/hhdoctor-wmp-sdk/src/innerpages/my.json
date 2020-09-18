@@ -1,9 +1,0 @@
-{
-  "usingComponents": {
-    "hhMy": "../hh-my"
-  },
-  "navigationStyle": "default",
-  "navigationBarBackgroundColor": "#424559",
-  "navigationBarTitleText": "我的",
-  "navigationBarTextStyle": "white"
-}

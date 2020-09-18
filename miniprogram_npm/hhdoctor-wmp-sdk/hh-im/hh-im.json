@@ -1,0 +1,8 @@
+{
+    "component": true,
+    "usingComponents": {
+        "hhSdk": "../hh-sdkcontext/hh-sdkcontext",
+        "hh-Modal": "../hh-modal/hh-modal",
+        "hh-face":"../hh-face/hh-face"
+    }
+}

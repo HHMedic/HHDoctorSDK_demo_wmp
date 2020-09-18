@@ -1,0 +1,1207 @@
+page {
+  height: 100%;
+  font-family: PingFangSC-Regular, sans-serif;
+}
+
+/* .full-screen {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+} */
+
+video {
+  width: 100%;
+}
+
+.hidden {
+  display: none;
+}
+
+.main-container {
+  /* display: flex; */
+  /* flex-direction: column; */
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  left: 0px;
+  top: 0px;
+  box-sizing: border-box;
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/online-background.jpg');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  -moz-background-size: 100% 100%;
+}
+
+.btn-panel {
+  /* position: relative; */
+  /* height: 109px; */
+  /* min-height: 109px; */
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 128px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  z-index: 9;
+}
+
+.topbtn-panel {
+  width: 100%;
+  height: 64px;
+  /* background-color: rgba(255, 255, 255, 1); */
+  background-color:rgba(0,0,0,0);
+  z-index: 9;
+  box-sizing: border-box;
+  border-bottom: solid 0.5px #ebebeb;
+  position:relative;
+}
+
+.top-btns{
+  box-sizing: border-box;
+  width:120px;
+  position:absolute;
+  z-index:10;
+  padding-left:9px;
+  
+}
+.top-btns-inner{
+  display:flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.topbtn-personal,.topbtn-naviback{
+  width:30px;
+  height:30px;
+  margin-right:16px;
+}
+.topbtn-personal{
+  background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAAA+VBMVEUAAAAAAAAAAAAAAAAzMzMqKiokJCQcHBwuLi4qKionJycrKys2NjYxMTE1NTUuLi4sLCwuLi40NDQzMzMyMjIxMTEvLy8zMzMxMTEzMzMyMjIxMTEwMDAzMzMwMDAzMzMzMzMxMTExMTE0NDQxMTEzMzMzMzMzMzMzMzMyMjIzMzMyMjIxMTEzMzMyMjIzMzMzMzMzMzMyMjIyMjIzMzMzMzMyMjIzMzMzMzMyMjIzMzMyMjIyMjIzMzMzMzMzMzMzMzMyMjIyMjIzMzMzMzMyMjIzMzMzMzMzMzMzMzMzMzMzMzMyMjIzMzMzMzMzMzMyMjIyMjIzMzOY5fUvAAAAUnRSTlMAAQIDBQYHCQsMDRITFRgcHSEiKCkqKy0vMjNJSktPUFVYWVloaGltbnByhIeHi4uNkaOpqaqtr7S2zNDR0tbX2drb3d7f4eLr9fb3+Pn7/P3+vV+lDwAAAUdJREFUSMftlGlXgkAUhoFcsCAtNdQW221xKS0loZLIJcrA9///mA6nOiWnYWbw5Ceeb3MvD8wM915BiImJjFrTR9PpWK+p3Gqm6eALp5nhc/MDeN1qLpnMVbseBnketzjBvfa90ExMihx7ttBO/yzTbVjsO2/BTP1ep0y0WF3F8bT5iOY5CqN8jF4w1MMJo9zBUTB0iA6jbKAUDJVgMMo2NoOhDTwv48t/nPkAN4vc9mnk/7zlvirsFWbMV5iBqwVq+2mVq6vMqF0lCAXL7+dsIpH1+9kqLG+SfM6wsT/DzlQh5l9Y29kPZXedqIqXb6DgXksE+Rzvd7eh6C+4IMgP2KOdaxuPhIyLFZoswSVkAPqVEp+JZc5nPEg0V8SMkBmiTJPLGBEyDdgVMbREKjYahJzcB5W+THqzXB/OQnvKrsvx3Irh4gPIKmNbUj1rmQAAAABJRU5ErkJggg==) no-repeat;
+  background-size:cover;
+}
+.topbtn-naviback{
+  background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8BAMAAADI0sRBAAAAIVBMVEUAAAAyMjIyMjIzMzMzMzMyMjIyMjIzMzMzMzMyMjIzMzNO/booAAAACnRSTlMAent9fn+AgoOE1ZGDxQAAAGZJREFUOMtjYBgF1AGJeGXZVingk45a5YBHlnXVEvyaA/BqXjo4NXvh1cxCmeZl+DUn0EozM37NVpRoZl+1CG8aq8KfxmisvQu/dg5aaxfAr30hJdo5CWifNbi1B+DVPnW07KYMAADdrTIS2w8HMwAAAABJRU5ErkJggg==) no-repeat;
+  background-size:cover;
+}
+.topbtn-personal.light {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAAA6lBMVEUAAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////+Le70HAAAATXRSTlMAAQIDBQYHCQsMDRITFRgcHSEiKCkqKy0vMjNJSktPUFVYWWhpbW5wcoSHi42Ro6mqra+0tszQ0dLW19na293e3+Hi6/X29/j5+/z9/qTwOf8AAAFFSURBVEjH7ZRrV4JAEIaBvGBBWmqoXSzNLlCaklBJeIsy8P3/f6fDqU7JcdldOvmJ59vO8MDuMjOCkJKSGLVjTheLmdlRudWC4eELzyjwueURgn6zlM2Wmv0AozKPW53jQfteaDbmVY49O+jmf5b5Lhz2nRuwc7/XORsGq6t4gbYa0QJPYZTbGERDA7QZ5R5a0VALPUbZQi0aqsFilF3sR0N7GG/iy2vOfMZ85rW3fZ74Px/4rwp7hVmrFWbh5g+1/bzN1VV20q4ShIoT9nMxkymG/exUNjdJPmfYLJxhF6qQ8i/sHJ3GcrxLVMXrN1DwbyWCfIn3+7tYzBdcEeRHnNDOdYgnQsbHFk2W4BMyAP1Kic+kMuczASSaK2JJyExQp8l1TAkZHW5DjC2RhgudkJOHoDKUSW+W9ckytqdcXU7nVgoXHyldXVAcTnniAAAAAElFTkSuQmCC) no-repeat;
+  background-size:cover;
+}
+.topbtn-naviback.light{
+  background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8BAMAAADI0sRBAAAAIVBMVEUAAAD////////////////////////////////////////PIev5AAAACnRSTlMAent9fn+AgoOE1ZGDxQAAAGhJREFUOMtjYBgFVAJsAnilsxbhk2VdtQSfdNQqB7yal+LXHDAoNbPg1+xFmeYEvJqX0UyzFV7NzJRoZqhapYBPmn0V3jRGY+0cBLR30Vj7QgLaBSjRPgu/ds7BrR1vVmHgDBgtvCkBADhnMgMMDc/yAAAAAElFTkSuQmCC) no-repeat;
+  background-size:cover;
+}
+
+
+
+/* .topbtn {
+  position: absolute;
+  left: 10px;
+  top: 30px;
+  width: 24px;
+  height: 24px;
+  z-index: 10;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  -moz-background-size: 100% 100%;
+} */
+
+/* .topbtn.personal {
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/personal.png');
+}
+
+.topbtn.personal.light {
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/personal-light.png');
+}
+
+.topbtn.naviback {
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/arrow-left2.png');
+} */
+
+.topbtn-title {
+  position: absolute;
+  top: 30px;
+  width: 370rpx;
+  right:190rpx;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  overflow:hidden;
+  white-space: nowrap;
+  text-overflow:ellipsis;
+}
+
+.topbtn-navitoapp {
+  background-color: transparent;
+  border: none;
+  width: 100%;
+  height: 100%;
+}
+
+.topbtn-navitoapp::after {
+  content: '';
+  border: none;
+}
+
+.disconnect-info {
+  position: fixed;
+  left: 0px;
+  width: 100%;
+  text-align: center;
+  font-size: 15px;
+  color: #f00;
+  z-index: 19;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.mainbtn-panel {
+  /* position: absolute; */
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 64px;
+  box-sizing: border-box;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 1);
+  z-index: 9;
+}
+
+.btn-main {
+  background-color: #0592f5;
+  height: 100%;
+  width: 710rpx;
+  margin:auto;
+  border-radius: 5px;
+  color: #fff;
+  text-align: center;
+  line-height: 49px;
+  font-size: 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-main::before {
+  content: '';
+  width: 28px;
+  height: 20px;
+  margin-right: 10px;
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/online-video.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.callbtn-panel-container {
+  position: fixed;
+  left: 0px;
+  width: 100%;
+  height: 99px;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 7;
+}
+
+.callbtn-panel {
+  width: 100%;
+  height: 99px;
+  display: flex;
+  box-sizing: border-box;
+  padding-top: 2px;
+  padding-left: 26px;
+  padding-right: 26px;
+  padding-bottom: 27px;
+  z-index: 8;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.call-doctor {
+  flex-grow: 1;
+  height: 55px;
+  max-width: 135px;
+  width: 100%;
+  border-radius: 5px;
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 15px;
+  border: solid 1px #0592f5;
+}
+
+.btn-call-img {
+  width: 26px;
+  height: 26px;
+  margin-right: 7px;
+}
+
+.btn-call-text {
+  font-size: 17px;
+  color: #0592f5;
+}
+
+.call-btn-sept {
+  min-width: 26px;
+}
+
+.msg-panel-scroll {
+  position: fixed;
+  left: 0px;
+  /* top: 109px; */
+  top: 120px;
+  width: 100%;
+  background-color: #f2f2f2;
+  box-sizing: border-box;
+  padding: 2px 10px;
+}
+
+.input-panel {
+  position: fixed;
+  left: 0px;
+  bottom: 0px;
+  width: 100%;
+  height: 50px;
+  min-height: 50px;
+  background-color: #fff;
+  border-top: solid 1px #e4e4e4;
+  box-sizing: border-box;
+}
+
+.input-ext-panel {
+  position: fixed;
+  left: 0px;
+  bottom: 0px;
+  width: 100%;
+  height: 0px;
+}
+
+.safe-area {
+  position: absolute;
+  left: 0px;
+  top: 49px;
+  width: 100%;
+  background-color: #fff;
+}
+
+.extend-panel {
+  position: absolute;
+  left: 0px;
+  top: -40px;
+  height: 40px;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.extend-view {
+  height: 100%;
+  box-sizing: border-box;
+  padding: 5px 7px;
+}
+
+.extend-btn {
+  background-color: #fff;
+  font-size: 12pt;
+  box-sizing: border-box;
+  padding: 2pt 10pt;
+  border-radius: 14pt;
+  border: solid 0.5pt #e4e4e4;
+  color: #333;
+  margin-left: 10px;
+  display: inline-block;
+}
+
+.extend-btn:first-child {
+  margin-left: 0px;
+}
+
+.msg-row {
+  width: 100%;
+  display: flex;
+  margin-top: 20px;
+  box-sizing: border-box;
+  padding-right: 45px;
+}
+
+.msg-row.timestamp {
+  flex-direction: column;
+  align-items: center;
+  padding-right: 0px;
+}
+
+.msg-time {
+  background-color: #d2d2d2;
+  box-sizing: border-box;
+  padding: 2px 5px;
+  border-radius: 5px;
+  font-size: 12px;
+  color: #fff;
+}
+
+.msg-row.user {
+  flex-direction: row-reverse;
+  padding-right: 0px;
+  padding-left: 45px;
+}
+
+.msg-img {
+  width: 35px;
+  min-width: 35px;
+}
+
+.img-head {
+  width: 35px;
+  height: 35px;
+}
+
+.msg-body {
+  margin-left: 10px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.msg-body.user {
+  margin-left: 0px;
+  margin-right: 10px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.msg-name {
+  font-size: 12px;
+  color: #d2d2d2;
+}
+
+.msg-content-main {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  box-sizing: border-box;
+  padding-top: 8px;
+}
+.msg-disclaimer{
+  margin-top:24rpx;
+  font-size:24rpx;
+  font-weight:400;
+  color:rgba(150,150,150,1);
+  line-height:36rpx;
+
+}
+
+.msg-content-main.user {
+  padding-top: 0px;
+  flex-direction: row-reverse;
+}
+
+.msg {
+  background-color: #fff;
+  box-sizing: border-box;
+  padding: 15px 15px 15px 10px;
+  border-radius: 5px;
+  position: relative;
+}
+
+.msg::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 0px;
+  width: 0px;
+  height: 0px;
+  border-top: 6px solid #fff;
+  border-left: 10px solid transparent;
+}
+
+.msg.user {
+  background-color: #c4e7ff;
+}
+
+.msg.user::before {
+  border-top: 0px solid #fff;
+  border-left: 0px solid transparent;
+}
+
+.msg.user::after {
+  content: '';
+  position: absolute;
+  right: -5px;
+  top: 0px;
+  width: 0px;
+  height: 0px;
+  border-top: 6px solid #c4e7ff;
+  border-right: 10px solid transparent;
+}
+
+.msg.text {
+  font-size: 15px;
+  color: #666;
+}
+
+.msg.user.text {
+  color: #333;
+}
+
+.msg.image {
+  max-width: 100px;
+  border-radius: 5px;
+  overflow: hidden;
+  padding: 0px;
+}
+
+.msg.image::before {
+  border-top: 0px solid #fff;
+  border-left: 0px solid transparent;
+}
+
+.msg.audio {
+  width: 100px;
+  height: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.sound-icon {
+  border: 2px solid #646464;
+  border-left: 2px solid transparent;
+  border-bottom: 2px solid transparent;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  position: absolute;
+}
+
+.sound-icon.user {
+  border: 2px solid #646464;
+  border-right: 2px solid transparent;
+  border-bottom: 2px solid transparent;
+  border-top: 2px solid transparent;
+}
+
+.sound-icon.arc1 {
+  width: 0px;
+  height: 0px;
+  border-width: 3px;
+  left: 8px;
+  top: 17px;
+}
+
+.sound-icon.arc2 {
+  width: 10px;
+  height: 10px;
+  left: 5px;
+  top: 13px;
+}
+
+.sound-icon.arc3 {
+  width: 20px;
+  height: 20px;
+  left: 0px;
+  top: 8px;
+}
+
+.sound-icon.arc1.user {
+  left: auto;
+  right: 8px;
+}
+
+.sound-icon.arc2.user {
+  left: auto;
+  right: 5px;
+}
+
+.sound-icon.arc3.user {
+  left: auto;
+  right: 0px;
+}
+
+.sound-length {
+  margin-left: 10px;
+  line-height: 40px;
+  height: 40px;
+  font-size: 12px;
+  color: #969696;
+}
+
+.sound-length.user {
+  margin-left: auto;
+  margin-right: 10px;
+}
+
+.msg-body.card {
+  width: 100%;
+}
+
+.msg.card {
+  width: 100%;
+  box-shadow: 6px 6px 30px 1px rgba(0, 0, 0, 0.1);
+}
+
+.msg-card-head {
+  font-size: 15px;
+  line-height: 15px;
+  font-weight: bold;
+  color: #333;
+  box-sizing: border-box;
+  padding-bottom: 10px;
+  border-bottom: solid 0.5px #d2d2d2;
+}
+
+.msg-card-body {
+  box-sizing: border-box;
+  padding: 10px 0px;
+}
+
+.msg-card-body.summary {
+  border-bottom: dashed 0.5px #d2d2d2;
+}
+
+.msg-card-body.medicine {
+  padding-bottom: 5px;
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-row {
+  display: flex;
+  margin-bottom: 5px;
+}
+
+.summary-row:last-child {
+  margin-bottom: 0px;
+}
+
+.summary-row.tip {
+  margin-left: 10px;
+}
+
+.summary-row.tip::before {
+  content: '';
+  position: relative;
+  left: -10px;
+  top: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #666;
+}
+
+.summary {
+  font-size: 15px;
+  color: #666;
+}
+.summary-tip{
+  font-size:26rpx;color:red;
+}
+.summary.name {
+  width: 79px;
+}
+
+.summary.value {
+  flex-grow: 1;
+}
+
+.summary.medicine {
+  font-size: 15px;
+  color: #333;
+}
+
+
+.show-more {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.show-more-text {
+  flex-grow: 1;
+}
+
+.show-more-text:before {
+  content: '详情';
+  color: #999;
+  font-size: 12px;
+}
+
+.show-more-text.custom::before {
+  content: '';
+  color: #999;
+  font-size: 12px;
+}
+
+
+.show-more-text-right::after {
+  content: '详情';
+  position: relative;
+  color: #999;
+  font-size: 12px;
+  top: -2px;
+}
+
+.show-more-text.custom {
+  color: #999;
+  font-size: 12px;
+}
+
+.show-more-text.custom:before {
+  content: '';
+}
+
+.show-more-arraw {
+  background-image: url("https://wmp.hh-medic.com/wmp/resources/image/arrow.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 8px;
+  height: 14px;
+}
+
+.show-more-btn {
+  width: 100%;
+  height: 35px;
+  border-radius: 5px;
+  background-color: #0592f5;
+  color: #fff;
+  text-align: center;
+  line-height: 35px;
+  font-size: 14px;
+}
+
+.disabled.disabled {
+  background-color: #d2d2d2;
+  color: #000;
+}
+
+.medicine-row {
+  box-sizing: border-box;
+  padding: 5px 0px;
+  border-bottom: dashed 0.5px #d2d2d2;
+  width: 100%;
+}
+
+.medicine {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  font-size: 15px;
+  line-height: 23px;
+  color: #323232;
+}
+
+.medicine-name {
+  flex-grow: 1;
+}
+
+.medicine-count {
+  min-width: 55px;
+  text-align: right;
+}
+
+.medicine-count::before {
+  content: 'x';
+  position: relative;
+  left: -8px;
+}
+
+.medicine-remark {
+  margin:6rpx 0;
+  font-size: 26rpx;
+  line-height: 42rpx;
+  color: #646464;
+}
+
+/* .medicine-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0px;
+} */
+
+/* .medicine {
+  font-size: 15px;
+  line-height: 15px;
+  color: #333;
+}
+
+.medicine.count {
+  color: #666;
+}
+
+.medicine-remark {
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 13px;
+  color: #666;
+} */
+
+.input-tools {
+  width: 100%;
+  height: 50px;
+  display: flex;
+  align-items: flex-end;
+  box-sizing: border-box;
+  padding: 7px 10px;
+}
+
+.input-text {
+  -webkit-appearance: none;
+  flex-grow: 1;
+  height: 100%;
+  margin-left: 10px;
+  border: solid 1px #e4e4e4;
+  border-radius: 5px;
+  padding: 5px 0px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 50px;
+}
+
+.input-text.touchstart {
+  background-color: #e4e4e4;
+}
+
+.textarea {
+  height: 100%;
+  font-size: 15px;
+  line-height: 17px;
+  outline: none;
+  border: none;
+  padding: 0px 2px;
+  color: #333;
+  z-index: 999;
+}
+
+.input-btn-box {
+  width: 28px;
+  height: 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-left: 10px;
+}
+
+.input-btn-box:first-child {
+  margin-left: 0px;
+}
+
+.input-btn {
+  width: 28px;
+  height: 28px;
+  box-sizing: border-box;
+  min-width: 28px;
+}
+
+.input-btn.audio {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_audio.png");
+  background-size: cover;
+  margin-left: 0px;
+}
+
+.input-btn.audio:active {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_audio_press.png");
+}
+
+.input-btn.keyboard {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_kb.png");
+  background-size: cover;
+  margin-left: 0px;
+}
+
+.input-btn.keyboard:active {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_kb_press.png");
+}
+
+.input-btn.emoji {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_smail.png");
+  background-size: cover;
+}
+
+.input-btn.emoji:active {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_smail_press.png");
+}
+
+.input-btn.plus {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_add.png");
+  background-size: cover;
+}
+
+.input-btn.plus:active {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_add_press.png");
+}
+
+.input-record {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  font-size: 17px;
+  font-weight: bold;
+  color: #333;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -ms-touch-callout: none;
+  -moz-touch-callout: none;
+}
+
+.anchor {
+  height: 0px;
+  overflow: hidden;
+}
+
+.record-mask {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  z-index: 99;
+  background-color: rgba(0, 0, 0, 0);
+}
+
+.record-msg-box {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: 150px;
+  height: 150px;
+  z-index: 100;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.5);
+  transform: translateX(-50%) translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  /*justify-content: center;*/
+  align-items: center;
+}
+
+.record-msg-icon {
+  margin-top: 37px;
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_recording.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 42px;
+  height: 65px;
+}
+
+.record-msg-icon.cancel {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_recordcancel.png");
+}
+
+.record-msg-text {
+  margin-top: 19px;
+  font-size: 14px;
+  color: #fff;
+}
+
+.record-msg-text:before {
+  content: '手指上滑，取消发送';
+}
+
+.record-msg-text.cancel:before {
+  content: '松开手指，取消发送';
+  background-color: #903d3b;
+  box-sizing: border-box;
+  padding: 2px;
+  border-radius: 4px;
+}
+
+.util-tools {
+  width: 100%;
+  height: 210px;
+  background-color: #f2f2f2;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  box-sizing: border-box;
+  padding: 0px 15px;
+}
+
+.util-tool {
+  min-width: 25%;
+  min-height: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.util-icon {
+  width: 55px;
+  height: 55px;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.util-icon.album {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_album.png");
+}
+
+.util-icon.camera {
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/im_camera.png");
+}
+
+.util-text {
+  margin-top: 7px;
+  font-size: 12px;
+  color: #787878;
+}
+
+.demo-status {
+  font-size: 13px;
+  box-sizing: border-box;
+  padding-left: 65px;
+  color: #0592f5;
+}
+
+.demo-status-1 {
+  display: none;
+}
+
+.demo-status0::before {
+  content: '';
+  position: absolute;
+  left: 40px;
+  top: -1px;
+  width: 20px;
+  height: 20px;
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/icon_uncheck.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.demo-status1::before {
+  content: '';
+  position: absolute;
+  left: 40px;
+  top: -1px;
+  width: 20px;
+  height: 20px;
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/icon_checked.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.live-panel {
+  position: fixed;
+  left: 0px;
+  width: 100%;
+  height: 130px;
+  box-sizing: border-box;
+  padding: 5px 5px 15px 5px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+}
+
+.live-item {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 0px 5px;
+  position: relative;
+}
+
+.live-item-image {
+  width: 100%;
+  height: 100%;
+}
+
+.live-item-image.status::after {
+  content: '';
+  position: absolute;
+  left: 19px;
+  top: 15px;
+  width: 66.5px;
+  height: 17px;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.live-item-image.status.active::after {
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/live-active.png');
+}
+
+.live-item-image.status.inactive::after {
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/live-inactive.png');
+}
+
+/* 顶部成员列表 */
+.member-wrap {
+  position: fixed;
+  overflow: hidden;
+  left: 0;
+  font-family: PingFang SC;
+  text-align: center;
+  padding: 0 30rpx;
+  width: 750rpx;
+  z-index: 8;
+  box-sizing: border-box;
+  background: #fff;
+  border-top:1px solid #E6E6E6;
+}
+.member-bg{
+  position:fixed;
+  top:0;
+  bottom:0;
+  left:0;
+  right:0;
+  background:rgba(0,0,0,.3);  
+  z-index: 8;
+}
+
+.member-choose {
+  font-size: 28rpx;
+  color:rgba(100,100,100,1);
+  margin:18rpx auto 39rpx auto;
+  font-weight: 400;
+}
+.member-item,
+.member-button {
+  height: 98rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid #E6E6E6;
+  color:#0592F5;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+/* //演示模式 */
+.demo-pattern{
+  height:106rpx;
+  display:flex;
+  align-items: center;
+  justify-content: left;
+  border-top:1px solid #e6e6e6;
+  font-size:26rpx;
+  color:rgba(150,150,150,1);
+}
+.demo-pattern::before{
+  content:'';
+  display:block;
+  width:50rpx;
+  height:50rpx;
+  margin-right:10rpx;
+  background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAsVBMVEUAAAAAAABVVVWqqqp/f3+ZmZl/f3+Xl5eQkJCVlZWPj4+ZmZmVlZWWlpaUlJSXl5eWlpaXl5eVlZWUlJSWlpaUlJSXl5eVlZWWlpaVlZWXl5eVlZWVlZWXl5eWlpaVlZWXl5eWlpaWlpaVlZWXl5eWlpaVlZWWlpaWlpaXl5eVlZWWlpaWlpaWlpaVlZWWlpaWlpaWlpaWlpaVlZWWlpaWlpaVlZWWlpaXl5eWlpaWlpb1WlKqAAAAOnRSTlMAAQMDBAUGFhcYGRk1ODk7P0BBQ0RFWFlaZWV7fX2DhISGj5CQnp++v7/AwNDd3uLl5ufo7PX2+fn87KvLuAAAASJJREFUSMftlFFXgkAQhddoo1BExCJMWkoUkpWNgpL7/39Yb2W6A9Kpp7hve+d858zOzl7GevXaF/dEUtR1kQiPnwSYYotP5cJsJ24UIMOpZRjWNJSA8tuIGMicr6OTAXEzsUIVfHeCCqsm4hGlfejZJZY04eNtfOyOK5D3MRXmOn8ORc3tHqm+kEHoC+dbOPqKg1z/pteQVMsSM63/gDsKWSAiOp5QiItE67/ikkIsFFq/hkEhZ6i7Ihd479rYFV66Xn+Cp98a8g+ekuedF4YJai1Tai2ZqRDo/IBefuajso9du+GLMbZEOTr0RmVzYKx1cbFuTJhBDGz2Q2kDxIOWIPMVIEN3yPnQXUhA3f5FwDLGuBelz7tdkUaz02K81//RB1HKJ56i4v+QAAAAAElFTkSuQmCC) no-repeat;
+  background-size:cover;
+}
+.demo-pattern-1::before{
+  content:'';
+  display:block;
+  width:50rpx;
+  height:50rpx;
+  margin-right:10rpx;
+  background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAA21BMVEUAAAAAAP8AVf8Af/8AZswAmf8Af/8An/8Ajv8AgOYAl/MAkPQAivQAj/UAlPgFlfUFkvYEj/IElPIElPYEk/YEkvMEkvcEk/cEkfMEkfcEkvQEkPQDkfYDkvQDkvYGkfQFkPUFkvUEkfQEk/QEkfUEkfUEkvUEkfMEkfUEk/UEkvYEkfQFkfUFkvUFkvQEk/UFkvYEkvYEkvQEkvYEkfQEkvQFkvUFkfYFk/YFkvUFkvUEkvUEkfUEkvUEkvUEkfQEkvUEkvQEkvUEkvYEkfUFkfUFkvYFkvUFkvX0Sf0mAAAASHRSTlMAAQMEBQUGCAkKFhcYGSY1ODk5OTs/P0BBQ0RFWFlZWmVldnZ7fYOEhIaPkJ6fpK68vr+/wMDQ3d3e4uXm5ufo7PH19fb5+fwjkKNdAAABXElEQVRIx+2UbVOCQBSFV5JKC6UkUUvLyqDQEl8oUZOi5Pz/XxTSxOvu4jTTl8bzZeHceYbL3TuHkJ3+scSmbi49b2nqTXEroKw9I9RMK+cTFzZg9RqSIEiNngXYnTzCAKZK9KpMAYNP9OF2k86Viz6PeIAjpz3Z4X2njY9a1j1x0WbOykaX5ndhs+Z2hzG9MIVGL+y9QKFXFMyK1MI5rIx3+nS4OSy0qMg9bjPEG643Zw86o+N6lngUNg8qTCqywlHSqP0QRMKSingI6oJRSRNEgMdDbjCvpAiyj09eY6VhwMQJcoxXxu+fkZBJEKTOuORwyD6zSBDMIUdX6TMJgnmVxVm4MKVhgmAuDNGijg/iBBmz1vI3y086cOWsK7+jwwsLp5r2qg4/MAa0uBhwE6bgh9IkHkoTP5QKOUHWDqJPlURRUoPou/yLgP2O8dF8vV6M9NZ2Mb7TThx9AYKOPJI3wt2PAAAAAElFTkSuQmCC) no-repeat;
+  background-size:cover;
+}
+
+/* 顶部 视频医生说明勾选部分 */
+.member-explain{
+  font-size:26rpx;
+  font-family:PingFang SC;
+  font-weight:400;
+  color:#b4b4b4;
+  padding:28rpx 0;
+  display:flex;
+}
+.member-text{
+  width:648rpx;
+  line-height:40rpx;
+  text-align: left;
+}
+.member-check{
+  width:50rpx;
+  height:50rpx;
+  margin-right:5rpx;
+  margin-top:-1rpx;
+  border-radius:50%;
+  background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAsVBMVEUAAAAAAABVVVWqqqp/f3+ZmZl/f3+Xl5eQkJCVlZWPj4+ZmZmVlZWWlpaUlJSXl5eWlpaXl5eVlZWUlJSWlpaUlJSXl5eVlZWWlpaVlZWXl5eVlZWVlZWXl5eWlpaVlZWXl5eWlpaWlpaVlZWXl5eWlpaVlZWWlpaWlpaXl5eVlZWWlpaWlpaWlpaVlZWWlpaWlpaWlpaWlpaVlZWWlpaWlpaVlZWWlpaXl5eWlpaWlpb1WlKqAAAAOnRSTlMAAQMDBAUGFhcYGRk1ODk7P0BBQ0RFWFlaZWV7fX2DhISGj5CQnp++v7/AwNDd3uLl5ufo7PX2+fn87KvLuAAAASJJREFUSMftlFFXgkAQhddoo1BExCJMWkoUkpWNgpL7/39Yb2W6A9Kpp7hve+d858zOzl7GevXaF/dEUtR1kQiPnwSYYotP5cJsJ24UIMOpZRjWNJSA8tuIGMicr6OTAXEzsUIVfHeCCqsm4hGlfejZJZY04eNtfOyOK5D3MRXmOn8ORc3tHqm+kEHoC+dbOPqKg1z/pteQVMsSM63/gDsKWSAiOp5QiItE67/ikkIsFFq/hkEhZ6i7Ihd479rYFV66Xn+Cp98a8g+ekuedF4YJai1Tai2ZqRDo/IBefuajso9du+GLMbZEOTr0RmVzYKx1cbFuTJhBDGz2Q2kDxIOWIPMVIEN3yPnQXUhA3f5FwDLGuBelz7tdkUaz02K81//RB1HKJ56i4v+QAAAAAElFTkSuQmCC) no-repeat;
+  background-size:cover;
+
+}
+
+.member-checked{
+  background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAA21BMVEUAAAAAAP8AVf8Af/8AZswAmf8Af/8An/8Ajv8AgOYAl/MAkPQAivQAj/UAlPgFlfUFkvYEj/IElPIElPYEk/YEkvMEkvcEk/cEkfMEkfcEkvQEkPQDkfYDkvQDkvYGkfQFkPUFkvUEkfQEk/QEkfUEkfUEkvUEkfMEkfUEk/UEkvYEkfQFkfUFkvUFkvQEk/UFkvYEkvYEkvQEkvYEkfQEkvQFkvUFkfYFk/YFkvUFkvUEkvUEkfUEkvUEkvUEkfQEkvUEkvQEkvUEkvYEkfUFkfUFkvYFkvUFkvX0Sf0mAAAASHRSTlMAAQMEBQUGCAkKFhcYGSY1ODk5OTs/P0BBQ0RFWFlZWmVldnZ7fYOEhIaPkJ6fpK68vr+/wMDQ3d3e4uXm5ufo7PH19fb5+fwjkKNdAAABXElEQVRIx+2UbVOCQBSFV5JKC6UkUUvLyqDQEl8oUZOi5Pz/XxTSxOvu4jTTl8bzZeHceYbL3TuHkJ3+scSmbi49b2nqTXEroKw9I9RMK+cTFzZg9RqSIEiNngXYnTzCAKZK9KpMAYNP9OF2k86Viz6PeIAjpz3Z4X2njY9a1j1x0WbOykaX5ndhs+Z2hzG9MIVGL+y9QKFXFMyK1MI5rIx3+nS4OSy0qMg9bjPEG643Zw86o+N6lngUNg8qTCqywlHSqP0QRMKSingI6oJRSRNEgMdDbjCvpAiyj09eY6VhwMQJcoxXxu+fkZBJEKTOuORwyD6zSBDMIUdX6TMJgnmVxVm4MKVhgmAuDNGijg/iBBmz1vI3y086cOWsK7+jwwsLp5r2qg4/MAa0uBhwE6bgh9IkHkoTP5QKOUHWDqJPlURRUoPou/yLgP2O8dF8vV6M9NZ2Mb7TThx9AYKOPJI3wt2PAAAAAElFTkSuQmCC) no-repeat;
+  background-size:cover;
+
+}
+.member-explain-link{
+  color: #0592F5;
+  display:inline;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 授权部分 */
+.auth-box{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100vh;
+  background:rgba(0,0,0,.5);
+  z-index:1200;
+  display:flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.auth-text{
+  color:#fff;
+  font-size:29rpx;
+  text-align:center;
+  line-height:42rpx;
+  width:642rpx;
+  margin:60rpx auto;
+  white-space:pre-wrap;
+}
+.auth-button{
+  width:660rpx;
+  height:100rpx;
+  line-height:100rpx;
+  background:#19be6b;
+  border-radius:10px;
+  color:#fff;
+  font-size:32rpx;
+}

@@ -1,4 +1,0 @@
-<view class='nav-bar' style='background-color:{{backgroundColor}};top:{{topHeight}}px;' wx:if='{{customNavBar}}'>
-  <view class='nav-bar-text' style='color:{{color}};'>{{text}}</view>
-  <view class='nav-icon previous' catchtap='_naviBack'></view>
-</view>

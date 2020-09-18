@@ -1,0 +1,10 @@
+{
+    "usingComponents": {
+        "hhMy": "../../hh-my/hh-my",
+        "hhNetwork":"../../hh-network/hh-network"
+    },
+    "navigationStyle": "default",
+    "navigationBarBackgroundColor": "#424559",
+    "navigationBarTitleText": "我的",
+    "navigationBarTextStyle": "white"
+}

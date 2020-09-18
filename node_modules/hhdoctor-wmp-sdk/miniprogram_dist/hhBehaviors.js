@@ -41,6 +41,7 @@ module.exports = Behavior({
       payPage: '',
       redirectPage: '',
       serviceType: 'asst',
+      callBtnVisible: true,
       //hh-ehr属性
       viewModule: 'memberList',
       addMember: true,
@@ -99,6 +100,7 @@ module.exports = Behavior({
     app = getApp();
   },
   methods: {
+      
     propertyChanged(newVal, oldVal, changedPath) {
       if (!newVal) {
         return;
@@ -192,6 +194,7 @@ module.exports = Behavior({
 
           break;
         case 'hh-rtc':
+		  case 'hh-trtc':
         case 'hh-call':
           if (!this.data._request.dept &&
             (this.data._request.appointedDoctorId || this.data._request.appointedOrderId) &&
@@ -359,20 +362,20 @@ module.exports = Behavior({
         '&sdkProductId=' + this.data._request.sdkProductId +
         '&userToken=' + this.data._request.userToken +
         '&openId=' + this.data._request.openId +
-        '&payPage=' + encodeURIComponent(this.data.basePath + 'innerpages/pay') +
+        '&payPage=' + encodeURIComponent(this.data.basePath + 'innerpages/pay/pay') +
         '&redirectPage=' + encodeURIComponent(redirectPage ? redirectPage : '/pages/newIndex/newIndex') +
         '&source=wmpSdk' +
         '&version=' + this.data._sdkVersion +
         '&_=' + new Date().getTime();
-      var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(vParam);
+      var pageUrl = this.data.basePath + 'innerpages/view/view?url=' + encodeURIComponent(vParam);
       wx.navigateTo({
         url: pageUrl
       })
     },
 
-    _viewMedicineMiaoHealth(cartUrl){
-      console.log('cartUrl',cartUrl)
-      var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(cartUrl)
+    _viewMedicineMiaoHealth(cartUrl) {
+      console.log('cartUrl', cartUrl)
+      var pageUrl = this.data.basePath + 'innerpages/view/view?url=' + encodeURIComponent(cartUrl)
       wx.navigateTo({
         url: pageUrl
       })
@@ -413,14 +416,14 @@ module.exports = Behavior({
         '&source=wmpSdk' +
         '&version=' + this.data._sdkVersion;
 
-      var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(vParam);
+      var pageUrl = this.data.basePath + 'innerpages/view/view?url=' + encodeURIComponent(vParam);
       wx.navigateTo({
         url: pageUrl
       })
     },
 
     _viewRight() {
-      var pageUrl = this.data.basePath + 'innerpages/right?' + this._getPublicRequestParams();
+      var pageUrl = this.data.basePath + 'innerpages/right/right?' + this._getPublicRequestParams();
       wx.navigateTo({
         url: pageUrl,
       })
@@ -468,8 +471,8 @@ module.exports = Behavior({
       }
       vParam + '&source=wmpSdk&version=' + this.data._sdkVersion;
       var s = this.data._host.ehrHost + 'view/?' + vParam;
-
-      var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(s);
+      console.log(s)
+      var pageUrl = this.data.basePath + 'innerpages/view/view?url=' + encodeURIComponent(s);
       wx.navigateTo({
         url: pageUrl
       })
@@ -537,7 +540,7 @@ module.exports = Behavior({
         '&source=wmpSdk' +
         '&version=' + this.data._sdkVersion +
         '&_=' + new Date().getTime();
-      var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(vParam);
+      var pageUrl = this.data.basePath + 'innerpages/view/view?url=' + encodeURIComponent(vParam);
       wx.navigateTo({
         url: pageUrl
       })
@@ -545,7 +548,7 @@ module.exports = Behavior({
 
     _viewUrl(url) {
       url = this._appendUrlParams(url);
-      var pageUrl = this.data.basePath + 'innerpages/view?url=' + encodeURIComponent(url);
+      var pageUrl = this.data.basePath + 'innerpages/view/view?url=' + encodeURIComponent(url);
       wx.navigateTo({
         url: pageUrl
       })
@@ -571,7 +574,7 @@ module.exports = Behavior({
         '&subDomain=' + this.data._request.subDomain +
         '&source=wmpSdk' +
         '&version=' + this.data._sdkVersion;
-      let pageUrl = this.data.basePath + 'innerpages/invitationcode?' + param;
+        let pageUrl = this.data.basePath + 'innerpages/invitationcode/invitationcode?' + param;
       wx.navigateTo({
         url: pageUrl
       })
@@ -614,6 +617,6 @@ module.exports = Behavior({
         url += ('&wxAppId=' + getApp().globalData.wxAppId);
       }
       return url;
-    }
+    },
   }
 })

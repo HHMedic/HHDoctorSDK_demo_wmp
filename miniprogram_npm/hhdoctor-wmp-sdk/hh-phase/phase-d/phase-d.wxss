@@ -1,0 +1,54 @@
+/* components/hh-phase/phase-d/phase-d.wxss */
+@import '../phase.wxss';
+
+.camera-wrap {
+    position: fixed;
+    height:100vh;
+    z-index: 130;
+    left: 0;
+    right: 0;
+    bottom:0;
+    background: rgba(0, 0, 0, 0);
+    font-family: PingFangSC-Regular;
+    
+
+}
+
+.camera-box {
+    position: absolute;
+    bottom: 0;
+    color: #4a4a4a;
+    font-size: 30rpx;
+    background: #f2f2f2;
+    overflow: hidden;
+    border-radius: 15rpx 15rpx 0 0;
+    width: 750rpx;
+}
+
+.camera-options {
+    width: 100%;
+    margin: auto;
+    background: #fff;
+    text-align: center;
+}
+
+.camera-btn {
+    height: 114rpx;
+    line-height: 114rpx;
+    background: #fff;
+    border-top: 1px solid #f2f2f2;
+}
+
+.camera-btn::after,
+.model-cancel::after {
+    border: none;
+}
+
+.camera-cancel {
+    margin-top: 20rpx;
+    width: 100%;
+    background: #fff;
+    height: 130rpx;
+    line-height: 114rpx;
+}
+

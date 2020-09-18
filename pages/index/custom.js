@@ -11,7 +11,7 @@ Page({
   /**
    * 生命周期函数--监听页面加载
    */
-  onLoad: function(options) {
+  onLoad: function (options) {
     self = this;
     app.hhDoctorLogin()
       .then(() => {
@@ -33,7 +33,7 @@ Page({
 
   //呼叫医生
   callDoctor(e) {
-    var page = '../call/call' +
+    var page = '/pages/call/call' +
       '?sdkProductId=' + this.data.hhRequest.sdkProductId +
       '&profileName=' + this.data.hhRequest.profileName +
       '&userToken=' + this.data.hhRequest.userToken +
@@ -74,6 +74,13 @@ Page({
 
   viewIm() {
     let page = `./im?profileName=${app.globalData.profileName}&sdkProductId=${app.globalData.sdkProductId}&userToken=${app.globalData.userToken}&openId=${app.globalData.openId}&callPage=../call/call`;
+    wx.navigateTo({
+      url: page,
+    })
+  },
+
+  viewEhr() {
+    let page = '/miniprogram_npm/hhdoctor-wmp-sdk/innerpages/ehr-family/ehr-family'
     wx.navigateTo({
       url: page,
     })

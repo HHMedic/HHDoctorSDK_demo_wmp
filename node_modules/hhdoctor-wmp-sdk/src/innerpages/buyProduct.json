@@ -1,9 +1,0 @@
-{
-  "usingComponents": {
-    "hhBuy": "../hh-buyproduct"
-  },
-  "navigationStyle": "default",
-  "navigationBarBackgroundColor": "#fff",
-  "navigationBarTitleText": "请选择",
-  "navigationBarTextStyle": "black"
-}

@@ -1,6 +1,6 @@
 {
   "usingComponents": {
-    "hhCall": "hhdoctor-wmp-sdk/hh-rtc/hh-rtc"
+    "hhCall": "hhdoctor-wmp-sdk/hh-trtc/hh-trtc"
   },
   "navigationBarBackgroundColor": "#000000",
   "navigationBarTextStyle": "white",

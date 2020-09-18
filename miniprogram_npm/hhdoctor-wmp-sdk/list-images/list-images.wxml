@@ -1,0 +1,6 @@
+<!--components/innerpages/hh-ehr/ehr-filing-list/list-images/list-images.wxml-->
+ <view class='scroll-item' catchtap='bindFilingImg'>
+    <image class='scroll-img' src='{{imgUrls[0].smallPic||imgUrls[0]}}'  ></image>
+    <!-- <view class='scroll-name'>{{name}}</view> -->
+    <view class='scroll-many'>{{imgUrls.length}}张</view>
+  </view>

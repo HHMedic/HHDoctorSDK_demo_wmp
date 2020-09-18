@@ -4,6 +4,7 @@
 <button catchtap='callDoctor' data-dept='600002'>开始咨询医生(成人)</button>
 <button catchtap='callDoctor' data-dept='600000'>开始咨询医生(儿童)</button>
 <button catchtap='viewPersonal'>查看个人主页</button>
+<button catchtap='viewEhr'>查看档案库</button>
 <button catchtap='viewAddrList'>查看地址列表</button>
 <button catchtap='viewDrugOrder'>查看购药订单</button>
 <button catchtap='viewDrugOrderList'>查看购药订单列表</button>

@@ -18,6 +18,6 @@
   },
   "homepage": "https://github.com/HHMedic/HHDoctorSDK_demo_wmp#readme",
   "dependencies": {
-    "hhdoctor-wmp-sdk": "^2.1.0"
+    "hhdoctor-wmp-sdk": "^3.0.0"
   }
 }

@@ -1,7 +1,0 @@
-{
-  "component": true,
-  "usingComponents": {
-    "hhSdk": "./hh-sdkcontext",
-    "hh-Modal":"../hh-modal/hh-modal"
-  }
-}

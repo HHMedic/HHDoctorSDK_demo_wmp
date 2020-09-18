@@ -1,6 +1,6 @@
 {
   "usingComponents": {
-    "hhIm": "hhdoctor-wmp-sdk/hh-im"
+    "hhIm": "hhdoctor-wmp-sdk/hh-im/hh-im"
   },
   "navigationStyle": "default",
   "navigationBarBackgroundColor": "#ffffff",

@@ -1,0 +1,82 @@
+<!--components/innerpages/ehr-addmember/ehr-addmember.wxml-->
+<form bindsubmit='bindMemberSubmit'>
+<view class='page'>
+  <view class='member-theme'>
+    <image src='../../images/avatar.png' class='member-avatar'></image>
+  </view>
+  <view class='member-inputs'>
+   <!-- 填写姓名 -->
+    <view class='inputs-item bottom' >
+      <text class='inputs-text'>姓名</text> 
+      <input placeholder="请输入成员姓名"  placeholder-class="placeholder" class='inputs-input' 
+            bindinput="bindInput"
+            bindblur="bindBlur"
+            maxlength='20'
+            value='{{inputVal}}'
+      ></input> 
+    </view>
+    <!-- 填写关系 -->
+    <view class='inputs-item bottom' wx:if='{{relationList.length}}'>
+      <text class='inputs-text'>关系</text> 
+      <picker  range="{{relations}}"  bindchange="bindPickerRelation"  class='picker' value='{{relationIdx}}'>
+        <view class='{{relations[relationIdx]?"picker-text":"placeholder"}}'>{{relations[relationIdx] || '请选择与成员关系'}}</view>
+      </picker>
+    </view>
+      <!-- 填写性别 -->
+    <view class='inputs-item bottom'>
+      <text class='inputs-text'> 性别</text> 
+      <picker  value="{{genderIdx}}"  range="{{gender}}"  bindchange="bindPickerGender"  class='picker'>
+        <view class='{{gender[genderIdx]?"picker-text":"placeholder"}}' > {{gender[genderIdx] || '请选择性别'}} </view>
+      </picker>
+    </view>
+      <!-- 生日 -->
+    <view class='inputs-item'>
+      <text class='inputs-text'>生日</text> 
+      <picker  mode="date" value="{{date}}"
+      start="1900-01-01" 
+      end="{{endDate}}"
+      bindchange="bindPickerDate" class='picker'>
+        <view class='{{date?"picker-text":"placeholder"}}' >{{date || '请选择出生年月'}}</view>
+      </picker>
+    </view>
+    </view>
+    <!-- 是否允许成员独立登录 -->
+      	 <view wx:if='{{showAccount=="true"}}' >
+			   <view class="member-inputs">
+			     <view class="inputs-item">
+			       <text class="inputs-text">允许成员独立登录</text>
+			       <switch checked="{{isLoginChecked}}"
+					  bindtap="bindDisabledModal"
+                      
+					 bindchange="bindIsLoginChecked" data-type="switch"  class="inputs-switch" color="#3c91ee" disabled="{{isedit && isAccount}}"></switch>
+			     </view>
+			     <view class="inputs-item" wx:if="{{isLoginChecked}}">
+			       <text class="inputs-text">手机号</text>
+			       <input placeholder="请输入独立登录手机号" 
+						placeholder-class="placeholder" 
+						class="inputs-input" 
+						bindinput="bindLoginInput" 
+						bindblur="bindLoginBlur" 
+						value="{{loginname}}" 
+						type="number" 
+						maxlength="11" 
+						data-type="input" 
+						bind='bindDisabledModal'
+						disabled="{{isedit && isAccount}}"></input> 
+			     </view>
+			     <!-- 编辑状态下如果已设置允许成员独立登录手机号 则禁止更改 点击弹窗提示联系相应负责人更改 如果没有开通独立登录则允许设置独立登录 -->
+			   </view>
+			   <view class="member-tip">对方可用本人手机号登录，并共享您当前套餐内所有权益。</view>
+			 </view>
+
+    <view class='member-saves' wx:if='{{isIndex}}'>
+      <button class='member-save' form-type="submit" data-type='save'>保存</button>
+      <button class='member-call' form-type="submit"  data-type='saveCall'>保存并呼叫医生</button>
+    </view>
+    <view class="member-saves" wx:elif='{{isUpdate}}'>
+       <button class='member-save' form-type="submit" data-type='update'>保存</button>
+        <button class='member-call' form-type="submit" data-type='updateCall'>保存并呼叫医生</button>
+    </view>
+    <button class='member-submit' form-type="submit" wx:else>确定</button>
+</view>
+</form>

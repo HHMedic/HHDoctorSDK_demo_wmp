@@ -1,6 +1,6 @@
 const hostUtil = require('./utils/hostUtil.js')
 const apis = require('./utils/api.js')
-const TIM = require("./webrtc-room/tim-wx.js");
+const TIM = require("./trtc-room/libs/tim-wx.js");
 const SDKAppID = 1400073238;
 var app;
 var tim = null; // SDK 实例通常用 tim 表示
@@ -37,6 +37,7 @@ function login(options) {
   return new Promise((resolve, reject) => {
     app = getApp();
     tim = getTim();
+    injectThrottle()
     if (tim) {
       resolve();
     }
@@ -48,12 +49,10 @@ function login(options) {
     }
     refreshSession();
     wx.onAppHide(() => {
-      console.log('小程序被隐藏');
       _status.appShow = false;
       addLog('1', 'life:onAppHide')
     });
     wx.onAppShow(() => {
-      console.log('小程序被打开');
       _status.appShow = true;
       addLog('1', 'life:onAppShow')
     });
@@ -68,7 +67,8 @@ function login(options) {
       _userToken: _options.userToken,
       _openId: _options.openId,
       _profileName: _options.profileName,
-      _subDomain: _options.subDomain
+      _subDomain: _options.subDomain,
+      _callPage: _options.callPage
     };
     getApp().globalData._hhSdkOptions = sdkOptions;
 
@@ -148,6 +148,11 @@ function off(event) {
       return
   }
 }
+
+function getOptions() {
+  return _options
+}
+
 /** 获取userId */
 function getUserId() {
   return _options.userId;
@@ -183,8 +188,8 @@ function doAddLog(type, content, orderId) {
       _logUrl = _logUrl.substring(0, _logUrl.length - 1) + '-log/';
     }
     let url = _logUrl + '?sdkProductId=' + _options.sdkProductId +
-      '&uuid=' + _options.userId +
-      '&session=' + _sessionId +
+      '&uuid=' + (_options.userId || '-1') +
+      '&session=' + (_sessionId || '') +
       '&id=' + _logId +
       '&orderId=' + (orderId || '') +
       '&type=' + type +
@@ -197,6 +202,18 @@ function doAddLog(type, content, orderId) {
     })
     resolve();
   })
+}
+/* 注入截流函数 */
+function injectThrottle() {
+  if (!app._throttle) {
+    app._throttle = (btn, wait) => {
+      let nowTime = Date.parse(new Date());
+      let preTime = wx.getStorageSync(btn) || 0;
+      let seconds = parseInt(nowTime - preTime)
+      wx.setStorageSync(btn, nowTime);
+      return seconds < (wait ? wait : 2000)
+    }
+  }
 }
 
 function reportActive() {
@@ -284,12 +301,37 @@ function onMessageReceived(e) {
   if (!e || !e.data || 0 == e.data.length) {
     return;
   }
+  if (isCallWithCancel(e.data)) return;
+
   for (var i = 0; i < e.data.length; i++) {
     if ('C2C' != e.data[i].conversationType) {
       continue;
     }
+    apis.requestRtcLog(1, 'onMessageReceived:====>' + JSON.stringify(e.data[i]));
     parseMsg(e.data[i]);
   }
+}
+
+function isCallWithCancel(dataList) {
+  if (1 == dataList.length) return false
+  let callOrderId = '', cancelOrderId = '';
+  for (var i = 0; i < dataList.length; i++) {
+    if ('C2C' != dataList[i].conversationType) {
+      continue;
+    }
+    let msg = JSON.parse(dataList[i].payload.data);
+    switch (msg.command) {
+      case 'call':
+        callOrderId = msg.orderId || ''
+        break;
+      case 'cancel':
+        cancelOrderId = msg.orderId || ''
+        break;
+      default:
+        break;
+    }
+  }
+  return callOrderId && cancelOrderId && callOrderId == cancelOrderId
 }
 
 function onTimError(e) {
@@ -342,7 +384,6 @@ function doCallUser(msg, caller) {
   }
   getDoctorInfo(msg)
     .then((res) => {
-      console.log(res)
       let pageUrl = _options.callPage + '?' +
         getPublicParams() +
         '&dept=' + msg.orderId +
@@ -421,7 +462,6 @@ function getPublicParams() {
 }
 
 app = getApp();
-console.log(getApp())
 module.exports = {
   login: login,
   logout: logout,
@@ -431,6 +471,7 @@ module.exports = {
   getUserId,
   getProduct,
   getUserSig,
+  getOptions,
   getUserInfo,
   getUserPhoto,
   getAsstInfo,

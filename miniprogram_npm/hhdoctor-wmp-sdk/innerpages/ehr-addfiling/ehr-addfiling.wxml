@@ -1,0 +1,48 @@
+<!--components/innerpages/ehr-addfiling/ehr-addfiling.wxml-->
+<wxs src="../../wxs/common.wxs" module="common" />
+
+<view class='page'>
+  <view class='add-name'>姓名 {{nickname}}</view>
+  <view class='add-main'>
+    <view class='add-title'>病历资料 <text class='add-text'>(体检报告/病例/检查/处方等)</text> </view>
+    <view class='add-picture' >
+      <view class='add-icon' bindtap='bindAddImg'></view>
+      <view class='add-imgs' bindtap='bindPreviewImg' wx:if='{{chooseImages.length}}'>
+         <image src='{{chooseImages[0]["path"]}}' class='add-img'></image>
+         <view class='add-imgs-many'>共{{chooseImages.length}}张</view>
+      </view>
+    </view>
+
+    <textarea placeholder="可继续补充过往诊疗信息，如就诊日期、医院、医生信息等" 
+    class='text-area' 
+    placeholder-class="textarea-placeholder"
+    bindinput='bindTextarea'
+    show-confirm-bar='{{false}}'	
+    maxlength='-1'	
+    cursor-spacing='40'	></textarea>
+    
+    <view class='add-explain' wx:for='{{list}}' wx:key=''>
+      <view class='explain-caption {{item.isCheck?"explain-checked":"explain-check"}}' bindtap='bindIsChecked' data-index='{{index}}' >{{item.title}}</view>
+      <view class='explain-txt' wx:if='{{item.isCheck}}'>
+        <view class='text-item' wx:for='{{item.texts}}' wx:key='index2' wx:for-index='index2' wx:for-item='text'>{{text}}<block wx:if='{{index==0&&index2==5}}'>用授权码(<text bindtap='bindGetAuthCode' class='add-authcode'>点击获取</text>)登录</block></view>
+      </view>
+    </view>
+    
+    <button class='add-submit' bindtap='bindSubmitSave'>保存</button>
+  </view>
+
+    <!-- 授权码的浮窗 -->
+  <cover-view class='code-modal' wx:if='{{isAuthCode}}' bindtap='bindCloseCode'>
+	  <cover-view class='code-inner'>
+		  <cover-view class='code-inner-text'>
+			  <cover-view class='code-inner-line'><cover-view class='code-inner-title'>授权码：</cover-view><cover-view class='code-inner-val'>{{authData.id}}</cover-view></cover-view>
+			  <cover-view class='code-inner-line'><cover-view class='code-inner-title'>验证码：</cover-view><cover-view class='code-inner-val'>{{authData.code}}</cover-view></cover-view>
+			  <cover-view class='code-inner-line'><cover-view class='code-inner-title'>过期时间： </cover-view><cover-view class='code-inner-val'>{{common.getHourMSecond(authData.expireTime)}}</cover-view></cover-view>
+		  </cover-view>
+		  <cover-view class='code-inner-tip'>请用电脑浏览器访问：e.hh-medic.com，输入授权码、验证码登录</cover-view>
+	  </cover-view>
+  </cover-view>
+</view>
+
+
+

@@ -1,0 +1,22 @@
+<!--components/hh-phase/phase-c/phase-c.wxml-->
+	<view>
+		<view class="room-box" style="background-image:url({{bgImgs.waitImg}})">
+		  <!-- 初始不展示begin -->
+		  <view class="wait-video-wrap" wx:if='{{waitTips.waitVideoTips}}'>
+		    <view class="wait-video-box">
+		      <view class="wait-video-title">排队期间，看几个医疗小窍门吧</view>
+		      <view class="wait-video-title2">分配成功会自动切换到与医生视频</view>
+		    </view>
+		    <view class="wait-time-tip" wx:if='{{waitTips.videoTimeTip}}'>{{waitTips.videoTimeTip}}</view>
+		  </view>
+		  <!-- 初始不展示end -->
+		  <view class="room-modal">
+		    <view class="room-wait">{{waitTips.waitUserInfoText? waitTips.waitUserInfoText:'目前咨询人数较多，感谢耐心等待'}}</view>
+		    <view class="room-status">{{callTips.callintTipQueue}}</view>
+		    <view class="room-icon" >
+              <button class='room-image' style='background-image:url({{icons.hangup}});' id='b-hangup' bindtap='bindHangUp' id='c-hangup'></button>
+		      <view class="room-cancel">取消</view>
+		    </view>
+		  </view>
+		</view>
+	</view>

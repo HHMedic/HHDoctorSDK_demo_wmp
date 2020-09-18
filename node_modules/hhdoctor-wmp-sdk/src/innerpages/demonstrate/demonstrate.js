@@ -25,7 +25,8 @@ Page({
     showPusher: false,//是否显示右上角推流
     showHangupBtn: false, //是否显示挂断按纽
     showWaitting:false,
-    objectFit:'cover'
+    objectFit:'cover',
+    isConnect:true
   },
 
   /**
@@ -70,6 +71,7 @@ Page({
    * 生命周期函数--监听页面显示
    */
   onShow: function() {
+    this.setData({ isConnect: getApp().globalData.isConnect })
     this.getAuth();
 
   },

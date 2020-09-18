@@ -1,9 +1,0 @@
-{
-  "usingComponents": {
-    "hhRight": "../hh-right"
-  },
-  "navigationStyle": "default",
-  "navigationBarBackgroundColor": "#ffffff",
-  "navigationBarTitleText": "会员权益",
-  "navigationBarTextStyle": "black"
-}

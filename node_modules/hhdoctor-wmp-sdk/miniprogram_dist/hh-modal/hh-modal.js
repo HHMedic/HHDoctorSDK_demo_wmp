@@ -10,7 +10,7 @@ Component({
     },
     isShowModal:{
       type:Boolean,
-      value:false
+      value:true
     }
   },
   lifetimes: {
@@ -44,9 +44,7 @@ Component({
       })
     },
     bindConfirm(){
-      
       this.triggerEvent('myConfirm');
-      
     },
   }
 })

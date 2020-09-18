@@ -1,9 +1,0 @@
-{
-  "usingComponents": {
-    "hhProdRight": "../hh-productright"
-  },
-  "navigationStyle": "default",
-  "navigationBarBackgroundColor": "#424559",
-  "navigationBarTitleText": "会员",
-  "navigationBarTextStyle": "white"
-}

@@ -41,3 +41,4 @@
     <button class='auth-button' open-type="openSetting">现在去授权</button>
   </view> -->
 </view>
+<hhNetwork wx:if='{{!isConnect}}'></hhNetwork>

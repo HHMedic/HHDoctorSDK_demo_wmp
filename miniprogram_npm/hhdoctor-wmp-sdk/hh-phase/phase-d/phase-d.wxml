@@ -1,0 +1,68 @@
+<!--components/hh-phase/phase-d/phase-d.wxml-->
+<view>
+    <view class="room-box" style="background-image:url({{isEnterCamera?doctor.photourl:''}})">
+        <!-- 功能区  -->
+        <view hidden='{{isClickCamera}}'>
+            <image src="{{_request.style.logoImage}}" class="logo-image" mode='widthFix'></image>
+            <view class="room-function">
+                <view class="room-inner" wx:if='{{isExpand}}'>
+                    <view class="function-item function-certificate" catchtap='_bindPreviewCertificate' hidden='{{doctor.serviceTypeStatus=="zhuanke"}}'>
+                        <image src="{{icons.certificate}}" class="function-img"></image>
+                    </view>
+                    <view class="function-item function-flash" catchtap="bindFlashIcon">
+                        <image src="{{cameraTorch?icons.flash_on:icons.flash_off}}" class="function-img"></image>
+                    </view>
+                </view>
+                <view class="function-arrow" catchtap='_bindArrow'>
+                    <image src="{{isExpand?icons.arrow_down:icons.arrow_up}}" class="arrow-img"></image>
+                </view>
+            </view>
+            <!-- 更换医生按钮 -->
+            <view class="change-doctor" catchtap="bindIndexChangeDoctor" wx:if='{{_request.dept[0]!="F"}}'>
+                <image src="{{icons.change_doctor}}" class="change-doctor-img"></image>
+            </view>
+            <!-- 上传的照片 -->
+            <view class="cover-upload" catchtap="bindPreviewPhotos" wx:if='{{chooseImages.length}}'>
+                <image src="{{chooseImages[chooseImages.length-1]['path_server']+'?x-oss-process=image/resize,m_fixed,w_60,h_60'}}" class="upload-img" wx:if="{{chooseImages[0]['path_server']}}"></image>
+                <view class="upload-num">{{chooseImages.length}}</view>
+            </view>
+        </view>
+        <!-- 底部按钮遮罩层 -->
+        <view class="room-mask">
+            <view class="video-time">{{videoTime}}</view>
+            <view class="room-bottom">
+                <view class="bottom-item" hidden='{{doctor.serviceTypeStatus=="zhuanke"}}'>
+                    <button class='bottom-image' catchtap='bindCamera' style='background-image:url({{icons.camera}});' id='d-camera'></button>
+                </view>
+                <view class="bottom-item">
+                    <button class='bottom-image' catchtap='bindHangUp' style='background-image:url({{icons.hangup}});' id='d-hangup'></button>
+                </view>
+                <view class="bottom-item">
+                    <button class='bottom-image' catchtap='bindChangeCamera' style='background-image:url({{icons.switch_camera}});' id='d-switch_camera'></button>
+
+                </view>
+            </view>
+        </view>
+
+        <!-- 预览 -->
+        <view class="cover-preview" catchtap="bindClosePreviewPhotos" bindtouchstart="touchstart" bindtouchend="touchend" wx:if="{{isPreviewPhoto}}">
+            <view class="preview-count">{{photoIdx+1}} / {{uploadImages.length}}</view>
+            <image bindload="bindImagesLoad" src="{{uploadImages[photoIdx]+'?x-oss-process=image/resize,m_fixed,w_750'}}" class="preview-img" mode='widthFix' style='width:{{setWidth}};height:{{setHeight}};'></image>
+        </view>
+        <!-- 执业医师资格证书预览模式 -->
+        <view class='cover-preview' hidden='{{!isCertificate}}' bindtap='_bindPreviewCertificate'>
+            <image src='{{doctor.license}}' class='preview-img' mode='widthFix'></image>
+        </view>
+        <!-- 拍照弹窗 -->
+        <view class='camera-wrap'  wx:if="{{isClickCamera}}"   catchtap='bindCancel'>
+           <view class='camera-box'>
+            <view class='camera-options'>
+                <button class='camera-btn' catchtap='bindUserImage' data-photo='camera'>拍照</button>
+                <button class="camera-btn" catchtap='bindUserImage' data-photo='album'>从手机相册选择</button>
+             </view>
+             <button class="camera-cancel" catchtap='bindCancel' >取消</button>
+           </view>
+         </view>
+
+    </view>
+</view>

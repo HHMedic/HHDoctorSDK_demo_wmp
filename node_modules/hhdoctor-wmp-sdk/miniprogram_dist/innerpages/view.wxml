@@ -1,3 +1,0 @@
-<view class='page'>
-<web-view src="{{viewSrc}}" ></web-view>
-</view>

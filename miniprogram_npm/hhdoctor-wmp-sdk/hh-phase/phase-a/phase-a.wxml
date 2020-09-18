@@ -1,0 +1,23 @@
+<!--components/hh-phase/phase-a/phase-a.wxml-->
+		<view class="room-box" style='background-image:url({{bgImgs.defaultImg}})'>
+		  <view class="transition-text">请稍后...</view>
+		  <view class="room-mask" >
+		    <view class="room-bottom">
+		      <view class="bottom-item">
+		        <!-- <image src="{{icons.camera}}" class="bottom-image"></image> -->
+                <button class='bottom-image' style='background-image:url({{icons.camera}});' id='a-camera'></button>
+		      </view>
+		      <view class="bottom-item">
+		        <!-- <image src="{{icons.hangup_disabled}}" class="bottom-image"></image> -->
+
+                <button class='bottom-image' style='background-image:url({{icons.hangup_disabled}})' id='a-hangup'></button>
+
+		      </view>
+		      <view class="bottom-item">
+		        <!-- <image src="{{icons.switch_camera}}" class="bottom-image"></image> -->
+                <button class='bottom-image' style='background-image:url({{icons.switch_camera}})' id='a-switch_camera'></button>
+
+		      </view>
+		    </view>
+		  </view>
+		</view>

@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "rightList": "../hh-rightlist/hh-rightlist"
+  }
+}

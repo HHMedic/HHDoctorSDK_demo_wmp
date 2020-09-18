@@ -1,6 +1,9 @@
 {
   "usingComponents": {
-    "hhLive": "../../hh-live/hh-live"
+    "hhLive": "../../hh-live/hh-live",
+    "hhNetwork": "../../hh-network/hh-network"
+
   },
-  "navigationStyle": "custom"
+  "navigationStyle": "custom",
+  "pageOrientation":"auto"
 }

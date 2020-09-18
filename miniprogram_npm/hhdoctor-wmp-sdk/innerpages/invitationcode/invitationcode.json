@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "keyboard": "../../keyboard/keyboard",
+    "hhNetwork": "../../hh-network/hh-network"
+  },
+  "navigationBarTitleText": "邀请码激活"
+}

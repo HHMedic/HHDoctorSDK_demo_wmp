@@ -1,10 +1,9 @@
 {
   "pages": [
     "pages/index/index",
-    "pages/call/call",
-    "pages/ehr/ehr",
     "pages/index/custom",
-    "pages/index/im"
+    "pages/index/im",
+    "pages/call/call"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -12,8 +11,5 @@
     "navigationBarTitleText": "WeChat",
     "navigationBarTextStyle": "black"
   },
-  "navigateToMiniProgramAppIdList": [
-    "wx4cb4b02322574f52"
-  ],
   "sitemapLocation": "sitemap.json"
 }

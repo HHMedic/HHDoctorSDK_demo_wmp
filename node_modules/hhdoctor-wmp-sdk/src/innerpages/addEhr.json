@@ -1,9 +1,0 @@
-{
-    "usingComponents": {
-      "hhAddEhr": "../hh-addehr"
-    },
-    "navigationStyle": "default",
-    "navigationBarBackgroundColor": "#fff",
-    "navigationBarTitleText": "自建档案",
-    "navigationBarTextStyle": "black"
-}

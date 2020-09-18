@@ -58,10 +58,109 @@ var getPeriod2 = function(batchType, batchNum, validateMonth) {
   return validateMonth + '月';
 }
 
+var getTextUrl = function (text) {
+    var reg = getRegExp('(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-|%)+)', 'g')
+    var result = reg.exec(text)
+    if (result) {
+        var arr = text.split(result[0])
+        arr.splice(1, 0, '点此前往');
+        var url = result[0];
+        if (url.indexOf('?') == -1) {
+            url += '?'
+        } else {
+            url += '&'
+        }
+        return { textArr: arr, url: url }
+    }
+}
+var getCheckUrl = function (text) {
+    var reg = getRegExp('(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-|%)+)', 'g')
+    var result = reg.exec(text)
+    if (result) {
+        return true
+    } else {
+        return false
+    }
+}
+var encode = function (url) {
+    var codeUrl = encodeURIComponent(url);
+    return codeUrl
+}
+
+function getYearMonthDay(value) {
+    var time = getDate(value);
+    var year = time.getFullYear();
+    var month = time.getMonth() + 1;
+    var date = time.getDate();
+    month = month < 10 ? "0" + month : month;
+    date = date < 10 ? "0" + date : date;
+    return year + "年" + month + "月" + date + "日";
+} 
+function formatTimeText(value) {
+    var time = getDate(value);
+    // var reg = /[\u4e00-\u9fa5]/g;
+    var reg = getRegExp('[\u4e00-\u9fa5]', 'g');
+    var text = time.toLocaleString().match(reg).join('');
+    var day = time.getDay();
+    var hour = time.getHours();
+    var m = time.getMinutes();
+    hour = hour < 10 ? "0" + hour : hour;
+    m = m < 10 ? "0" + m : m;
+    return '星期' + getWeek(day) + ' ' + text + ' ' + hour + ":" + m;
+}
+function getHourMSecond(value){
+    var time = getDate(value);
+    var h = time.getHours();
+    var m = time.getMinutes();
+    var s = time.getSeconds();
+    h = h < 10 ? "0" + h : h;
+    m = m < 10 ? "0" + m : m;
+    s = s < 10 ? "0" + s : s;
+    return h + ':' + m + ":" + s;
+
+}
+function getWeek(day) {
+    switch (day) {
+        case 0: return '日'; break
+        case 1: return '一'; break
+        case 2: return '二'; break
+        case 3: return '三'; break
+        case 4: return '四'; break
+        case 5: return '五'; break
+        case 6: return '六'; break
+    }
+}
+
+function getReplace(content){
+    return content.replace('http://image.hh-medic.com', 'https://imgs.hh-medic.com')
+}
+
+function formatFaceName(str){
+  return '*'+str.substring(1,str.length);
+}
+function formatFaceCardId(str){
+  var star='';
+  for(var i=0;i<str.length-4;i++){
+    star+="*"
+  }
+return str.substring(0,2) + star+str.substring((str.length-2),str.length);
+}
+
+
 //module.exports.phoneDesensitization = phoneDesensitization;
 module.exports = {
   phoneDesensitization: phoneDesensitization,
   getChars: getChars,
   getPeriod: getPeriod,
-  getPeriod2: getPeriod2
+  getPeriod2: getPeriod2,
+  getTextUrl: getTextUrl,
+  getCheckUrl: getCheckUrl,
+  getYearMonthDay: getYearMonthDay,
+  formatTimeText: formatTimeText,
+  encode: encode,
+  getHourMSecond: getHourMSecond,
+  getReplace: getReplace,
+  formatFaceName:formatFaceName,
+  formatFaceCardId:formatFaceCardId
+
 }

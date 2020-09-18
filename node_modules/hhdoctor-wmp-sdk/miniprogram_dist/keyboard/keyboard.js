@@ -50,6 +50,7 @@ Component({
     /** 处理键盘输入 */
     _processKeyPress(e) {
       console.log(e)
+      if (e.detail.keyText == '确定') return;
       let key = e.detail;
       let eventName = 'keypress';
       if (key.controlKey) {

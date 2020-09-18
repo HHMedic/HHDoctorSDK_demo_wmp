@@ -1,6 +1,8 @@
 {
   "navigationStyle":"custom",
   "disableScroll": true,
-  "usingComponents": {},
+  "usingComponents": {
+    "hhNetwork": "../../hh-network/hh-network"
+  },
   "disableSwipeBack": true
 }

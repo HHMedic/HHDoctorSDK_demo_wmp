@@ -1,5 +1,5 @@
 {
   "usingComponents": {
-    "hhSdk": "hhdoctor-wmp-sdk/hh-sdkcontext"
+    "hhSdk": "hhdoctor-wmp-sdk/hh-sdkcontext/hh-sdkcontext"
   }
 }

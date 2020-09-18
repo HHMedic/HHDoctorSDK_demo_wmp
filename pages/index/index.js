@@ -23,7 +23,7 @@ Page({
             sdkProductId: app.globalData.sdkProductId, //已分配的产品sdkProductId
             userToken: app.globalData.userToken, //服务器注册用户接口返回的userToken
             openId: app.globalData.openId, //用户微信openId
-            callPage: '../call/call',
+            callPage: '/pages/call/call',
             style: {
               navigationBar: {
                 bColor: '#ffffff', //标题栏背景色，默认:#000000

@@ -1,0 +1,18 @@
+{
+  "component": true,
+  "usingComponents": {
+    "trtc-room": "../trtc-room/trtc-room",
+    "phase-a": "../hh-phase/phase-a/phase-a",
+    "phase-b": "../hh-phase/phase-b/phase-b",
+    "phase-c": "../hh-phase/phase-c/phase-c",
+    "phase-d": "../hh-phase/phase-d/phase-d",
+    "phase-e": "../hh-phase/phase-e/phase-e",
+    "phase-f": "../hh-phase/phase-f/phase-f",
+    "trtc-modal": "../hh-phase/trtc-modal/trtc-modal",
+    "hh-live": "../hh-live/hh-live",
+    "hh-evaluate": "../hh-evaluate/hh-evaluate"
+  },
+  "navigationStyle": "custom",
+  "disableScroll": true,
+  "disableSwipeBack": true
+}

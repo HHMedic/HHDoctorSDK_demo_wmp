@@ -1,5 +1,5 @@
 <!--Component/hh-evaluate/hh-evaluate.wxml-->
-<view class='page'  style='background:url({{photoUrl}}) no-repeat;background-size:cover;background-pisition:top center;'>
+<view class='page'  style='background:url({{doctor.photoUrl||photoUrl}}) no-repeat;background-size:cover;background-pisition:top center;'>
 
 <view class='contain'>
     <view class='evaluate' >

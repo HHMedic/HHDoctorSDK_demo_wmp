@@ -1,8 +1,0 @@
-{
-    "usingComponents": {
-      "hhEhr": "hhdoctor-wmp-sdk/hh-ehr"
-    },
-    "navigationBarBackgroundColor": "#ffffff",
-    "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "病历档案"
-}

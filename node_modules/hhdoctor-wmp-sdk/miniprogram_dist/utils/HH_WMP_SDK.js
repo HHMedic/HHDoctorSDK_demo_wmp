@@ -72,13 +72,13 @@ var upgradeOrderId = '';
 //option.wsServer:字符型,websocket服务器地址
 function init(option) {
   if (option) {
-    if ('undefined' != typeof(option.debug)) {
+    if ('undefined' != typeof (option.debug)) {
       _options.debug = option.debug;
     }
-    if ('undefined' != typeof(option.wsServer)) {
+    if ('undefined' != typeof (option.wsServer)) {
       _options.wsServer = option.wsServer;
     }
-    if ('undefined' != typeof(option.fileServer)) {
+    if ('undefined' != typeof (option.fileServer)) {
       _options.fileServer = option.fileServer;
     }
   }
@@ -90,7 +90,7 @@ function init(option) {
 //function login(sdkProductId, uuid, token, openId, withHisMsg, callback) {
 function login(sdkProductId, userToken, openId, wxAppId, withHisMsg, callback) {
   log('login');
-  if ('undefined' != typeof(withHisMsg)) {
+  if ('undefined' != typeof (withHisMsg)) {
     loginWithHisMsg = withHisMsg;
   }
   if (callback) {
@@ -132,7 +132,7 @@ function sendLog(logType, logContent) {
   }
   try {
     sendMessage(JSON.stringify(msg));
-  } catch (e) {}
+  } catch (e) { }
 
 };
 
@@ -156,11 +156,11 @@ function getHisMsg(loadMore) {
   }
   try {
     sendMessage(JSON.stringify(msg));
-  } catch (e) {}
+  } catch (e) { }
 }
 
 //发送文本消息
-function sendText(text, callback) {
+function sendText(text, callback, appointedOrderId) {
   if (!isLogin) {
     if (_callbacks.onError) {
       _callbacks.onError('尚未登录或登录失败，请先调用login()方法');
@@ -181,6 +181,7 @@ function sendText(text, callback) {
       from: _options.uuid
     }
   }
+  if (appointedOrderId) msg.data.appointedOrderId = appointedOrderId
 
   var sendingText = {
     type: 'text',
@@ -195,25 +196,25 @@ function sendText(text, callback) {
 }
 
 //发送图片消息，支持多张图片
-function sendImages(files, callback) {
+function sendImages(files, callback, appointedOrderId) {
   if (!isLogin) {
     if (_callbacks.onError) {
       _callbacks.onError('尚未登录或登录失败，请先调用login()方法');
     }
     return;
   }
-  sendFile(files, 0, 'image', callback, null);
+  sendFile(files, 0, 'image', callback, null, appointedOrderId);
 }
 
 //发送音频消息
-function sendAudio(file, duration, callback) {
+function sendAudio(file, duration, callback, appointedOrderId) {
   if (!isLogin) {
     if (_callbacks.onError) {
       _callbacks.onError('尚未登录或登录失败，请先调用login()方法');
     }
     return;
   }
-  sendFile([file], 0, 'audio', callback, duration);
+  sendFile([file], 0, 'audio', callback, duration, appointedOrderId);
 }
 
 
@@ -267,7 +268,7 @@ function preCall(dept, callback, toUuid, appointedDoctorId, appointedOrderId, mr
   } else {
     //处理页面打开但是没有连接到wss服务器的情况，尝试重连
     connectToWss();
-    setTimeout(function() {
+    setTimeout(function () {
       if (connected) {
         sendMessage(JSON.stringify(msg));
       } else {
@@ -499,18 +500,18 @@ function connectToWss() {
     log(e.toString());
   }
   connected = false;
-  wx.onSocketOpen(function(res) {
+  wx.onSocketOpen(function (res) {
     log('websocket open');
     connected = true;
     startLogin();
   });
 
-  wx.onSocketMessage(function(res) {
+  wx.onSocketMessage(function (res) {
     log('websocket recv:' + res.data);
     parseSocketMessage(res.data);
   });
 
-  wx.onSocketError(function(res) {
+  wx.onSocketError(function (res) {
     connected = false;
     log('websocket error');
     if (_callbacks.onError) {
@@ -518,7 +519,7 @@ function connectToWss() {
     }
   });
 
-  wx.onSocketClose(function(res) {
+  wx.onSocketClose(function (res) {
     connected = false;
     isLogin = false;
     log('websocket close');
@@ -576,7 +577,7 @@ function sendMessage(message) {
 };
 
 //发送文件
-function sendFile(files, index, fileType, callback, duration) {
+function sendFile(files, index, fileType, callback, duration, appointedOrderId) {
   if (index >= files.length) {
     log('All file has uploaded');
     return;
@@ -600,7 +601,7 @@ function sendFile(files, index, fileType, callback, duration) {
 
   sendingMsg[id] = sendingFile;
 
-  getSendFileInfo(files[index], fileType, function(resFile) {
+  getSendFileInfo(files[index], fileType, function (resFile) {
     wx.uploadFile({
       url: _options.fileServer,
       filePath: files[index],
@@ -611,7 +612,7 @@ function sendFile(files, index, fileType, callback, duration) {
         'token': _options.token,
         'fileType': fileType
       },
-      success: function(res) {
+      success: function (res) {
         var data = JSON.parse(res.data);
         if (200 == data.statusCode) {
           var fileUrl = data.data;
@@ -631,12 +632,13 @@ function sendFile(files, index, fileType, callback, duration) {
               from: _options.uuid
             }
           }
+          if (appointedOrderId) msg.data.appointedOrderId = appointedOrderId
           sendMessage(JSON.stringify(msg));
-          sendFile(files, index + 1, fileType, callback, duration);
+          sendFile(files, index + 1, fileType, callback, duration, appointedOrderId);
         }
       }
     })
-  }, function() {
+  }, function () {
     if (_callbacks.onError) {
       _callbacks.onError('文件上传失败');
     }
@@ -654,12 +656,12 @@ function uploadFile(file, callback) {
       'account': _options.uuid,
       'token': _options.token
     },
-    success: function(res) {
+    success: function (res) {
       if (callback) {
         callback(res.data);
       }
     },
-    fail: function() {
+    fail: function () {
       if (callback) {
         callback({
           statusCode: 400,
@@ -723,11 +725,11 @@ function getSendFileInfo(file, fileType, success, fail) {
   wx.getFileInfo({
     filePath: file,
     digestAlgorithm: 'md5',
-    success: function(fileResult) {
+    success: function (fileResult) {
       if ('image' == fileType) {
         wx.getImageInfo({
           src: file,
-          success: function(imageResult) {
+          success: function (imageResult) {
             if (success) {
               var res = {
                 size: fileResult.size,
@@ -738,7 +740,7 @@ function getSendFileInfo(file, fileType, success, fail) {
               success(res);
             }
           },
-          fail: function() {
+          fail: function () {
             if (fail) {
               fail('getSendFileInfo fail');
             }
@@ -754,7 +756,7 @@ function getSendFileInfo(file, fileType, success, fail) {
         success(res);
       }
     },
-    fail: function() {
+    fail: function () {
       if (fail) {
         fail('getSendFileInfo fail');
       }
@@ -873,7 +875,7 @@ function parseLoginResponse(msg) {
   _asst.name = msg.data.asstName;
   _asst.photo = msg.data.asstPhoto;
   isLogin = true;
-  if ('undefined' != typeof(msg.data.demoOptionStatus)) demoStatus = msg.data.demoOptionStatus;
+  if ('undefined' != typeof (msg.data.demoOptionStatus)) demoStatus = msg.data.demoOptionStatus;
   if (_callbacks.login) {
     _callbacks.login(msg.data.login);
   }
@@ -1099,7 +1101,7 @@ function clearCache() {
     endTime: null,
     list: []
   }
-  if (_options && 'undefined' != typeof(_options.uuid)) {
+  if (_options && 'undefined' != typeof (_options.uuid)) {
     var key = 'msgCache_' + _options.uuid;
     wx.removeStorageSync(key);
   } else {
@@ -1130,10 +1132,10 @@ function setCacheMsgs() {
   wx.setStorage({
     key: key,
     data: JSON.stringify(_cacheMsgs.list),
-    success: function() {
+    success: function () {
 
     },
-    fail: function(e) {
+    fail: function (e) {
       log('setCacheMsgs fail');
     }
   })
@@ -1144,7 +1146,7 @@ function sortMsg(a, b) {
 }
 
 function existMsg(id) {
-  var test = function(item) {
+  var test = function (item) {
     return parseInt(item.id) == parseInt(id);
   }
   var exist = _cacheMsgs.list.some(test);
@@ -1273,7 +1275,7 @@ function heartbeat() {
   if (heartBeatInterval) {
     clearInterval(heartBeatInterval);
   }
-  heartBeatInterval = setInterval(function() {
+  heartBeatInterval = setInterval(function () {
     var msg = {
       action: 'HEARTBEAT_REQUEST'
     }

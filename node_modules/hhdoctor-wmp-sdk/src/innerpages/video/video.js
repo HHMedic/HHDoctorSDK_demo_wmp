@@ -1,11 +1,13 @@
+const commonUtil = require('../../utils/commonUtil.js')
 var that;
+let apiUtil
 Page({
 
   /**
    * 页面的初始数据
    */
   data: {
-
+    isConnect: true
   },
 
   /**
@@ -14,57 +16,41 @@ Page({
   onLoad: function (options) {
     that = this;
     wx.hideShareMenu();
-    if ('WMP_SHARE_LIVE' == options.liveSource) {
-      //来自分享
-      this.getUserInfo(options);
-    } else {
-      this.setData({
-        hhRequest: options
-      })
+    let hhRequest = options
+
+    if (options.q) {
+      //来自二维码
+      let params = commonUtil.getRequestParams(options.q)
+      hhRequest = {}
+      for (let n in params) {
+        hhRequest[n] = params[n]
+      }
+      hhRequest.liveSource = 'QR_CODE_LIVE'
+    }
+
+    switch (hhRequest.liveSource) {
+      case 'QR_CODE_LIVE':
+      case 'WMP_SHARE_LIVE':
+        //来自分享
+        this.getUserInfo(hhRequest);
+        break;
+      default:
+        this.setData({ hhRequest })
+        break;
     }
   },
 
   /**
    * 生命周期函数--监听页面初次渲染完成
    */
-  onReady: function () {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面显示
-   */
+  onReady: function () { },
   onShow: function () {
-
+    this.setData({ isConnect: getApp().globalData.isConnect })
   },
-
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide: function () {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload: function () {
-
-  },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh: function () {
-
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom: function () {
-
-  },
+  onHide: function () { },
+  onUnload: function () { },
+  onPullDownRefresh: function () { },
+  onReachBottom: function () { },
 
   /**
    * 用户点击右上角分享
@@ -82,13 +68,18 @@ Page({
       '&subDomain=' + getApp().globalData._hhSdkOptions._subDomain;
     console.log(pageUrl);
     return {
-      title: '我在看健康科普界的“李佳琪”，快来看',
-      imageUrl: that.data.liveInfo.imageUrl + '?x-oss-process=image/resize,m_pad,h_320,w_400',
+      title: that.data.liveInfo.shareTitle || '我在看健康科普界的“李佳琪”，快来看',
+      imageUrl: (that.data.liveInfo.shareImageUrl || that.data.liveInfo.imageUrl) + '?x-oss-process=image/resize,m_pad,h_320,w_400',
       path: pageUrl
     }
   },
 
   getUserInfo(options) {
+    if (options && options.sdkProductId) getApp().globalData.appId = options.sdkProductId
+    if (options && options.profileName) getApp().globalData.profile = options.profileName
+    if (options && options.subDomain) getApp().globalData.subDomain = options.subDomain
+    getApp().initProfile()
+    getApp().globalData.loginUser = null
     getApp().getLoginUser()
       .then((loginUser) => {
         //已注册用户
@@ -108,6 +99,7 @@ Page({
         })
       })
   },
+
   /** 点击左上角关闭 */
   onClose() {
     if (!getApp().globalData._hhSdkOptions._userToken) {
@@ -171,8 +163,14 @@ Page({
     }
   },
   /** 播放列表为空 */
-  onLiveListEmpty() {
-    let msg = '当前直播已结束';
+  onLiveListEmpty(e) {
+    if (e && e.detail && e.detail.liveInfo && e.detail.liveInfo.preUrl) {
+      wx.redirectTo({
+        url: '../view/view?url=' + encodeURIComponent(e.detail.liveInfo.preUrl)
+      })
+      return
+    }
+    let msg = '当前直播未开始或已结束';
     let unRegUser = !getApp().globalData._hhSdkOptions._userToken;
     if (!getApp().globalData._hhSdkOptions._userToken) {
       msg += '，现在注册即可每天观看医生直播，还可享1对1视频咨询医生';
@@ -196,5 +194,6 @@ Page({
     that.setData({
       liveInfo: res.detail
     })
-  }
+  },
+
 })
