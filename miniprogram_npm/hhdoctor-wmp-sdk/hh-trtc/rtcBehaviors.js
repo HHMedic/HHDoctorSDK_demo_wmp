@@ -174,7 +174,7 @@ module.exports = Behavior({
 		_requestCreateFamOrder(famOrderId, deptId) {
             self.requestRtcLog('1', 'createFamOrder start');
 			self.data.createOrderPromise = apis.requestCreateFamOrder(deptId ? deptId : self.data._request.dept, famOrderId,
-				self.data.systeminfo.platform, self.data.systeminfo.SDKVersion, self.data.realPatientUuid, self._request.appointedDoctorId, self._request.appointedOrderId,self.data._request.medicRecordId, self.data._request.hospitalId).then(res => {
+				self.data.systeminfo.platform, self.data.systeminfo.SDKVersion, self.data.realPatientUuid, self._request.appointedDoctorId, self._request.appointedOrderId,self.data._request.medicRecordId, self.data._request.hospitalId,self.data.realPatientUserToken).then(res => {
 					console.log('创建订单====>',res)
 				if (res.status == 200) {
                     self.requestRtcLog('1', 'createFamOrder success', self.data.orderid);

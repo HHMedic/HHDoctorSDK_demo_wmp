@@ -33,12 +33,24 @@ Page({
 
   /** 呼叫医生 */
   callDoctor(e) {
-    var page = '/pages/call/call' +
+    let page = '/pages/call/call' +
       '?sdkProductId=' + this.data.hhRequest.sdkProductId +
       '&profileName=' + this.data.hhRequest.profileName +
       '&userToken=' + this.data.hhRequest.userToken +
       '&openId=' + this.data.hhRequest.openId +
       '&dept=' + e.currentTarget.dataset.dept;
+    wx.navigateTo({
+      url: page,
+    })
+  },
+  callDoctorWithPatient() {
+    let realPatientUserToken = '24D164DA355B9089168C9F9C012DB9893F0D04F68EA2608F6783B874E4F50EEF'
+    let page = '/pages/call/call' +
+      '?sdkProductId=' + this.data.hhRequest.sdkProductId +
+      '&profileName=' + this.data.hhRequest.profileName +
+      '&userToken=' + this.data.hhRequest.userToken +
+      '&openId=' + this.data.hhRequest.openId +
+      '&realPatientUserToken=' + realPatientUserToken
     wx.navigateTo({
       url: page,
     })

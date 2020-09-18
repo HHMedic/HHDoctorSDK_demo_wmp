@@ -138,16 +138,17 @@ function requestRtc(url, data, isLog) {
 
 //rtc-1.创建订单
 // ?dept = ${ this.data._request.dept }`
-function requestCreateFamOrder(dept, famOrderId, platform, sdkVersion, realPatientUuid, appointedDoctorId, appointedOrderId, mrId, hospitalId) {
+function requestCreateFamOrder(dept, famOrderId, platform, sdkVersion, realPatientUuid, appointedDoctorId, appointedOrderId, mrId, hospitalId,realPatientUserToken) {
   let query = `sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}`
 
   let orderid = famOrderId ? `&famOrderId=${famOrderId}` : ''
   let uuid = realPatientUuid ? `&realPatientUuid=${realPatientUuid}` : ''
+  let userToken = realPatientUserToken ? `&realPatientUserToken=${realPatientUserToken}` : ''
   let hospital = hospitalId ? `&hospitalId=${hospitalId}` : ''
   let mr = mrId ? `&mrId=${mrId}` : ''
   let callType = getApp().globalData.callType ? `&callType=${getApp().globalData.callType}`: '';
   let appointed = appointedDoctorId && appointedOrderId ? `&appointedDoctorId=${appointedDoctorId}&appointedOrderId=${appointedOrderId}` : ''
-    let url = `?dept=${dept}&platform=${platform}&sdkVersion=${sdkVersion}${uuid}&${query}${hospital}${mr}${appointed}${callType}`
+    let url = `?dept=${dept}&platform=${platform}&sdkVersion=${sdkVersion}${uuid}${userToken}&${query}${hospital}${mr}${appointed}${callType}`
   return requestRtc(APIURLs.createFamOrder + url + orderid, {})
 }
 //rtc-2.挂断呼叫

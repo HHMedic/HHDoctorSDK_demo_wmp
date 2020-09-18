@@ -229,7 +229,7 @@ hhDoctorLogin() {
 
 
    
-### 5. hh-sdkcontext组件
+### 4. hh-sdkcontext组件
 
  - **功能** :hhSdk实例，通过this.selectComponent(ID)获取，以调用hhSdk内部封装好的方法，使用方法可参考pages/index/custom页面
 
@@ -247,9 +247,11 @@ hhDoctorLogin() {
 
      ```json
      {
-       page:'',          //Enum，跳转页面名称，'drugOrder':购药订单详情页; 'drugOrderList':购药订单列表页; 'personalPage':个人主页; 'addressList':地址列表 
+       page:'',          //Enum，跳转页面名称，'drugOrder':购药订单详情页; 'drugOrderList':购药订单列表页; 'personalPage':个人主页; 'addressList':地址列表 ;'ehrMemberList':档案库首页; 'ehrList':指定成员的档案列表; 'ehrDetail': 指定的档案详情;
        drugOrderId:'',   //String,购药订单ID，当page='drugOrder'时必填。
-       redirectPage:''   //String,支付完成后跳转页面，留空默认跳转至'pages/index/index'
+       redirectPage:'',  //String,支付完成后跳转页面，留空默认跳转至'pages/index/index'
+       patient:'',       //String,实际患者的userToken，当page='ehrList'或page='ehrDetail'时必填
+       medicRecordId:''  //String,要查看的档案的medicRecordId，当page='ehrDetail'时必填
      }
      ```
 
@@ -266,18 +268,15 @@ hhDoctorLogin() {
 | callPage  | String | hh-im | 无 | 否 | 呼叫视频医生页面相对当前页面的位置，例如“/pages/call/call”，点击页面顶部的呼叫医生按纽，可跳转到上述页面进行呼叫。不设置该属性，或该属性值为空字符串，则隐藏最上方的呼叫按钮区域。 |
 | personalPage  | String | hh-im | 无 | 否 | 点击左上角图标跳转页面，例如“/pages/my/my”，不设置该属性，或该属性值为空字符串，则点击图标跳转到默认的个人页面。 |
 | personalIconVisible  | Boolen | hh-im | true | 否 | 是否显示左上角图标。 |
-| dept  | Enum | hh-rtc | 无 | 是 | **`600002`**：呼叫医生咨询成人问题<br />**`600000`**：呼叫医生咨询儿童问题 |
-| style | Object | hh-rtc | 无 | 否 | 界面样式，详见下方“style参数说明” |
-| cameraTimeoutSeconds       | Integer | hh-rtc | 10 | 否 | 启动摄像头超时(单位：秒)，当因某些原因导致微信无法启动摄像头时，会提示用户，并退出呼叫 |
-| cameraTimeoutMessage        | String | hh-rtc | 打开摄像头失败，请重启微信再呼叫 | 否 | 启动摄像头超时后提示用户的信息内容 |
-| playTimeoutSeconds        | Integer | hh-rtc | 10 | 否 | 播放医生画面超时(单位：秒)，当因某些原因导致微信无法播放医生画面时，会提示用户，并退出呼叫 |
-| playTimeoutMessage        | String | hh-rtc | 播放视频失败，请重启微信再呼叫 | 否 | 播放医生画面超时后提示用户的信息内容 |
-| weakNetworkTimeout        | Integer | hh-rtc | 6 | 否 | 弱网监控超时时间(单位：秒)，当小程序与服务器通信往返消息总耗时大于设置的超时时间时，认为当前是弱网环境，会主动终止当前呼叫。 |
-| ringtone        | String | hh-rtc | 无 | 否 | 呼叫医生时的振铃音，支持传入文件的url地址，支持mp3格式音频文件，url需在小程序的“downloadFile合法域名”范围内。 该音频文件第一次使用时会下载到小程序本地存储中(key:ringFile)，如更换其他音频文件，需调用wx.clearStorage()或wx.removeStorage()清理缓存后，新的音频文件方可生效  |
-| viewModule  | Enum | hh-ehr | memberList | 否 | **`memberList`**: 显示家庭成员列表界面<br />**`ehrList`**: 显示家庭成员主账号健康档案列表界面<br />**`detail`**: 显示指定的健康档案详情，需与patient属性及medicRecordId配合使用 |
-| addMember | Boolen | hh-ehr |  true | 否 | 家庭成员列表下方是否显示添加新成员按钮 |
-| patient    | String | hh-ehr | 无        | 否 | 需要查看健康档案的实际患者的userToken值 |
-| medicRecordId | String | hh-ehr | 无    | 否 | 需要查看健康档案的id值 |
+| dept  | Enum | hh-trtc | 无 | 否 | **`600002`**：呼叫医生咨询成人问题<br />**`600000`**：呼叫医生咨询儿童问题 |
+| realPatientUserToken  | String | hh-trtc | 无 | 否 | 实际患者的userToken |
+| style | Object | hh-trtc | 无 | 否 | 界面样式，详见下方“style参数说明” |
+| cameraTimeoutSeconds       | Integer | hh-trtc | 10 | 否 | 启动摄像头超时(单位：秒)，当因某些原因导致微信无法启动摄像头时，会提示用户，并退出呼叫 |
+| cameraTimeoutMessage        | String | hh-trtc | 打开摄像头失败，请重启微信再呼叫 | 否 | 启动摄像头超时后提示用户的信息内容 |
+| playTimeoutSeconds        | Integer | hh-trtc | 10 | 否 | 播放医生画面超时(单位：秒)，当因某些原因导致微信无法播放医生画面时，会提示用户，并退出呼叫 |
+| playTimeoutMessage        | String | hh-trtc | 播放视频失败，请重启微信再呼叫 | 否 | 播放医生画面超时后提示用户的信息内容 |
+| weakNetworkTimeout        | Integer | hh-trtc | 6 | 否 | 弱网监控超时时间(单位：秒)，当小程序与服务器通信往返消息总耗时大于设置的超时时间时，认为当前是弱网环境，会主动终止当前呼叫。 |
+| ringtone        | String | hh-trtc | 无 | 否 | 呼叫医生时的振铃音，支持传入文件的url地址，支持mp3格式音频文件，url需在小程序的“downloadFile合法域名”范围内。 该音频文件第一次使用时会下载到小程序本地存储中(key:ringFile)，如更换其他音频文件，需调用wx.clearStorage()或wx.removeStorage()清理缓存后，新的音频文件方可生效  |
 
 
 ## style参数说明

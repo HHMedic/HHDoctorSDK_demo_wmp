@@ -3,6 +3,7 @@
 <button catchtap='viewIm'>咨询助理</button>
 <button catchtap='callDoctor' data-dept='600002'>开始咨询医生(成人)</button>
 <button catchtap='callDoctor' data-dept='600000'>开始咨询医生(儿童)</button>
+<button catchtap='callDoctorWithPatient'>开始咨询医生(指定成员)</button>
 <button catchtap='viewPersonal'>查看个人主页</button>
 <button catchtap='viewEhrList'>查看档案库(首页)</button>
 <button catchtap='viewMemberEhr'>查看成员档案列表</button>
