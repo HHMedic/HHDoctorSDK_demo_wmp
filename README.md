@@ -1,4 +1,4 @@
-# 和缓视频医生微信小程序SDK使用指南（3.0.0）
+# 和缓视频医生微信小程序SDK使用指南（3.0.2）
 
 和缓视频医生微信小程序SDK（**本SDK**）为小程序自定义组件形式，使用npm方式发布。本文引导开发者从零开始，一步一步搭建起和缓视频医生基本功能框架。如果开发者是在现有项目中集成本SDK，可直接从第2步开始阅读。
 
@@ -99,7 +99,7 @@
 
 ### 6. 如何更新SDK
 
-  - 使用命令提示符或终端，进入小程序项目所在根目录，执行命令更新：`npm i hhdoctor-wmp-sdk --production`。
+  - 使用命令提示符或终端，进入小程序项目所在根目录，执行命令更新：`npm i hhdoctor-wmp-sdk@latest --production`。
   
   - 打开小程序开发者IDE，点击IDE菜单中的“工具”-“构建 npm”。
 
@@ -143,13 +143,13 @@
   ```
     https://mp.hh-medic.com
     https://sec.hh-medic.com
-
+    https://test.hh-medic.com
   ```
 ### 5.在"开发"-"接口设置"下打开相应权限
 
  ![](https://imgs.hh-medic.com/icon/wmp/sdk/WX20190225-093837.png)  
     
-### 6. 在“设置”-“基本设置”下，将“基础库最低版本设置”设置为2.9.4或更高版本。
+### 6. 在“设置”-“基本设置”下，将“基础库最低版本设置”设置为2.10.0或更高版本。
 
 
 ## SDK说明
@@ -247,12 +247,23 @@ hhDoctorLogin() {
 
      ```json
      {
-       page:'',          //Enum，跳转页面名称，'drugOrder':购药订单详情页; 'drugOrderList':购药订单列表页; 'personalPage':个人主页; 'addressList':地址列表 ;'ehrMemberList':档案库首页; 'ehrList':指定成员的档案列表; 'ehrDetail': 指定的档案详情;
+       page:'',          //Enum，跳转页面名称，具体指参见下方说明;
        drugOrderId:'',   //String,购药订单ID，当page='drugOrder'时必填。
        redirectPage:'',  //String,支付完成后跳转页面，留空默认跳转至'pages/index/index'
        patient:'',       //String,实际患者的userToken，当page='ehrList'或page='ehrDetail'时必填
        medicRecordId:''  //String,要查看的档案的medicRecordId，当page='ehrDetail'时必填
      }
+     ```
+
+      page参数枚举值说明
+     ```
+     'drugOrder':购药订单详情页; 
+     'drugOrderList':购药订单列表页; 
+     'personalPage':个人主页; 
+     'addressList':地址列表;
+     'ehrMemberList':档案库首页; 
+     'ehrList':指定成员的档案列表; 
+     'ehrDetail': 指定的档案详情;
      ```
 
 
