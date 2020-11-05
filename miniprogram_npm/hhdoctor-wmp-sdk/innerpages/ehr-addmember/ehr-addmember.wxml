@@ -46,9 +46,8 @@
 			     <view class="inputs-item">
 			       <text class="inputs-text">允许成员独立登录</text>
 			       <switch checked="{{isLoginChecked}}"
-					  bindtap="bindDisabledModal"
-                      
-					 bindchange="bindIsLoginChecked" data-type="switch"  class="inputs-switch" color="#3c91ee" disabled="{{isedit && isAccount}}"></switch>
+					  bindtap="bindDisabledModal"        
+					  bindchange="bindIsLoginChecked" data-type="switch"  class="inputs-switch" color="#3c91ee" disabled="{{isedit && isAccount}}"></switch>
 			     </view>
 			     <view class="inputs-item" wx:if="{{isLoginChecked}}">
 			       <text class="inputs-text">手机号</text>
@@ -76,6 +75,10 @@
     <view class="member-saves" wx:elif='{{isUpdate}}'>
        <button class='member-save' form-type="submit" data-type='update'>保存</button>
         <button class='member-call' form-type="submit" data-type='updateCall'>保存并呼叫医生</button>
+    </view>
+    <view class='member-saves' wx:elif='{{isOpenAccount}}'>
+      <button class='member-save' form-type="submit" data-type='openAccount'>保存</button>
+      <button class='member-call' form-type="submit" data-type='openAccountCall'>保存并呼叫医生</button>
     </view>
     <button class='member-submit' form-type="submit" wx:else>确定</button>
 </view>

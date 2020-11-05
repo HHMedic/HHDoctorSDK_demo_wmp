@@ -14,9 +14,8 @@ Component({
 		doctor: Object,
 		cameraTorch: Boolean,
 		order: Object,
-		videoTime: String,
-		systeminfo: Object,
-
+		videoTime:String,
+		systeminfo:Object,
 	},
 
 	/**
@@ -84,84 +83,57 @@ Component({
 			this.setData({
 				isClickCamera: false
 			})
+
 		},
 		//点击拍照按钮谈出弹窗
-		bindCamera() {
-			self.requestRtcLog('1', 'user click camera：' + this.data.isClickCamera ? '显示弹窗' : '隐藏弹窗', self.data.orderid);
+
+		bindCamera(){
+			self.requestRtcLog('1', 'user click camera：'+this.data.isClickCamera?'显示选择相册相机弹窗':'隐藏选择相册相机弹窗', self.data.orderid);
 			this.setData({
 				isClickCamera: !this.data.isClickCamera
 			})
 
 		},
-		//拍照
-		bindUserImage(e) {
-			let type = e.currentTarget.dataset.photo;
-			if (getApp()._throttle('camera-' + type)) return;
-			self.triggerEvent('enterCamera')
+		bindUserImage(e){
+			let type =e.currentTarget.dataset.photo;
+			if (getApp()._throttle('camera-'+type)) return;
+			self.triggerEvent('enterCamera',type)
 			this.setData({
-				isClickCamera: false
+				isClickCamera:false
 			})
-			wx.chooseImage({
-				count: 3,
-				sizeType: ['original', 'compressed'],
-				sourceType: [type],
-				success(res) {
-					self.requestRtcLog('1', 'chooseImage success', self.data.orderid);
-					let chooseImages = self.data.chooseImages.concat(res.tempFiles);
-					self.setData({
-						chooseImages
-					})
-					self.uploadFun();
-				},
-				fail: function (res) {
-					self.requestRtcLog('1', 'chooseImage fail', self.data.orderid);
-				},
-				complete: function (res) {
-					self.requestRtcLog('1', 'chooseImage complete', self.data.orderid);
-					self.triggerEvent('completeCamera')
-					wx.setKeepScreenOn({ keepScreenOn: true })
-				},
-			})
+			// self.joinCameraFun(type)
+	
+		},			
+		
+		//外部调用了
+		joinCameraFun(type){
+            console.log('进入相册chooseImage')
+            self.requestRtcLog('1', '进入相册', self.data.orderid);
+            wx.chooseImage({
+                count: 3,
+                sizeType: ['original', 'compressed'],
+                sourceType: [type],
+                success(res) {
+                    self.requestRtcLog('1', 'chooseImage success', self.data.orderid);
+                    let chooseImages = self.data.chooseImages.concat(res.tempFiles);
+                    self.setData({
+                        chooseImages
+                    })
+                    self.uploadFun();
+                },
+                fail: function(res) {
+                    self.requestRtcLog('1', 'chooseImage fail', self.data.orderid);
+                },
+                complete: function(res) {
+                   self.requestRtcLog('1', 'chooseImage complete', self.data.orderid);
+				   self.triggerEvent('completeCamera')
+				   wx.setKeepScreenOn({ keepScreenOn: true })
+
+                },
+            })
+        },
 
 
-		},
-
-
-
-
-
-		// bindCamera() {
-		// if (getApp()._throttle('camera-photo')) return;
-		// self.setData({
-		//     isEnterCamera:true
-		// })
-		// self.triggerEvent('enterCamera')
-		// self.requestRtcLog('1', 'user click chooseImage', self.data.orderid);
-		// wx.chooseImage({
-		// 	count: 3,
-		// 	sizeType: ['original', 'compressed'],
-		// 	sourceType: ['album', 'camera'],
-		// 	success(res) {
-		//         self.requestRtcLog('1', 'chooseImage success', self.data.orderid);
-		// 		let chooseImages = self.data.chooseImages.concat(res.tempFiles);
-		// 		self.setData({
-		// 			chooseImages
-		// 		})
-		// 		self.uploadFun();
-		// 	},
-		// 	fail: function(res) {
-
-		//         self.requestRtcLog('1', 'chooseImage fail', self.data.orderid);
-		//     },
-		// 	complete: function(res) {
-		//         self.setData({
-		//             isEnterCamera: false
-		//         })
-		//         self.requestRtcLog('1', 'chooseImage complete', self.data.orderid);
-		// 	   self.triggerEvent('completeCamera')
-		// 	},
-		// })
-		// },
 		//循环上传图片
 		uploadFun() {
 			let chooseImages = self.data.chooseImages;
@@ -187,6 +159,11 @@ Component({
 						self.getAddAttatch(data.data)
 						self.setData({
 							chooseImages: self.data.chooseImages
+						})
+						wx.showToast({
+						  title: '图片已发送给医生',
+						  icon:'none',
+						  duration:1000
 						})
 						console.log(self.data.chooseImages)
 					} else {

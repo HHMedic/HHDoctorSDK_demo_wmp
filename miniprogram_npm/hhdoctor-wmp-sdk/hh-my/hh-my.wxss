@@ -15,6 +15,7 @@ page {
   box-sizing: border-box;
   padding: 15px 15px 10px 15px;
   overflow: hidden;
+  background:#fff;
 }
 
 .top-background {

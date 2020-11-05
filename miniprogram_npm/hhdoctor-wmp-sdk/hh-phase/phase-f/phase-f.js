@@ -5,7 +5,8 @@ Component({
    * 组件的属性列表
    */
   properties: {
-	doctor:Object
+  doctor:Object,
+  order:Object
   },
 
   /**

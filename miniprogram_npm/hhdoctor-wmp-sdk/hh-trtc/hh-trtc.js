@@ -2,6 +2,8 @@
 const apis = require('../utils/api.js')
 const dateUtil = require('../utils/dateUtil.js')
 const hhDoctor = require('../hhDoctor.js');
+const { sendLog } = require('../utils/HH_WMP_SDK.js');
+const { requestCallResponse } = require('../utils/api.js');
 let audioContext;
 let self;
 Component({
@@ -13,13 +15,15 @@ Component({
 			sdkAppID: '1400073238', // 必要参数 开通实时音视频服务创建应用后分配的 sdkAppID
 			userID: '', // 必要参数 用户 ID 可以由您的帐号系统指定
 			userSig: '', // 必要参数 身份签名，相当于登录密码的作用
-			template: '1v1', // 必要参数 组件模版，支持的值 1v1 grid custom ，注意：不支持动态修改, iOS 不支持 pusher 动态渲染
+			template: '', // 必要参数 组件模版，支持的值 1v1 grid custom ，注意：不支持动态修改, iOS 不支持 pusher 动态渲染
 			maxBitrate: 1000,
 			minBitrate: 2000,
 			beautyLevel: 0, // 开启美颜等级 0～9级美颜
 			enableIM: false, // 可选，仅支持初始化设置（进房前设置），不支持动态修改
 		},
-		template: '1v1',
+		localVideo: true,
+		localAudio: true,
+		template: '',
 		subscribeList: {},
 		callTips: {
 			callintTip: '医生连线中，请耐心等待...',
@@ -38,8 +42,16 @@ Component({
 		pageStatus: '',
 		isaboutHangUpSomething: false,
 		roomCommand: '',
+		inviteCallCommand: '',
+		isInvite: 0,//是否为邀请模式 
+		inviteRole: 1,//邀请角色 配合邀请模式使用 1邀请人 2被邀请人
+		isBUserAccept: false,//B用户是否接听
+		isInviteBReject: false,
+		isBUserLeaveRoom: false,
+		isAUserLeaveRoom: false,
 	},
 	lifetimes: {
+		attached: function () { },
 		created() { },
 		ready() {
 			self = this;
@@ -52,22 +64,30 @@ Component({
 	pageLifetimes: {
 		show() {
 			this.data.pageStatus = 'show'
+			if (this.data.orderid && this.data.trtcComponent && this.data.isaboutHangUpSomething) {
+				setTimeout(() => {
+					this.data.trtcComponent.exitRoom('userExit')
+				}, 500)
+			}
 			this._pageLifeExit()
+
 		},
 		hide() {
 			this.data.pageStatus = 'hide'
-			this._pageLifeExit()
+			this._pageLifeExit();
+
 		}
 	},
 	methods: {
 		_pageLifeExit() {
+			console.log('pageLife', this.data.pageStatus)
 			let self = this;
 			let pageStatus = this.data.pageStatus;
 			let phase = self.data.phase;
 			switch (pageStatus) {
 				case 'show':
 					self.requestRtcLog(1, 'life:show', self.data.orderid);
-					if (phase == 0) wx.navigateBack();
+					if (phase == 0) self._naviBack()
 					self._onMemoryWarning();
 					self._onNetworkStatusChange();
 					self._getNetWorkType();
@@ -77,6 +97,8 @@ Component({
 					break;
 				case 'detached':
 					hhDoctor.off('messageReceived');
+					clearInterval(self.data.cameraInterval);
+					self._getClearTimer()
 					self._exitHideAndDetached('life:detached', '页面卸载')
 					break;
 			}
@@ -90,7 +112,11 @@ Component({
 			if (self.data.isDoctorHangUp) return;
 			if (self.data.isaboutHangUpSomething) return;
 			if (self.data.enterChooseImages) return;
-			// self.trtcComponent.unpublishLocalAudio();
+			if (self.data.phase == 7) {
+				self.bindInviteHangUp();
+				return;
+			}
+			self.bindTRTCOffEvent();
 			if (self.data.createOrderPromise) {
 				self.data.createOrderPromise.then(res => {
 					self.aboutHangUpSomething(text, 'isBack');
@@ -102,6 +128,14 @@ Component({
 		_requestComplete() {
 			console.log('onLoad======>', this.data._request)
 			self = this;
+			this.setData({
+				isInvite: this.data._request.isInvite || 0,
+				template: this.data._request.isInvite == 1 ? 'grid' : '1v1'
+			})
+			self.data.rtcConfig.template = this.data.template;
+			this.setData({
+				rtcConfig: self.data.rtcConfig
+			})
 			this.trtcComponent = this.selectComponent('#trtc-component')
 			this._request = this.data._request;
 			self._checkAuthorize().then(res => {
@@ -109,12 +143,14 @@ Component({
 				self.setData({
 					isAuthBox: false
 				})
+				self._getLocation()
 				self.componentOnload();
 			}).catch(res => {
 				self.requestRtcLog(1, 'authorize: check fail');
 				self.setData({
 					isAuthBox: true
 				})
+				console.log('授权失败')
 			});
 		},
 
@@ -137,12 +173,17 @@ Component({
 			self.requestRtcLog('1', 'enter call start', self.data.orderid);
 			self._requestCreateFamOrder(orderid, deptId);
 		},
-		//1.IM--工作台已接听
-		workbenchAccept(orderid, obj) {
+
+		//1.收到医生接听的消息doctor已接听
+		workbenchDoctorAccept(orderid, obj) {
 			console.log('* 医生接听=====', orderid)
 			if (orderid == self.data.orderid) {
 				if (self.data.isWorkbenchAccept) {
 					return;
+				}
+				if (self.data.isInvite == 1) {
+					// A通知B
+					self.sendCustomerMessage(self.data.command.doctor_accept_invite, self.data.realPatientUuid)
 				}
 				self.stopAudio();
 				self.setData({
@@ -151,6 +192,18 @@ Component({
 				})
 				self.requestRtcLog('1', 'doctor accept-进入视频界面', self.data.orderid);
 				self._startVideoTimer();
+
+			}
+		},
+		//B收到 A发来的 医生已接听的消息 
+		workbenchDoctorAcceptInvite(orderid) {
+			if (orderid == self.data.orderid) {
+				self.data.isWorkbenchAccept = true;
+				if (self.data.isBUserAccept) {
+					self.setData({ phase: 3 })
+					self._startVideoTimer();
+				}
+				self.stopAudio();
 			}
 		},
 		// 向工作台发送call消息，检测发送状态
@@ -165,25 +218,38 @@ Component({
 				apis.requestGetOrderStatus(orderId).then(res => {
 					if (res.data) {
 						clearInterval(self.data.timerGetStatus);
-						self.workbenchAccept(orderId, res.data);
+						self.workbenchDoctorAccept(orderId, res.data);
 					}
 				});
-			}, 2000);
+			}, 3500);
 		},
 		//2.IM--工作台忙碌状态
 		workbenchBusy(orderid, obj) {
 			self.requestRtcLog('1', 'doctor busy', self.data.orderid);
-			self.aboutHangUpSomething('医生忙碌返回busy');
+			if (self.data.isInvite == 1) {
+				self.sendCustomerMessage(self.data.command.busy, self.data.realPatientUuid)
+				if (self.data.phase != 3) {
+					self.showToast('医生正在忙碌中')
+				}
+				return;
+			}
+			self.aboutHangUpSomething('医生忙碌返回busy', 'noBack', 'busy');
 			self._showModalTip({ content: '医生忙碌中，请稍后再呼' })
 		},
-
+		//用户忙碌
+		workbenchBusyInvite(orderid) {
+			self.requestRtcLog('1', 'doctor busy', self.data.orderid);
+			self.aboutHangUpSomething('医生忙碌返回busy', 'noBack', 'busy');
+			if (self.data.isInvite == 1 && self.data.inviteRole == 2) {
+				self.showToast('医生正在忙碌中')
+			}
+		},
 		//3.IM--排队中显示排队等待
 		workbenchWait(orderid, obj) {
 			self.setData({
 				'waitTips.waitUserInfoText': obj.msg
 			})
 			self.requestRtcLog('1', 'waitTips:' + JSON.stringify(obj.msg), self.data.orderid);
-
 		},
 		//4.IM--由排队进入分配医生
 		workbenchDispatchDoctorByONS(orderid, obj) {
@@ -206,33 +272,40 @@ Component({
 				return;
 			}
 			self.playAudio()
-			let doctor = JSON.parse(self._request.doctor);
-			console.log('doctor', doctor)
-
+			let doctor = JSON.parse(decodeURIComponent(self._request.doctor));
+			let order = JSON.parse(decodeURIComponent(self._request.order))
 			let roomID = orderid.slice(orderid.length - 6, orderid.length);
 			self.setData({
+				inviteRole: 2,
 				doctor,
+				order,
 				roomID,
 				orderid,
 				userSig: hhDoctor.getUserSig(),
 				userID: hhDoctor.getUserId(),
-				phase: doctor.serviceTypeStatus == 'quanke' ? 4 : 5
+				phase: self.data.isInvite == 1 ? 7 : (doctor.serviceTypeStatus == 'quanke') ? 4 : 5
 			}, () => {
-
+				self.trtcComponent.startPreview();
 			})
 		},
 		//6.IM 转呼 =>走新单号=>agentTransfer=> 重新创建订单
 		workbenchAgentTransfer(orderid, obj) {
 			self.requestRtcLog('1', 'doctor transfer:' + JSON.stringify(obj), orderid);
-			self.requestHangUp('医生发起转呼', 'noBack');
 			self.trtcComponent.exitRoom('UserExit');
+			if(self.data.enterChooseImages){
+				self.aboutHangUpSomething('相册中收到转呼异常挂断')
+				self._naviBack()
+				return;
+			};
+			self.requestHangUp('医生发起转呼', 'noBack');
 			self.setData({
 				isTransfer: true,
 				doctor: null,
 				phase: 0,
 				preCommand: '',
 				createOrderPromise: null,
-				isWorkbenchAccept: false
+				isWorkbenchAccept: false,
+				orderid:''
 			})
 			self.data.timerTransfer = setTimeout(() => {
 				self._enterCall(orderid, obj.deptId)
@@ -257,25 +330,127 @@ Component({
 			if (orderid == self.data.orderid) {
 				self.data.isDoctorHangUp = true;
 				self.requestRtcLog('1', 'doctor interrupt:' + JSON.stringify(obj), orderid);
+				if (self.data.isInvite == 1) {
+					self.sendCustomerMessage(self.data.command.interrupt, self.data.realPatientUuid)
+				}
 				self.trtcComponent.exitRoom('UserExit')
-				wx.navigateBack();
-				// self.aboutHangUpSomething(obj.command);
+				self._naviBack()
 			}
 
 		},
 
+		//多人视频-B收到A取消呼叫-呼叫中 返回首页
+		workbenchCancelInvite(orderid) {
+			console.log(orderid, self.data.orderid, '收到邀请人取消邀请===', self.data.inviteRole)
+			if (self.data.inviteRole == 2 && !orderid) {
+				self.showToast('对方已取消呼叫')
+				return;
+			}
+			if (self.data.orderid != orderid) return;
+			self.stopAudio();
+			self.aboutHangUpSomething('邀请人点击挂断', 'noBack');
+			self.showToast(self.data.order.patientName + '已取消呼叫')
+
+
+		},
+		//多人视频-B收到A A主动挂断
+		workbenchInterruptInvite(orderid) {
+			console.log(orderid, self.data.orderId, 'A挂断')
+			if (self.data.orderid != orderid) return;
+			self.stopAudio();
+			clearInterval(self.data.timerVideoChat);
+			if (self.data.phase == 7) {
+				self.showToast(self.data.order.patientName + '已挂断')
+			} else {
+				self.showToast(self.data.order.patientName + '已挂断', 'noBack')
+			}
+		},
+		//多人视频-A收到B拒接 消息
+		workbenchRejectInvite(orderid) {
+			console.log(orderid, self.data.orderid)
+			self.stopAudio();
+			self.setData({ isInviteBReject: true })
+			if (self.data.phase == 1) {
+				self.showToast(self.data.order.realPatientName + '拒绝了您的邀请')
+				self.aboutHangUpSomething('被邀请人点击挂断', 'noBack');
+			}
+		},
+		//多人视频-收到对方进入相册
+		workbenchEnterCamera(orderid, obj) {
+			if (self.data.isInvite == 1 && self.data.phase == 3) {
+				if (obj.uuid == self.data.order.realPatientUuid) {
+					self.setData({
+						isBUserLeaveRoom: true
+					})
+					self.showToast(self.data.order.realPatientName + '已离开', 'noBack')
+					return;
+
+				}
+				if (obj.uuid == self.data.order.patientUuid) {
+					self.setData({
+						isAUserLeaveRoom: true
+					})
+					self.showToast(self.data.order.patientName + '已离开', 'noBack')
+					return;
+				}
+			};
+		},
+		//多人视频-收到对方退出相册
+		workbenchExitCamera(orderid, obj) {
+			if (self.data.isInvite == 1 && self.data.phase == 3) {
+				if (obj.uuid == self.data.order.realPatientUuid) {
+					self.setData({
+						isBUserLeaveRoom: false
+					})
+					return;
+
+				}
+				if (obj.uuid == self.data.order.patientUuid) {
+					self.setData({
+						isAUserLeaveRoom: false
+					})
+					return;
+				}
+			};
+		},
 		//回拨接听
 		bindAccept() {
 			self.requestRtcLog('1', 'user click accept', self.data.orderid);
 			apis.requestCallResponse(self.data.orderid);
-			self.stopAudio()
+			self.stopAudio();
+			self.trtcComponent.stopPreview();
 			self.sendMessage(self.data.command.ACCEPT).then(res => {
 				self.enterRoom()
 				self.setData({ phase: 3 })
 				self._startVideoTimer();
 			})
-
 		},
+		//多人视频-phase-g B接听 
+		bindInviteAccept() {
+			self.stopAudio();
+			self.trtcComponent.stopPreview();
+			self.enterRoom()
+			self.setData({
+				isBUserAccept: true
+			})
+			if (self.data.isWorkbenchAccept) {
+				self.setData({ phase: 3 })
+				self._startVideoTimer();
+			} else {
+				//通知邀请人A 已接听
+				self.setData({
+					phase: 1
+				})
+
+			}
+		},
+		//多人视频-phase-gB点击拒接 通知A
+		bindInviteHangUp() {
+			//正常点击挂断不走requestHangUp
+			self.sendCustomerMessage(self.data.command.reject_invite, self.data.order.patientUuid);
+			self._naviBack()
+		},
+
 		//用户点击挂断
 		bindHangUp() {
 			self.data.isClickHangUp = true;
@@ -284,25 +459,28 @@ Component({
 
 		},
 		//点击挂断 左滑 压后台 拍照需要处理的事情 转呼单独处理不进入该函数内
-		aboutHangUpSomething(reason, isBack) {
+		aboutHangUpSomething(reason, isBack, isBusy) {
 			if (!self.data.orderid) {
-				wx.navigateBack()
+				self._naviBack()
 				return;
 			}
-
+			self._getClearTimer();
 			if (self.data.isaboutHangUpSomething) return;
 			self.requestRtcLog('1', 'aboutHangUpSomething：' + reason, self.data.orderid);
 			self.data.isaboutHangUpSomething = true;
 			self.stopAudio();
-			self._getClearTimer()
-			// if (self.data.pageStatus=='hide'){
-			//   self.sendMessage(self.data.hangupcommand[self.data.phase])
-			// }
+			
+			//多人视频-邀请模式且为邀请人主动挂断 通知B ==>取消呼叫  
+			if (self.data.isInvite == 1 && !self.data.isInviteBReject && isBusy != 'busy') {
+				self.trtcComponent.exitRoom('UserExit');
+				self.sendCustomerMessage(self.data.hangupcommand_invite[self.data.phase], self.data.realPatientUuid);
+			}
 			self.requestHangUp(reason, isBack);
 			self.trtcComponent.exitRoom('UserExit');
 		},
 		enterRoom(command) {
 			console.log('* room enterRoom', command)
+			self.data.roomCommand = command;
 			self.requestRtcLog('1', 'room enterRoom:' + command || '', self.data.orderid);
 			let rtcConfig = {
 				userID: self.data.userID,
@@ -312,13 +490,11 @@ Component({
 			this.setData({
 				rtcConfig: this.data.rtcConfig
 			}, () => {
-				this.trtcComponent.enterRoom({
+				this.data.enterRoomPromise = this.trtcComponent.enterRoom({
 					roomID: self.data.roomID,
 				}).then(res => {
-
 					console.log('* room joinRoom 进房成功:');
 					self.requestRtcLog('1', 'room enterRoom init success', self.data.orderid);
-					self.data.roomCommand = command;
 					// 真正进房成功需要通过 1018 事件通知
 					// view 渲染成功回调后，开始推流
 					//bindTRTCRoomEvent 监听用户进房成功与否 异常问题
@@ -353,37 +529,63 @@ Component({
 			}
 		},
 		//进入或相机-静音publishLocalAudio
-		bindEnterCamera() {
-			console.log('进入相册')
-			self.requestRtcLog('1', '进入相册', self.data.orderid);
+		bindEnterCamera(e) {
+			let type = e.detail;
+			self.requestRtcLog('1', '准备进入相册', self.data.orderid);
 			self.setData({
 				enterChooseImages: true,
-				isFromCamera: false
 			})
-			if (self.data.s[0] == 'iOS' && self.data.w[self.data.w.length - 1] >= 15) {
-				self.sendMessage(self.data.command.SWITCH_TO_AUDIO + '_iOS_7.0.15');
-			}
 			self.sendMessage(self.data.command.SWITCH_TO_AUDIO);
-			self.trtcComponent.unpublishLocalAudio();
-			self.trtcComponent.unsubscribeRemoteAudio({ userID: self.data.rtcConfig.userID });
+			self.getInveterCamera();
+			self.selectComponent('#trtcCamera').joinCameraFun(type);
+
+			if (self.data.isInvite == 1) {
+				let toUser = self.data.userID == self.data.order.patientUuid ? self.data.order.realPatientUuid : self.data.order.patientUuid;
+				self.sendCustomerMessage(self.data.command.enter_camera, toUser);
+			}
 		},
+
 		//跳出相册或相机publishLocalAudio
 		bindCompleteCamera() {
-			console.log('跳出相册')
 			self.requestRtcLog('1', '跳出相册', self.data.orderid);
 			self.setData({
-				enterChooseImages: false,
-				isFromCamera: true
-
+				enterChooseImages: false
 			})
-			if (self.data.s[0] == 'iOS' && self.data.w[self.data.w.length - 1] >= 15) {
-				self.sendMessage(self.data.command.SWITCH_TO_VIDEO + '_iOS_7.0.15');
+			clearInterval(self.data.cameraInterval);
+
+			this.trtcComponent.publishLocalAudio()
+			this.trtcComponent.publishLocalVideo()
+			this.sendMessage(self.data.command.SWITCH_TO_VIDEO)
+			if(this.data.isInvite==1){
+				this.trtcComponent.allRemoteAudio();
 			}
-			self.sendMessage(self.data.command.SWITCH_TO_VIDEO);
-			self.trtcComponent.subscribeRemoteAudio({ userID: self.data.rtcConfig.userID })
-			self.trtcComponent.publishLocalAudio();
-			self.trtcComponent.publishLocalVideo();
+			if (self.data.isInvite == 1) {
+				let toUser = self.data.userID == self.data.order.patientUuid ? self.data.order.realPatientUuid : self.data.order.patientUuid;
+				self.sendCustomerMessage(self.data.command.exit_camera, toUser);
+			}
 		},
+		getInveterCamera(){
+			clearInterval(self.data.cameraInterval);
+			self.sendMessage(self.data.command.SWITCH_TO_CAMERA);
+			self.data.cameraInterval=setInterval(res=>{
+				self.sendMessage(self.data.command.SWITCH_TO_CAMERA);
+			},5000)
+		},
+		// 给邀请人发送消息
+		sendCustomerMessage(command, toUser) {
+			self.requestRtcLog('1', 'inviter member start:' + command, self.data.orderid);
+			console.log('inviter member start:', command)
+			apis.sendCustomerMessage(self.data.rtcConfig.userID || self.data.order.realPatientUuid, toUser, command, self.data.orderid).then(res => {
+				if (res.status == 200) {
+					console.log('inviter member success:', command)
+					self.requestRtcLog('1', 'inviter member success:' + command, self.data.orderid);
+				}
+			}).catch(res => {
+				self.requestRtcLog('1', '邀请成员消息发送失败', self.data.orderid);
+			})
+		},
+		
+
 		bindTRTCRoomEvent() {
 			const TRTC_EVENT = this.trtcComponent.EVENT
 			this.timestamp = []
@@ -395,14 +597,29 @@ Component({
 					switch (self.data.roomCommand) {
 						case 'call':
 							self.playAudio();
-							self.sendMessage(self.data.roomCommand);
-							self.requestGetOrderStatus(self.data.orderid);
+							if (self.data.pageStatus == 'hide' || self.data.pageStatus == 'detached') return;
+							if (self.data.isInvite == 1) {
+								if (self.data.isDoctorHangUp) return;
+								if (self.data.isaboutHangUpSomething) return;
+								self.sendCustomerMessage(self.data.command.call_invite, self.data.realPatientUuid);
+	
+							}
+							self.sendMessage(self.data.roomCommand).then(res=>{
+								self.requestGetOrderStatus(self.data.orderid);
+							});
 							break;
 					}
 				}
-				// 进房成功，触发该事件后可以对本地视频和音频进行设置
 				if (this.data.localVideo === true || this.data.template === '1v1') {
-					this.trtcComponent.publishLocalVideo()
+					if (self.data.phase == 1) {
+						this.trtcComponent.unpublishLocalVideo().then(res => {
+							this.trtcComponent.publishLocalVideo()
+						})
+					}
+					if (self.data.phase == 3) {
+						this.trtcComponent.publishLocalVideo()
+
+					}
 				}
 				if (this.data.localAudio === true || this.data.template === '1v1') {
 					this.trtcComponent.publishLocalAudio()
@@ -423,6 +640,20 @@ Component({
 			})
 			//4.远端用户进房
 			this.trtcComponent.on(TRTC_EVENT.REMOTE_USER_JOIN, (event) => {
+				if (self.data.isaboutHangUpSomething) return;
+				let userlist = this.trtcComponent.getRemoteUserList()
+				if (userlist.length) {
+					userlist.map((item, index) => {
+						if (item.userID == self.data.order.realPatientUuid) {
+							self.stopAudio();
+							self.setData({
+								isBUserJoinRoom: true
+							})
+
+						}
+					})
+				}
+
 				self.requestRtcLog('1', 'room REMOTE_USER_JOIN:' + JSON.stringify(event), self.data.orderid);
 				console.log('* room REMOTE_USER_JOIN', event, this.trtcComponent.getRemoteUserList())
 				this.timestamp.push(new Date())
@@ -432,10 +663,10 @@ Component({
 			this.trtcComponent.on(TRTC_EVENT.REMOTE_USER_LEAVE, (event) => {
 				self.requestRtcLog('1', 'room REMOTE_USER_LEAVE:' + JSON.stringify(event), self.data.orderid);
 				console.log('* room REMOTE_USER_LEAVE', event, this.trtcComponent.getRemoteUserList())
-				if (self.data.pageStatus == 'detached') {
+				if (self.data.pageStatus == 'hide') {
 					return;
 				}
-				if (self.data.pageStatus == 'hide') {
+				if (self.data.pageStatus == 'detached') {
 					return;
 				}
 				if (self.data.isTransfer) {
@@ -445,20 +676,29 @@ Component({
 				if (self.data.isClickHangUp) {
 					return;
 				}
-				self.data.isDoctorHangUp = true;
-				self.requestRtcLog('1', 'doctor exitRoom', self.data.orderid);
-				self.trtcComponent.exitRoom('UserExit')
-				wx.navigateBack();
-				// if (this.template === '1v1') {
-				// 	wx.showModal({
-				// 		title: '对方已退房',
-				// 		content: '对方退房了'
-				// 	})
-				// 	this.timestamp = []
-				// }
-				// if (this.template === '1v1' && this.remoteUser === event.data.userID) {
-				// 	this.remoteUser = null
-				// }
+
+				if (self.data.isInvite == 1 && self.data.phase == 3) {
+					if (event.data.userID == self.data.order.realPatientUuid) {
+						self.setData({
+							isBUserLeaveRoom: true
+						})
+						self.showToast(self.data.order.realPatientName + '已离开', 'noBack')
+						return;
+
+					}
+					if (event.data.userID == self.data.order.patientUuid) {
+						self.setData({
+							isAUserLeaveRoom: true
+						})
+						self.showToast(self.data.order.patientName + '已离开', 'noBack')
+						return;
+					}
+				};
+				if (self.data.enterChooseImages) return;
+				// self.data.isDoctorHangUp = true;
+				// self.requestRtcLog('1', 'doctor exitRoom', self.data.orderid);
+				// self.trtcComponent.exitRoom('UserExit')
+				// wx.navigateBack();
 			})
 			//6.远端用户推送视频
 			this.trtcComponent.on(TRTC_EVENT.REMOTE_VIDEO_ADD, (event) => {
@@ -497,7 +737,7 @@ Component({
 				console.log('* room REMOTE_AUDIO_ADD(远端用户推送音频)', event, this.trtcComponent.getRemoteUserList())
 				// 订阅音频
 				const data = event.data
-				if (this.template === '1v1' && (!this.remoteUser || this.remoteUser === data.userID)) {
+				if (this.data.template === '1v1' && (!this.remoteUser || this.remoteUser === data.userID)) {
 					this.remoteUser = data.userID
 					this.trtcComponent.subscribeRemoteAudio({
 						userID: data.userID
@@ -530,8 +770,14 @@ Component({
 				// self.requestRtcLog('1', 'room LOCAL_AUDIO_VOLUME_UPDATE:' + JSON.stringify(event), self.data.orderid);
 				// console.log('* room LOCAL_AUDIO_VOLUME_UPDATE', event)
 			})
-
-
 		},
+		bindTRTCOffEvent() {
+			const TRTC_EVENTS = this.trtcComponent.EVENT
+			this.trtcComponent.off(TRTC_EVENTS.LOCAL_JOIN)
+			this.trtcComponent.off(TRTC_EVENTS.REMOTE_USER_JOIN)
+			this.trtcComponent.off(TRTC_EVENTS.REMOTE_AUDIO_ADD)
+			this.trtcComponent.off(TRTC_EVENTS.REMOTE_VIDEO_ADD)
+
+		}
 	}
 })

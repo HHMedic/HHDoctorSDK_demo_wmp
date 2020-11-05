@@ -1,3 +1,24 @@
+let accessCardCommand = [];
+
+function isAccessCardCommand(command) {
+  if (0 == accessCardCommand.length) {
+    accessCardCommand['summaryByFam'] = 1               //
+    accessCardCommand['buyDrugInformation'] = 1         //
+    accessCardCommand['buyService'] = 1                 //
+    accessCardCommand['commandProductTips'] = 1         //
+    accessCardCommand['command_recomment_doctor'] = 1   //推荐专家卡片
+    accessCardCommand['appointmentExpertSuccess'] = 1   //专家设置时间卡片
+    accessCardCommand['psycholForm'] = 1                //心理表单卡片
+    accessCardCommand['psycholFeedback'] = 1            //心理表反馈
+    accessCardCommand['appointmentExpertSuccess'] = 1   //专家设置预约时间成功卡片
+    accessCardCommand['psycholTips'] = 1                //心理介绍说明
+    accessCardCommand['haoForm'] = 1                    //挂号表单
+    accessCardCommand['nurseReport'] = 1                  //护理报告
+    accessCardCommand['nurseDetail'] = 1                  //护理服务详情
+  }
+  return accessCardCommand[command] && 1 == accessCardCommand[command]
+}
+
 function parseMsgReceive(msg) {
   let data, attach, content;
   console.log('<<<', msg);
@@ -33,13 +54,8 @@ function parseMsgReceive(msg) {
     case 'CARD': //卡片消息
       attach = JSON.parse(msg.data.attach);
       content = JSON.parse(attach.content);
-      if ('summaryByFam' != content.command &&
-        'buyDrugInformation' != content.command &&
-        'buyService' != content.command &&
-        'commandProductTips' != content.command) {
-        return;
-      }
-
+      content = processDrugCard(attach, content)
+      if (!isAccessCardCommand(content.command)) break
       data = {
         id: msg.data.msgidServer,
         from: 'd',
@@ -113,22 +129,20 @@ function parseMsgHistory(msgHis, uuid) {
         break;
       case 9999: //卡片消息
         var content = JSON.parse(msg.body.content);
-        if ('summaryByFam' == content.command ||
-          'buyDrugInformation' == content.command ||
-          'buyService' == content.command ||
-          'commandProductTips' == content.command) {
-          msgs.push({
-            id: msg.msgid,
-            type: 'card',
-            from: msg.from,
-            head: msg.body.talkUserPic,
-            name: msg.body.talkName,
-            patient: msg.body.patientUuid,
-            time: msg.sendtime,
-            body: msg.body,
-            bodyContent: content
-          });
-        }
+        content = processDrugCard(msg.body, content)
+        if (!isAccessCardCommand(content.command)) break
+        msgs.push({
+          id: msg.msgid,
+          type: 'card',
+          from: msg.from,
+          head: msg.body.talkUserPic,
+          name: msg.body.talkName,
+          patient: msg.body.patientUuid,
+          time: msg.sendtime,
+          body: msg.body,
+          bodyContent: content
+        });
+        //}
         break;
       default:
         break;
@@ -143,6 +157,46 @@ function getAudioMsgUrl(ext, from, msgId, url) {
     url = 'https://imgfamily.hh-medic.com/family/' + from + '/audio/' + msgId + '.aac';
   }
   return url;
+}
+
+//处理药卡
+function processDrugCard(body, content) {
+  content = checkElemeDrugIsExpired(body, content)
+  content = checkSystemTips(body, content)
+  return content
+}
+
+//检查饿了么药卡是否已过期
+function checkElemeDrugIsExpired(body, content) {
+  if ('buyDrugInformation' != body.command || 'eleme' != content.source) return content;
+  switch (body.isSuccess) {
+    case -1:
+      //不可购药
+      content.trans = false
+      break;
+    case 1:
+      //购药成功
+      content.buttonName = '查看详情';
+      break;
+    default:
+      let ts = new Date().getTime() - body.createTime
+      if (ts > 86400000) {
+        //超过24小时
+        content.trans = false
+        content.tips = '该药品订单已超24小时，请呼叫医生重新获取药卡'
+        content.tipsClass = 'warn'
+      }
+      break;
+  }
+  return content
+}
+
+function checkSystemTips(body, content) {
+  if ('buyDrugInformation' != body.command || (!body.systemTips && !content.systemTips)) return content;
+  content.trans = false
+  content.tips = body.systemTips || content.systemTips
+  content.tipsClass = 'warn'
+  return content
 }
 
 module.exports = {

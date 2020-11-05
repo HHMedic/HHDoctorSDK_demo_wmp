@@ -19,7 +19,13 @@ var APIURLs = {
   commitQuestion: 'trtc/commitQuestion',//rtc-评价提交问题
   commitFeedback: 'trtc/commitFeedback',//rtc-星级评价 匿名提交
   changeDoctor: 'trtc/changeDoctor',//rtc-换个医生问问
-
+  reportLocation: 'trtc/reportLocation',  //上报实时位置
+  saveIdCard: 'trtc/saveIdCard',        //保存真实姓名、身份证信息并实名认证
+  createRx: 'trtc/createRx',              //创建处方
+  getRxPatientInfo: 'trtc/getRxDrugOrderPatientInfo',  //获取处方患者信息 
+  updateDrugCount: 'trtc/updateDrugCount',  //更新药卡中的药品数量 
+  sendCustomerMessage: 'trtc/sendCustomerMessage',
+  getCardInfo: 'trtc/getCardInfo'
 };
 
 
@@ -29,7 +35,7 @@ function getEhrUrl(url) {
 }
 // ehr
 function getUploadUrl() {
-    return getApp().globalData._hhSdkOptions._host.ehrHost + 'ehr/v2/api/uploadFile';
+  return getApp().globalData._hhSdkOptions._host.ehrHost + 'ehr/v2/api/uploadFile';
 }
 
 function getRtcUrl(url) {
@@ -94,8 +100,8 @@ function requestAddEhr(data) {
 }
 //获取授权码
 function requestGetAuthCode() {
-    let url = `${APIURLs.getAuthCode}?appId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}`
-    return request(url, {})
+  let url = `${APIURLs.getAuthCode}?appId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}`
+  return request(url, {})
 }
 //6.获取指定用户的档案列表
 function requestGetEhrList(memberUuid, memberUserToken) {
@@ -138,18 +144,39 @@ function requestRtc(url, data, isLog) {
 
 //rtc-1.创建订单
 // ?dept = ${ this.data._request.dept }`
-function requestCreateFamOrder(dept, famOrderId, platform, sdkVersion, realPatientUuid, appointedDoctorId, appointedOrderId, mrId, hospitalId,realPatientUserToken) {
-  let query = `sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}`
 
-  let orderid = famOrderId ? `&famOrderId=${famOrderId}` : ''
-  let uuid = realPatientUuid ? `&realPatientUuid=${realPatientUuid}` : ''
-  let userToken = realPatientUserToken ? `&realPatientUserToken=${realPatientUserToken}` : ''
-  let hospital = hospitalId ? `&hospitalId=${hospitalId}` : ''
-  let mr = mrId ? `&mrId=${mrId}` : ''
-  let callType = getApp().globalData.callType ? `&callType=${getApp().globalData.callType}`: '';
-  let appointed = appointedDoctorId && appointedOrderId ? `&appointedDoctorId=${appointedDoctorId}&appointedOrderId=${appointedOrderId}` : ''
-    let url = `?dept=${dept}&platform=${platform}&sdkVersion=${sdkVersion}${uuid}${userToken}&${query}${hospital}${mr}${appointed}${callType}`
-  return requestRtc(APIURLs.createFamOrder + url + orderid, {})
+function requestCreateFamOrder(dept, famOrderId, orderType, platform, sdkVersion, realPatientUuid, realPatientUserToken, appointedDoctorId, appointedOrderId, mrId, hospitalId,ext) {
+  console.log('orderType', orderType)
+  let obj = {};
+  obj['sdkProductId'] = getApp().globalData._hhSdkOptions._sdkProductId;
+  obj['userToken'] = getApp().globalData._hhSdkOptions._userToken;
+  obj['callType'] = getApp().globalData.callType || '';
+  obj['dept'] = dept;
+  obj['famOrderId'] = famOrderId;
+  obj['orderType'] = orderType || '';
+  obj['platform'] = platform;
+  obj['sdkVersion'] = sdkVersion;
+  obj['realPatientUuid'] = realPatientUuid;
+  obj['realPatientUserToken'] = realPatientUserToken || '';
+  obj['appointedDoctorId'] = appointedDoctorId || '';
+  obj['appointedOrderId'] = appointedOrderId || '';
+  obj['mrId'] = mrId || '';
+  obj['hospitalId'] = hospitalId || '';
+  obj['ext'] = ext || '';
+  let url = '';
+  Object.keys(obj).forEach(function (key) {
+    if (obj[key] && key) {
+      url += `${key}=${obj[key]}&`;
+    }
+  });
+  return requestRtc(APIURLs.createFamOrder + '?' + url, {})
+
+}
+function sendCustomerMessage(fromUser, toUser, command, famOrderId, data) {
+  let query = `sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}`
+  let msg = `&fromUser=${fromUser}&toUser=${toUser}&command=${command}&famOrderId=${famOrderId}`
+  return requestRtc(APIURLs.sendCustomerMessage + '?' + query + msg, {})
+
 }
 //rtc-2.挂断呼叫
 function requestHangUp(params) {
@@ -210,11 +237,39 @@ function requestCommitFeedback(params) {
 }
 function requestChangeDoctor(famOrderId) {
   let callType = getApp().globalData.callType ? `&callType=${getApp().globalData.callType}` : '';
-    let url = `?sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}&famOrderId=${famOrderId}${callType}`;
+  let url = `?sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}&famOrderId=${famOrderId}${callType}`;
   return requestRtc(APIURLs.changeDoctor + url, {})
 
 }
+function requestReportLocation(latitude, longitude) {
+  latitude = latitude.toFixed(6), longitude = longitude.toFixed(6)
+  let url = `?sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}&latitude=${latitude}&longitude=${longitude}`;
+  return requestRtc(APIURLs.reportLocation + url, {})
+}
 
+function requestSaveIdCard(memberUserToken, name, idCard, informationId, phoneNum) {
+  let url = `?sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}&memberUserToken=${memberUserToken}&name=${name}&idCard=${idCard}&phoneNum=${phoneNum}&informationId=${informationId}`;
+  return requestRtc(APIURLs.saveIdCard + url, {})
+}
+function requestCreateRx(orderId, medicRecordId) {
+  let url = `?sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}&orderId=${orderId}&medicRecordId=${medicRecordId}`;
+  return requestRtc(APIURLs.createRx + url, {})
+}
+
+function requestGetRxPatientInfo(patientUserToken, patientUuid, hasRx) {
+  let url = `?sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}&patientUserToken=${patientUserToken || ''}&patientUuid=${patientUuid || ''}&hasRx=${hasRx}`;
+  return requestRtc(APIURLs.getRxPatientInfo + url, {})
+}
+/** 更新药卡中药品数量 */
+function requestUpdateDrugCount(informationId, drugId, drugCount) {
+  let url = `?sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}&informationId=${informationId}&drugId=${drugId}&drugCount=${drugCount}`;
+  return requestRtc(APIURLs.updateDrugCount + url, {})
+}
+/** 获取卡片信息 */
+function requestGetCardInfo(id) {
+  let url = `?sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}&id=${id}`;
+  return requestRtc(APIURLs.getCardInfo + url, {})
+}
 
 module.exports = {
   getUploadUrl,
@@ -237,6 +292,12 @@ module.exports = {
   requestGetOrderStatus,
   requestCommitQuestion,
   requestCommitFeedback,
-  requestChangeDoctor
-  
+  requestChangeDoctor,
+  requestReportLocation,
+  requestSaveIdCard,
+  requestCreateRx,
+  requestGetRxPatientInfo,
+  requestUpdateDrugCount,
+  sendCustomerMessage,
+  requestGetCardInfo
 }

@@ -49,6 +49,7 @@ Page({
             isUpdate: options.isUpdate || false,//首页进入补充成员信息
             isAddEhr: options.isAddEhr || false,//档案库进入
             item,
+            isOpenAccount:options.isOpenAccount,
             showAccount: options.showAccount||false,
             isAccount: item && item.isAccount?item:false,
             pageUrl: options.pageUrl || '',
@@ -61,10 +62,13 @@ Page({
         if (options.isedit) {
             this.getLoadEdit(item);
         }
+        
+
         console.log(this.data.showAccount)
     },
     //只有补全信息 会调用此方法
-    getLoadUpdate(item){
+    getLoadUpdate(item){       
+
         wx.setNavigationBarTitle({ title: '补充成员信息' });
         let genderIdx = (item.sex == '男') ? 0 : (item.sex == '女') ? 1 : -1;
         this.setData({
@@ -75,7 +79,9 @@ Page({
     },
     //只有编辑 会调用此方法
     getLoadEdit: function (item) {
-        wx.setNavigationBarTitle({ title: '编辑家庭成员' })
+        let title = this.data.isOpenAccount?'完善信息':'编辑家庭成员'
+        console.log(title)
+        wx.setNavigationBarTitle({ title:title  })
         this.data.relations.map((i, index) => {
             if (i == item.relation) { this.data.relationIdx = index }
         })
@@ -214,6 +220,15 @@ Page({
             }
             member['loginname'] = loginname;
         }
+        console.log('是否开通独立子账号',this.data.isOpenAccount)
+        console.log('是否点开独立子账号',this.data.isLoginChecked)
+        if(this.data.isOpenAccount&&!this.data.isLoginChecked){
+            wx.showToast({
+                title: '请设置独立子帐号',
+                icon: 'none'
+            })
+            return;
+        }
         console.log(this.data)
         let saveType = e.detail.target.dataset.type || false;
 
@@ -229,6 +244,7 @@ Page({
 
     //更新成员信息
     requestUpdateMember: function (member, memberUuid, saveType) {
+        console.log('saveType',saveType)
         wx.showLoading({ mask: true })
         let self = this;
         apis.requestUpdateMember(member, memberUuid).then(res => {
@@ -236,6 +252,18 @@ Page({
             if (res.status == 200) {
                 var pageUrl = self.data.pageUrl + '?' + hhDoctor.getPublicParams() + '&dept=600002' + '&uuid=' + memberUuid;
                 switch (saveType) {
+                    // case 'openAccount':
+                    //     if (res.data.isAccount && res.data.loginname) {
+                    //         wx.redirectTo({
+                    //             url: '../ehr-accounttip/ehr-accounttip'
+                    //         });
+                    //     } 
+                    case 'openAccountCall':
+                        console.log(pageUrl+'&orderType=many_video&isInvite=1')
+                        wx.redirectTo({
+                          url: pageUrl+'&orderType=many_video&isInvite=1'
+                        })
+                        break;
                     case 'updateCall':
                         wx.redirectTo({
                             url: pageUrl

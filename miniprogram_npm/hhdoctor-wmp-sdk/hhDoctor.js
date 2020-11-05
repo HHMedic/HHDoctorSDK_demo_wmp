@@ -21,7 +21,8 @@ var _options = {
   userSig: null,
   photo: null,
   openId: null,
-  callPage: null
+  callPage: null,
+  isUserCancelInvite: false
 }
 var _callbacks = {
   receiveMsg: null,
@@ -37,7 +38,7 @@ function login(options) {
   return new Promise((resolve, reject) => {
     app = getApp();
     tim = getTim();
-    injectThrottle()
+    injectAppjsMethods()
     if (tim) {
       resolve();
     }
@@ -175,6 +176,10 @@ function getProduct() {
 function getAsstInfo() {
   return _asst;
 }
+//邀请人是否取消邀请
+function isUserCancelInvite() {
+  return _options.isUserCancelInvite;
+}
 /** 上报日志到服务器 */
 function addLog(type, content, orderId) {
   //apis.requestRtcLog(type, content, orderId)
@@ -203,8 +208,8 @@ function doAddLog(type, content, orderId) {
     resolve();
   })
 }
-/* 注入截流函数 */
-function injectThrottle() {
+/* 注入App.js函数 */
+function injectAppjsMethods() {
   if (!app._throttle) {
     app._throttle = (btn, wait) => {
       let nowTime = Date.parse(new Date());
@@ -212,6 +217,12 @@ function injectThrottle() {
       let seconds = parseInt(nowTime - preTime)
       wx.setStorageSync(btn, nowTime);
       return seconds < (wait ? wait : 2000)
+    }
+  }
+  if (!app.isOnlyOnePage) {
+    app.isOnlyOnePage = () => {
+      let pageList = getCurrentPages()
+      return pageList.length == 1
     }
   }
 }
@@ -297,7 +308,7 @@ function initTIM() {
 }
 
 function onMessageReceived(e) {
-  if ('test' == _options.profileName) console.log('>><<>><<>><<>><<', e)
+  if ('test' == _options.profileName) console.log('hh-doctor>><<>><<>><<>><<', e)
   if (!e || !e.data || 0 == e.data.length) {
     return;
   }
@@ -350,12 +361,17 @@ function parseMsg(data) {
   if (!data.to || (parseInt(data.to) != _options.userId && 'chat' != msg.command)) {
     return;
   }
-
   switch (msg.command) {
     //当前用户被叫
     case 'call':
       doCallUser(msg, data.from);
       return;
+    case 'call_invite':
+      doCallInviteUser(msg, data.from)
+      return;
+    case 'cancel_invite': console.log('收到cancel_invite')
+      _options.isUserCancelInvite = true;
+      break;
     case 'chat':
       if (_callbacks.chatMsg) {
         _callbacks.chatMsg(msg);
@@ -369,10 +385,66 @@ function parseMsg(data) {
   }
 }
 
+// function busyInvite(){
+//   if (!_options.callPage || !msg.uuid) return;
+//   wx.showToast({
+//     title:'医生忙碌中',
+//     mask:true,
+//     icon:'none',
+//     duration:3000,
+//     success(){
+//       setTimeout(res=>{
+//         wx.navigateBack()
+//       },3000)
+//     }
+//   })
+// }
+//被邀请人收到邀请
+function doCallInviteUser(msg, caller) {
+  console.log('进入doCallInviteUser')
+  if (!_options.callPage || !msg.uuid) return;
+  _options.isUserCancelInvite = false;
+  if (isBusy()) {
+    //发送忙碌消息
+    let msgData = {
+      command: 'busy_invite',
+      orderId: msg.orderId || '',
+      uuid: _options.userId
+    }
+    sendMessage(msg.uuid, msgData, (msg.orderId || ''));
+    return;
+  }
+  getDoctorInfo(msg)
+    .then((res) => {
+      console.log('getDoctorInfo', res)
+      let pageUrl = _options.callPage + '?' +
+        getPublicParams() +
+        '&dept=' + msg.orderId +
+        '&doctor=' + JSON.stringify(res.doctor) +
+        '&order=' + JSON.stringify(res.order) +
+        '&orderid=' + res.order.orderid +
+        '&isInvite=' + 1
+      if (_options.isUserCancelInvite) {
+        wx.showToast({
+          title: '对方已取消邀请',
+          mask: true,
+          icon: 'none',
+          duration: 3000,
+        })
+        return;
+      }
+      wx.navigateTo({
+        url: pageUrl
+      })
+
+
+    }).catch(() => {
+
+    });
+}
 function doCallUser(msg, caller) {
   if (!_options.callPage || !msg.uuid) return;
   if (isBusy()) {
-    console.log('用户忙碌');
     //发送忙碌消息
     let msgData = {
       command: 'busy',
@@ -384,11 +456,15 @@ function doCallUser(msg, caller) {
   }
   getDoctorInfo(msg)
     .then((res) => {
+      console.log('getDoctorInfo', res)
       let pageUrl = _options.callPage + '?' +
         getPublicParams() +
         '&dept=' + msg.orderId +
-        '&doctor=' + JSON.stringify(res.doctor) +
-        '&orderid=' + res.order.orderid;
+        '&doctor=' + encodeURIComponent(JSON.stringify(res.doctor)) +
+        '&order=' + encodeURIComponent(JSON.stringify(res.order)) +
+        '&orderid=' + res.order.orderid +
+        '&isInvite=' + 0
+      console.log('pageUrl' + pageUrl)
       wx.navigateTo({
         url: pageUrl
       })
@@ -477,5 +553,6 @@ module.exports = {
   getAsstInfo,
   addLog,
   refreshSession,
-  getPublicParams
+  getPublicParams,
+  isUserCancelInvite
 }

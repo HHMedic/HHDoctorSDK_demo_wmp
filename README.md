@@ -1,4 +1,4 @@
-# 和缓视频医生微信小程序SDK使用指南（3.0.2）
+# 和缓视频医生微信小程序SDK使用指南（3.0.3）
 
 和缓视频医生微信小程序SDK（**本SDK**）为小程序自定义组件形式，使用npm方式发布。本文引导开发者从零开始，一步一步搭建起和缓视频医生基本功能框架。如果开发者是在现有项目中集成本SDK，可直接从第2步开始阅读。
 
@@ -31,13 +31,15 @@
 
 6. 小程序开发完成后，需提交微信审核，审核通过后方可正式上线。如贵方小程序属首次提交审核，请务必预留充足的审核时间（至少预留1周审核时间，特殊情况下可能需要2周）。如在上线审核过程中遇到问题，可咨询和缓接口人寻求更多建议。
 
-7. 在小程序后台“设置”-“基本设置”下，将“基础库最低版本设置”设置为2.10.0或更高版本。
+7. 在小程序后台“设置”-“基本设置”下，<u>将“基础库最低版本设置”设置为2.10.0或更高版本</u>。
 
 8. 生产环境与测试环境的sdkProductId可以通用，但用户数据是完全隔离的，请勿将测试环境的userToken数据应用到生产环境，反之亦然。
 
-9. 如果您是从 `1.*` 版本SDK升级到 `2.*` 版本SDK，请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_upgrade_1_to_2.md)查看升级指南。
+9. 本SDK从3.0.3版本开始，呼叫时需要调用wx.getLocation()获取用户位置，<u>因此请在项目的app.json文件中增加获取位置相关权限说明</u>，请[点击此处](https://developers.weixin.qq.com/miniprogram/dev/reference/configuration/app.html#permission)查看说明
 
-10. 如果您是从 `2.*` 版本SDK升级到 `3.*` 版本SDK，请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_upgrade_2_to_3.md)查看升级指南。
+10. 如果您是从 `1.*` 版本SDK升级到 `2.*` 版本SDK，请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_upgrade_1_to_2.md)查看升级指南。
+
+11. 如果您是从 `2.*` 版本SDK升级到 `3.*` 版本SDK，请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_upgrade_2_to_3.md)查看升级指南。
 
 ---
 

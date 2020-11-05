@@ -21,7 +21,7 @@ Component({
    */
   methods: {
 	bindHangUp(){
-        if (getApp()._throttle('hangup-2')) return;
+    if (getApp()._throttle('hangup-2')) return;
 		this.triggerEvent('hangUp') 
 	}
   }

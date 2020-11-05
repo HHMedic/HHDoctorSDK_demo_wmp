@@ -23,8 +23,7 @@ Component({
         isExitWx:{
             type:Boolean,
             value:false
-        }
-
+        },
 
     },
 

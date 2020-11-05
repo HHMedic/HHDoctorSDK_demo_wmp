@@ -1,7 +1,15 @@
 <!--components/hh-trtc/hh-trtc.wxml-->
 <view class="page-room">
 	<view hidden='{{isEvaluate}}'>
-		<trtc-room id="trtc-component" config="{{rtcConfig}}" orderid='{{orderid}}'></trtc-room>
+		<trtc-room id="trtc-component" config="{{rtcConfig}}" 		inviteRole='{{inviteRole}}' 
+		orderid='{{orderid}}' 
+		order='{{order}}' 
+		isInviteBReject='{{isInviteBReject}}'
+		isBUserLeaveRoom='{{isBUserLeaveRoom}}'
+		isAUserLeaveRoom='{{isAUserLeaveRoom}}'
+		doctor='{{doctor}}'
+		phase='{{phase}}'
+		></trtc-room>
 		<view style='background-image:url(https://imgs.hh-medic.com/icon/wmp/bg-default.jpg)' class='page-bg'  wx:if='{{phase!=3}}'>
 		</view>
 		<!-- 过渡页0 -->
@@ -27,18 +35,22 @@
 		    videoTime='{{videoTime}}' 
             expertAudio='{{expertAudio}}'
             systeminfo='{{systeminfo}}'
-            request='{{_request}}'
-			bind:hangUp='bindHangUp' 
+			request='{{_request}}'
+			bind:hangUp='bindHangUp'  
 			bind:enterCamera='bindEnterCamera'
 			bind:completeCamera='bindCompleteCamera'
 			bind:changeCamera='bindSwitchCamera'
 			bind:toggleTorch='bindToggleTorch'
 			bind:changeDoctor = 'bindChangeDoctor'
+			id='trtcCamera'
 			></phase-d>
 		<!-- 医生回拨4 -->
-		<phase-e style='display:{{phase==4?"block":"none"}}' doctor='{{doctor}}' bind:hangUp='bindHangUp' bind:accept='bindAccept'></phase-e>
+		<phase-e style='display:{{phase==4?"block":"none"}}' doctor='{{doctor}}' isInvite='{{_request.isInvite}}' order='{{order}}' bind:hangUp='bindHangUp' bind:accept='bindAccept'></phase-e>
 		<!-- 专家回拨5 -->
-		<phase-f style='display:{{phase==5?"block":"none"}}' doctor='{{doctor}}' bind:hangUp='bindHangUp' bind:accept='bindAccept'></phase-f>
+		<phase-f style='display:{{phase==5?"block":"none"}}' doctor='{{doctor}}' isInvite='{{_request.isInvite}}' order='{{order}}' bind:hangUp='bindHangUp' bind:accept='bindAccept'></phase-f>
+		<!-- 多人视频 被邀请人 邀请页7 -->
+		<phase-g style='display:{{phase==7?"block":"none"}}' doctor='{{doctor}}' isInvite='{{_request.isInvite}}' order='{{order}}' bind:hangUp='bindInviteHangUp' bind:accept='bindInviteAccept'></phase-g>
+		<showToast style='display:{{isShowToast?"block":"none"}}' toastTitle='{{toastTitle}}'></showToast>
 		<!-- 未授权弹窗 -->
 		<block wx:if='{{isAuthBox}}'>
 		  <cover-view class='auth-box' >
@@ -55,7 +67,8 @@
 	  evaluateData='{{evaluateData}}' 
 	  famOrderId='{{orderid}}' 
 	  doctor='{{doctor}}'
-      uuid="{{realPatientUuid}}"
+			uuid="{{realPatientUuid}}"
+		bind:closeevalate="_closeEvaluate"
 	  ></hh-evaluate>
 	</view>
     <trtc-modal title='{{modal.title}}' content='{{modal.content}}' isExitWx='{{modal.isExitWx}}' wx:if='{{isShowModalTip}}' bind:trtcModalConfirm='bindTrtcModalConfirm'></trtc-modal>

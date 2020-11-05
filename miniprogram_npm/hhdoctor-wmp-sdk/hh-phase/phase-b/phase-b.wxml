@@ -1,5 +1,5 @@
 <!--components/hh-phase/phase-b/phase-b.wxml-->
-<view class="room-box" style="background-image:url({{doctor.photourl}})">
+<view class="room-box" style="background-image:url({{doctor.photourl}});">
 	<view class="loading" wx:if='{{!doctor}}'>
 		<view class="loading-img">
 			<image src="{{loading}}" class="rotate-img"></image>
@@ -12,7 +12,6 @@
 		<view class="room-icon">
             <button class='room-image' style='background-image:url({{icons.hangup}});' id='b-hangup' bindtap='bindHangUp'></button>
 			<view class="room-cancel">取消</view>
-            
 		</view>
 	</view>
 </view>

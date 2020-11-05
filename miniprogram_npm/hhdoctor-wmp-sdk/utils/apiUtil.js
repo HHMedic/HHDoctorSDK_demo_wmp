@@ -10,6 +10,7 @@ var urls = {
   videoComment: wmpHost + 'video/comments?videoId={0}&lastCommentId={1}&channelType={2}',
   getLiveInfo: secHost + 'babyweb/page/v2.0/seckill/liveInfo?liveId={0}',
   getHistoryMsg: wmpHost + 'trtc/getHistoryMsg?asstUuid={0}',
+  getCardInfo: wmpHost + 'trtc/getCardInfo?id={0}',
   decrypt: wmpHost + 'wx/decrypt',
   getLicense: wmpHost + 'wmp/license?type={0}',
   getLoginUserByPhone: wmpHost + 'wmp/getLoginUserByPhone?phone={0}',
@@ -22,7 +23,8 @@ var urls = {
   seckillExec: secHost + 'babyweb/page/v2.0/seckill/exec',
   setAddress: secHost + 'babyweb/page/v2.0/seckill/setAddress',
   getAddressList: wmpHost + 'address/listP',
-  saveAddress: wmpHost + 'address/saveAddress'
+  saveAddress: wmpHost + 'address/saveAddress',
+  getDoctorInfo: wmpHost + 'wmp/getDoctorInfo?doctorId={0}'
 }
 var requestHeader = {};
 
@@ -120,6 +122,11 @@ function getHistoryMsg(asstUuid) {
   return doRequest(url, '', {});
 }
 
+function getCardInfo(id) {
+  let url = urls.getCardInfo.format(id);
+  return doRequest(url, '', {});
+}
+
 function decryptData(encryptedData, iv) {
   let url = urls.decrypt;
   return doRequest(url, '', { encryptedData, iv });
@@ -203,6 +210,11 @@ function getLiveInfo(liveId) {
   return doRequest(url, 'GET', {});
 }
 
+function getDoctorInfo(doctorId) {
+  let url = urls.getDoctorInfo.format(doctorId);
+  return doRequest(url, '', {});
+}
+
 module.exports = {
   regUser,
   leaveLive,
@@ -218,9 +230,11 @@ module.exports = {
   seckillList,
   seckillSign,
   seckillExec,
+  getCardInfo,
   getUserPhone,
   seckillApply,
   getVideoList,
+  getDoctorInfo,
   getHistoryMsg,
   getAddressList,
   getLoginUserByPhone

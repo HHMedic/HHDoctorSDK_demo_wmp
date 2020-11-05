@@ -47,6 +47,10 @@ Page({
       optString
     })
   },
+  onShow: function() {
+    this.setData({ isConnect: getApp().globalData.isConnect })
+    this.getAuth();
+  },
   //获取options遍历方法
   getOptions: function(obj) {
     let url = '';
@@ -58,34 +62,6 @@ Page({
     return url.slice(0, url.lastIndexOf('&'));
   },
 
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady: function() {
-
-
-
-  },
-
-  /**
-   * 生命周期函数--监听页面显示
-   */
-  onShow: function() {
-    this.setData({ isConnect: getApp().globalData.isConnect })
-    this.getAuth();
-
-  },
-
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide: function() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
   onUnload: function() {
     if (getApp().globalData._hhim && getApp().globalData._hhim.loginStatus()) {
       let timeSpan = (new Date().getTime() - timeStart) / 1000;
@@ -93,26 +69,6 @@ Page({
     }
   },
 
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh: function() {
-
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom: function() {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage: function() {
-
-  },
 
   // 获取授权
   getAuth: function() {

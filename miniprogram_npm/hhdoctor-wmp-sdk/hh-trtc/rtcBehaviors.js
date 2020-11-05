@@ -25,12 +25,22 @@ module.exports = Behavior({
 			REJECT: 'REJECT', //回拨-挂断
 			SWITCH_TO_AUDIO: 'SWITCH_TO_AUDIO', //转音频模式
 			SWITCH_TO_VIDEO: 'SWITCH_TO_VIDEO', //转视频模式
+			SWITCH_TO_CAMERA: 'SWITCH_TO_CAMERA',
 			TRANSFER: "TRANSFER", //转呼
-			cancel:'cancel',
-			iosWxVersion:'iOS_7.0.15'
+			cancel: 'cancel',
+			iosWxVersion: 'iOS_7.0.15',
+			call_invite: 'call_invite',
+			doctor_accept_invite: 'doctor_accept_invite',
+			user_accept_invite: 'user_accept_invite',//B接听
+			cancel_invite: 'cancel_invite',
+			reject_invite: 'reject_invite',
+			exit_camera: 'exit_camera',
+			enter_camera: 'enter_camera',
+			busy_invite: 'busy_invite',
 		},
 		hangupcommand: ['call_cancel', 'call_cancel', 'call_cancel', 'interrupt', 'REJECT', 'REJECT', 'call_cancel'],
-		phaseArray: ['过渡中', '呼叫中', '排队中', '视频中', '医生回拨', '专家回拨', '观看视频中'],
+		hangupcommand_invite: ['cancel_invite', 'cancel_invite', 'cancel_invite', 'interrupt_invite', '', '', 'cancel_invite', 'reject_inite'],
+		phaseArray: ['过渡中', '呼叫中', '排队中', '视频中', '医生回拨', '专家回拨', '观看视频中', '呼叫中'],
 		workbenchList: [],
 		preReceivedCommand: '',
 		cameraTorch: false, //手电筒
@@ -38,34 +48,36 @@ module.exports = Behavior({
 		videoTimeStart: '', //先获取一下当前时间
 		videoTime: '00:00',
 		isClickHangUp: false,
-		isDoctorHangUp:false,
+		isDoctorHangUp: false,
 		timerGetStatus: null, //检测发送call消息接收状态
 		timerTransfer: null, //医生转呼
 		timerChangeDoctor: null, //更换医生
 		timerWaitVideo: null, //进入排队中
 		timerWaittingTips: null, //显示排队提示
-        timerVideoChat:null,//视频计时
-		enterChooseImages :false,
-		audio:{url:'https://imgs.hh-medic.com/icon/ring.mp3'},
-        systeminfo:null,
-        realPatientUuid:0,
-        isShowModalTip:false,
-		modal:null,
-		s:null,
-		w:null
+		timerVideoChat: null,//视频计时
+		enterChooseImages: false,
+		audio: { url: 'https://imgs.hh-medic.com/icon/ring.mp3' },
+		systeminfo: null,
+		realPatientUuid: 0,
+		isShowModalTip: false,
+		modal: null,
+		s: null,
+		w: null,
+		isShowToast: false,
+		toastTitle: ''
 	},
-	attached: function() {
-        self = this;
-        wx.getSystemInfo({
-            success: function (systeminfo) {
-                console.log(systeminfo)
-                self.setData({ systeminfo })
-                self.requestRtcLog(1, JSON.stringify(systeminfo));
-            }
+	attached: function () {
+		self = this;
+		wx.getSystemInfo({
+			success: function (systeminfo) {
+				console.log(systeminfo)
+				self.setData({ systeminfo })
+				self.requestRtcLog(1, JSON.stringify(systeminfo));
+			}
 		})
-		self.data.s= self.data.systeminfo.system.split(' ');
+		self.data.s = self.data.systeminfo.system.split(' ');
 		self.data.w = self.data.systeminfo.version.split('.');
-    },
+	},
 	ready() {
 		self = this;
 	},
@@ -79,7 +91,7 @@ module.exports = Behavior({
 		},
 		//注册监听通信
 		_registMessageReceived() {
-			hhDoctor.on('messageReceived', function(e) {
+			hhDoctor.on('messageReceived', function (e) {
 				if (e && e.length > 0) {
 					let msgId = e[0].ID;
 					if (receivedMsgs[msgId]) {
@@ -90,20 +102,25 @@ module.exports = Behavior({
 				self.requestRtcLog(1, 'onImMessage:' + JSON.stringify(e), self.data.orderid);
 				e.map((item, index) => {
 					let obj = JSON.parse(item.payload.data);
+					console.log('收到的消息>>>>>>', obj)
 					if (self.data.preReceivedCommand == obj.command && obj.command != 'waitUserInfo') {
 						return;
 					}
-                    self.requestRtcLog(1, 'onImMessage-command:' + obj.command, self.data.orderid);
+					self.requestRtcLog(1, 'onImMessage-command:' + obj.command, self.data.orderid);
 					self.data.preReceivedCommand = obj.command;
-					self.data.workbenchList[obj.command] && self.data.workbenchList[obj.command](obj.orderId, obj, item.from,item.to);
+					self.data.workbenchList[obj.command] && self.data.workbenchList[obj.command](obj.orderId, obj, item.from, item.to);
 				});
 			});
 		},
 		// 向工作台发送消息
 		sendMessage(command, newOrderid, fromId, success, fail) {
 			console.log('sendMessage===*', self.data.orderid, command)
-            if(self.data.isDoctorHangUp)return;
-            if (self.data.isaboutHangUpSomething)return;
+			self.requestRtcLog('1', 'sendMessage init:' + command, self.data.orderid);
+			self.requestRtcLog('1', 'self.data.isDoctorHangUp:' + self.data.isDoctorHangUp, self.data.orderid);
+			self.requestRtcLog('1', 'self.data.isaboutHangUpSomething:' + self.data.isaboutHangUpSomething, self.data.orderid);
+			self.requestRtcLog('1', 'self.data.preCommand:' + self.data.preCommand, self.data.orderid);
+			if (self.data.isDoctorHangUp) return;
+			if (self.data.isaboutHangUpSomething) return;
 			return new Promise((resolve, reject) => {
 				let data = self.data;
 				if (data.orderid) {
@@ -118,15 +135,13 @@ module.exports = Behavior({
 						serviceTypeStatus: serviceType,
 						uuid: data.userID
 					};
-					console.log('sendMessage===*', msgData)
-
 					let uuid = data.doctor ? data.doctor.login.uuid : 0;
 					let toUser = command == 'busy' && fromId ? fromId : uuid;
 					self.requestRtcLog('1', 'sendMessage start:' + command + '；type:' + serviceType, self.data.orderid);
-					self.data.preCommand = command;
+					self.data.preCommand = command != 'SWITCH_TO_CAMERA' ? command : '';
 					hhDoctor.sendMessage(toUser, msgData, orderId).then(res => {
 						console.log('发消息成功')
-                        self.requestRtcLog('1', 'sendMessage success:' + command + '；type:' + serviceType, self.data.orderid);
+						self.requestRtcLog('1', 'sendMessage success:' + command + '；type:' + serviceType, self.data.orderid);
 						resolve();
 					}).catch(res => {
 						reject();
@@ -137,23 +152,32 @@ module.exports = Behavior({
 		// 注册IM执行方法存储
 		_workbenchRegist() {
 			let self = this;
-			self.data.workbenchList['accept'] = self.workbenchAccept;
+			self.data.workbenchList['accept'] = self.workbenchDoctorAccept;
 			self.data.workbenchList['busy'] = self.workbenchBusy;
 			self.data.workbenchList['waitUserInfo'] = self.workbenchWait;
 			self.data.workbenchList['call'] = self.workbenchCall;
 			self.data.workbenchList['agent_transfer'] = self.workbenchAgentTransfer;
 			self.data.workbenchList['cancel'] = self.workbenchInterrupt;
 			self.data.workbenchList['interrupt'] = self.workbenchInterrupt;
+			// self.data.workbenchList['server_hangup'] = self.workbenchInterrupt;
 			self.data.workbenchList['dispatchDoctorByONS'] = self.workbenchDispatchDoctorByONS;
+			self.data.workbenchList['doctor_accept_invite'] = self.workbenchDoctorAcceptInvite;
+			self.data.workbenchList['cancel_invite'] = self.workbenchCancelInvite;
+			self.data.workbenchList['reject_invite'] = self.workbenchRejectInvite;
+			self.data.workbenchList['interrupt_invite'] = self.workbenchInterruptInvite;
+			self.data.workbenchList['busy_invite'] = self.workbenchBusyInvite;
+			self.data.workbenchList['enter_camera'] = self.workbenchEnterCamera;
+			self.data.workbenchList['exit_camera'] = self.workbenchExitCamera;
+
 		},
 		//点击-切换摄像头
 		bindSwitchCamera() {
-            self.requestRtcLog('1', 'bind switchcamera' , self.data.orderid);
+			self.requestRtcLog('1', 'bind switchcamera', self.data.orderid);
 			this.data.trtcComponent.switchCamera()
 		},
 		//点击切换闪光灯
 		bindToggleTorch() {
-            self.requestRtcLog('1', 'bind toggle torch', self.data.orderid);
+			self.requestRtcLog('1', 'bind toggle torch', self.data.orderid);
 			this.data.trtcComponent.toggleTorch({
 				success() {
 					self.setData({
@@ -172,109 +196,114 @@ module.exports = Behavior({
 
 		// 万里长征第一步创建订单
 		_requestCreateFamOrder(famOrderId, deptId) {
-            self.requestRtcLog('1', 'createFamOrder start');
-			self.data.createOrderPromise = apis.requestCreateFamOrder(deptId ? deptId : self.data._request.dept, famOrderId,
-				self.data.systeminfo.platform, self.data.systeminfo.SDKVersion, self.data.realPatientUuid, self._request.appointedDoctorId, self._request.appointedOrderId,self.data._request.medicRecordId, self.data._request.hospitalId,self.data.realPatientUserToken).then(res => {
-					console.log('创建订单====>',res)
-				if (res.status == 200) {
-                    self.requestRtcLog('1', 'createFamOrder success', self.data.orderid);
-					let data = res.data;
-					let preCallResponse = data.preCallResponse;
-					let orderid = data.order.orderid;
-					let roomID = orderid.slice(orderid.length - 6, orderid.length)
-					self.setData({
-						orderid,
-						roomID,
-						userID: data.uuid,
-						userSig: hhDoctor.getUserSig(),
-						order: data.order,
-						doctor: data.doctor || null,
-						preCallResponse: preCallResponse || '',
-						callTips: {
-							callintTip: preCallResponse.callingTip || '医生连线中，请耐心等待...',
-							callintTipQueue: preCallResponse.callingTipQueue || '拨号中...',
-							callintTipTransfer: preCallResponse.callingTipTransfer || '拨号中...'
-						}
-					},()=>{
-                        if (data.doctor) {
-                            self.requestRtcLog('1', 'enter call success', self.data.orderid);
-                            self.setData({
-                                phase: 1
-                            })
-                            self.enterRoom(self.data.command.call)
-                        } else {
-                            self.requestRtcLog('1', 'enter callwait', self.data.orderid);
-                            self.setData({
-                                phase: 2
-                            })
-                            let preCallResponse = self.data.preCallResponse;
-                            self.data.timerWaittingTips = setTimeout(function () {
-                                self._showWaittingTips(preCallResponse.videoMsgTime, preCallResponse.videoMsgTemplate);
-                            }, preCallResponse.videoMsgDelay * 1000);
-                        }
-                    })
+			self.requestRtcLog('1', 'createFamOrder start -Version:' + getApp().globalData.wmpVersion);
+			let orderType = this.data._request.orderType || '';
+			self.data.createOrderPromise = apis.requestCreateFamOrder(deptId ? deptId : self.data._request.dept, famOrderId, orderType,
+				self.data.systeminfo.platform, self.data.systeminfo.SDKVersion, self.data.realPatientUuid, self.data.realPatientUserToken, self._request.appointedDoctorId, self._request.appointedOrderId, self.data._request.medicRecordId, self.data._request.hospitalId, self.data._request.ext).then(res => {
+					console.log('创建订单====>', res)
+					if (res.status == 200) {
+						self.requestRtcLog('1', 'createFamOrder success', self.data.orderid);
+						let data = res.data;
+						let preCallResponse = data.preCallResponse;
+						let orderid = data.order.orderid;
+						let roomID = orderid.slice(orderid.length - 6, orderid.length)
+						self.setData({
+							orderid,
+							roomID,
+							userID: data.uuid,
+							userSig: hhDoctor.getUserSig(),
+							order: data.order,
+							doctor: data.doctor || null,
+							preCallResponse: preCallResponse || '',
+							callTips: {
+								callintTip: preCallResponse.callingTip || '医生连线中，请耐心等待...',
+								callintTipQueue: preCallResponse.callingTipQueue || '拨号中...',
+								callintTipTransfer: preCallResponse.callingTipTransfer || '拨号中...'
+							}
+						}, () => {
+							if (data.doctor) {
+								self.requestRtcLog('1', 'enter call success', self.data.orderid);
+								self.setData({
+									phase: 1
+								})
+								self.enterRoom(self.data.command.call)
+							} else {
+								if (self.data.isInvite == 1) {
+									self.showToast('医生忙碌，请稍候重新呼叫')
+								}
+								self.requestRtcLog('1', 'enter callwait', self.data.orderid);
+								self.setData({
+									phase: 2
+								})
+								let preCallResponse = self.data.preCallResponse;
+								self.data.timerWaittingTips = setTimeout(function () {
+									self._showWaittingTips(preCallResponse.videoMsgTime, preCallResponse.videoMsgTemplate);
+								}, preCallResponse.videoMsgDelay * 1000);
+							}
+						})
 
-				} else {
-                    self._showModalTip({ content: res.message||'请保持网络流畅' })
-				}
-			}).catch(err => {
-				console.log('创建订单err====>',err)
-                self._showModalTip({ title: '网络不给力', content: '请保持网络流畅' })
-			})
+					} else {
+						self._showModalTip({ content: res.message || '请保持网络流畅' })
+					}
+				}).catch(err => {
+					console.log('创建订单err====>', err)
+					self._showModalTip({ title: '网络不给力', content: '请保持网络流畅' })
+				})
 		},
 		//更换医生封装函数
 		bindChangeDoctor() {
-            self.requestRtcLog('1', 'change doctor user click', self.data.orderid);
-            wx.showModal({
-                title: '提示',
-                content: '立即更换其他医生咨询，确定更换吗？【只可更换1次】',
-                confirmText: '确定更换',
-                confirmColor: '#0592F5',
-                success: function (res) {
-                    if (res.confirm) {
-                        self.requestChangeDoctor();
-                    } else {
-                        self.requestRtcLog('1', 'change doctor user cancel', self.orderid)
-                    }
-                }
-            })
-		},	
-        requestChangeDoctor(){
-            wx.showLoading();
-            self.requestRtcLog('1', 'change doctor start', self.data.orderid);
-            if (!self.data.orderid) return;
-            apis.requestChangeDoctor(self.data.orderid).then(res => {
-                wx.hideLoading();
-                if (res.status == 200) {
-                    self.requestHangUp('用户更换医生')
-                    self.data.trtcComponent.exitRoom('UserExit')
-                    self.setData({
-                        isTransfer: true,
-                        doctor: null,
-                        phase: 0,
-                        preCommand: '',
-                        createOrderPromise: null,
-                        isWorkbenchAccept: false,
-                    })
-                    self.requestRtcLog('1', 'change doctor success', self.data.orderid);
-                    self.data.timerChangeDoctor = setTimeout(() => {
-                        self._enterCall();
-                    }, 3000)
-                    //跳转呼叫页重新呼叫 服务器返回成功后，重新进行呼叫，呼叫时的dept、实际患者uuid等参数使用用户上次呼叫时的参数值； 
-                } else {
-                    wx.showToast({
-                        title: res.message,
-                        icon: 'none',
-                        duration: 2000
-                    })
-                }
-            }).catch(err => {
-                self._showModalTip({ title: '网络不给力', content: '请保持网络流畅' })
-            })
-        },
+			self.requestRtcLog('1', 'change doctor user click', self.data.orderid);
+			wx.showModal({
+				title: '提示',
+				content: '立即更换其他医生咨询，确定更换吗？【只可更换1次】',
+				confirmText: '确定更换',
+				confirmColor: '#0592F5',
+				success: function (res) {
+					if (res.confirm) {
+						self.requestChangeDoctor();
+					} else {
+						self.requestRtcLog('1', 'change doctor user cancel', self.orderid)
+					}
+				}
+			})
+		},
+		requestChangeDoctor() {
+			wx.showLoading();
+			self.requestRtcLog('1', 'change doctor start', self.data.orderid);
+			if (!self.data.orderid) return;
+
+			apis.requestChangeDoctor(self.data.orderid).then(res => {
+				wx.hideLoading();
+				if (res.status == 200) {
+					self.requestHangUp('用户更换医生')
+					self.data.trtcComponent.exitRoom('UserExit')
+					self.setData({
+						isTransfer: true,
+						doctor: null,
+						phase: 0,
+						preCommand: '',
+						createOrderPromise: null,
+						isWorkbenchAccept: false,
+					})
+					self.requestRtcLog('1', 'change doctor success', self.data.orderid);
+					self.data.timerChangeDoctor = setTimeout(() => {
+						self._enterCall();
+					}, 3000)
+					//跳转呼叫页重新呼叫 服务器返回成功后，重新进行呼叫，呼叫时的dept、实际患者uuid等参数使用用户上次呼叫时的参数值； 
+				} else {
+					wx.showToast({
+						title: res.message,
+						icon: 'none',
+						duration: 2000
+					})
+				}
+			}).catch(err => {
+				self._showModalTip({ title: '网络不给力', content: '请保持网络流畅' })
+			})
+		},
 		//主呼-挂断http提交 type挂断类型:CANCEL HANGUP  transfer:是否为转呼
 		requestHangUp(reason, isBack) {
-            console.log('调用挂断')
+			console.log('调用挂断')
 			if (!self.data.orderid) return;
 			let data = self.data;
 			let phase = data.phase;
@@ -284,27 +313,29 @@ module.exports = Behavior({
 				videoTime = parseInt((new Date().getTime() - videoTimeStart) / 1000);
 			}
 			let reasonText = encodeURIComponent(reason + '(' + data.phaseArray[phase] + ')');
+			if (self.data.isInvite == 1 && !self.data.isClickHangUp && !self.data.isDoctorHangUp) {
+				reasonText = reasonText + '-removeUser'
+
+			}
 			let serviceType = (data.doctor && data.doctor.serviceTypeStatus == 'zhuanke') ? 'zhuanke' : data._request.serviceType;
 			let params = `?famOrderId=${data.orderid}&serviceType=${serviceType}&videoTime=${videoTime}&reason=${reasonText}`
-            self.requestRtcLog('1', 'requestHangUp start；videoTime:'+videoTime +'s；'+ reason + '-' + data.phaseArray[phase], self.data.orderid);
-            wx.showLoading();
+			self.requestRtcLog('1', 'requestHangUp start；videoTime:' + videoTime + 's；' + reason + '-' + data.phaseArray[phase], self.data.orderid);
+			wx.showLoading();
 			apis.requestHangUp(params).then(res => {
 				wx.hideLoading();
 				self.setData({
 					videoTimeStart: '',
 					videoTime: '00:00'
 				})
-                self.requestRtcLog('1', 'requestHangUp success:' + res.message + '-' + data.phaseArray[phase], self.data.orderid);
+				self.requestRtcLog('1', 'requestHangUp success:' + res.message + '-' + data.phaseArray[phase], self.data.orderid);
 				if (res.status == 200) {
-					if (res.data && res.data.question && data.isClickHangUp) {
+					if (res.data && res.data.question && data.isClickHangUp && data.isInvite != 1) {
 						self.setData({
 							isEvaluate: true,
 							evaluateData: res.data
 						})
 					} else {
-						if (isBack == 'isBack') {
-							wx.navigateBack();
-						}
+						if (isBack == 'isBack') self._naviBack()
 					}
 				} else {
 					wx.showToast({
@@ -313,10 +344,10 @@ module.exports = Behavior({
 						duration: 1500
 					})
 				}
-			}).catch(err=>{
-                wx.hideLoading();
-                self._showModalTip({ title: '网络不给力', content: '请保持网络流畅' })
-            })
+			}).catch(err => {
+				wx.hideLoading();
+				self._showModalTip({ title: '网络不给力', content: '请保持网络流畅' })
+			})
 		},
 		//进入排队提示中
 		_showWaittingTips(msgTimeSeconds, msgTemplate) {
@@ -328,7 +359,7 @@ module.exports = Behavior({
 				}
 			})
 			clearInterval(self.data.timerWaitVideo);
-			self.data.timerWaitVideo = setInterval(function() {
+			self.data.timerWaitVideo = setInterval(function () {
 				if (self.data.phase != 2) {
 					clearInterval(self.data.timerWaitVideo);
 					return;
@@ -351,10 +382,10 @@ module.exports = Behavior({
 		_startVideoTimer() {
 			self.data.videoTimeStart = new Date().getTime();
 			console.log(self.data.videoTimeStart)
-            self.data.timerVideoChat = setInterval(() => {
+			self.data.timerVideoChat = setInterval(() => {
 				if (!self.data.videoTimeStart) {
-                    clearInterval(self.data.timerVideoChat);
-                    self.data.timerVideoChat = null;
+					clearInterval(self.data.timerVideoChat);
+					self.data.timerVideoChat = null;
 					return;
 				}
 				let vt = parseInt((new Date().getTime() - self.data.videoTimeStart) / 1000);
@@ -375,7 +406,7 @@ module.exports = Behavior({
 			wx.showModal({
 				title: '前往直播',
 				content: '评论需退出排队，跳转至全屏直播，确认跳转吗?',
-				success: function(res) {
+				success: function (res) {
 					if (res.confirm) {
 						self.aboutHangUpSomething('用户进入直播页')
 						let pageUrl = self.data.basePath + 'innerpages/video/video?' + self._getPublicRequestParams() +
@@ -390,20 +421,19 @@ module.exports = Behavior({
 			})
 		},
 		/** 检查用户授权 */
-		_checkAuthorize: function() {
+		_checkAuthorize: function () {
 			return new Promise((resolve, reject) => {
 				wx.authorize({
 					scope: "scope.record",
-					success: function() {
+					success: function () {
 						console.log('麦克风已授权')
 						wx.authorize({
 							scope: "scope.camera",
-							success: function() {
+							success: function () {
 								console.log('摄像头已授权')
-
 								resolve();
 							},
-							fail: function() {
+							fail: function () {
 								console.log('摄像头未授权')
 								self.setData({
 									isAuthBox: true
@@ -412,78 +442,130 @@ module.exports = Behavior({
 							}
 						})
 					},
-					fail: function() {
+					fail: function () {
 						console.log('麦克风未授权')
-                        wx.authorize({
-                            scope: "scope.camera",
-                            success: function () {
-                                console.log('摄像头已授权')
-                            },
-                            fail: function () {
-                                console.log('摄像头未授权')
-                                self.setData({
-                                    isAuthBox: true
-                                })
-                                reject();
-                            }
-                        })
+						wx.authorize({
+							scope: "scope.camera",
+							success: function () {
+								console.log('摄像头已授权')
+							},
+							fail: function () {
+								console.log('摄像头未授权')
+								self.setData({
+									isAuthBox: true
+								})
+								reject();
+							}
+						})
 						reject();
 					}
 				})
 			})
 		},
-
-		//点击授权按钮
-		bindAuthButton: function() {
-			wx.navigateBack()
+		_getLocation() {
+			wx.getLocation({
+				altitude: 'false',
+				highAccuracyExpireTime: 0,
+				isHighAccuracy: false,
+				type: 'gcj02',
+				success: (res) => {
+					apis.requestReportLocation(res.latitude, res.longitude)
+						// apis.requestReportLocation(44.102759, 88.067443)  // 联调测试用
+						.then(res => { }).catch(err => { })
+					self.requestRtcLog('1', '位置上报成功:' + JSON.stringify(res), '');
+				},
+				fail: (err) => {
+					apis.requestReportLocation(0, 0)
+						.then(res => { }).catch(err => { })
+					self.requestRtcLog('1', '位置未授权:' + JSON.stringify(err), self.data.orderid || '');
+				}
+			})
 		},
-        _onMemoryWarning(){
-            wx.onMemoryWarning(function (res) {
-                wx.showToast({
-                    title: '小程序内存不足',
-                    icon: 'none',
-                    duration: 1000
-                })
-                self.requestRtcLog('1', 'onMemoryWarning:内存告警:' + JSON.stringify(res),self.data.orderid)
-            })
-        },
-        _onNetworkStatusChange(){
-            wx.onNetworkStatusChange(function (res) {
-                self.requestRtcLog('1', 'networkStatusChange:' + JSON.stringify(res), self.data.orderid);
-                self._getNetWorkType();
-            })
-        },
-        _getNetWorkType(){
-            wx.getNetworkType({
-                success(res) {
-                    self.requestRtcLog(1, 'networkType: ' + JSON.stringify(res), self.data.orderid);
-                    if(res.networkType=='none'){
-                        // self.aboutHangUpSomething('网络已断开，连接超时')
-                        self._showModalTip({ title:'网络不给力', content:'请保持网络流畅'})
-                    }
-                }
-            })
-        },
+		//点击授权按钮
+		bindAuthButton: function () {
+			self._naviBack()
+		},
+		_onMemoryWarning() {
+			wx.onMemoryWarning(function (res) {
+				wx.showToast({
+					title: '小程序内存不足',
+					icon: 'none',
+					duration: 1000
+				})
+				self.requestRtcLog('1', 'onMemoryWarning:内存告警:' + JSON.stringify(res), self.data.orderid)
+			})
+		},
+		_onNetworkStatusChange() {
+			wx.onNetworkStatusChange(function (res) {
+				self.requestRtcLog('1', 'networkStatusChange:' + JSON.stringify(res), self.data.orderid);
+				self._getNetWorkType();
+			})
+		},
+		_getNetWorkType() {
+			wx.getNetworkType({
+				success(res) {
+					self.requestRtcLog(1, 'networkType: ' + JSON.stringify(res), self.data.orderid);
+					if (res.networkType == 'none') {
+						// self.aboutHangUpSomething('网络已断开，连接超时')
+						self._showModalTip({ title: '网络不给力', content: '请保持网络流畅' })
+					}
+				}
+			})
+		},
 		/** 上报日志 */
 		requestRtcLog(type, content, orderId) {
-		    hhDoctor.addLog(type, content, orderId);
-		    if ('life:detached' == content) {
-		        hhDoctor.refreshSession(500);
-		    }
+
+
+			hhDoctor.addLog(type, content, orderId);
+			if ('life:detached' == content) {
+				hhDoctor.refreshSession(500);
+			}
 		},
-        bindTrtcModalConfirm(){
-            self.stopAudio();
-        },
-        _showModalTip(data){
-            if(self.data.phase==3){
-                clearInterval(self.data.timerVideoChat);
-                self.data.timerVideoChat=null;
-            }
-            self.setData({
-                isShowModalTip:true,
-                modal: { title:data.title || '提示',content:data.content ,isExitWx:data.isExitWx}
-            })
-        }
-      
+		bindTrtcModalConfirm() {
+			self.stopAudio();
+
+		},
+		_showModalTip(data) {
+			if (self.data.phase == 3) {
+				clearInterval(self.data.timerVideoChat);
+				self.data.timerVideoChat = null;
+				self.trtcComponent.exitRoom();
+			}
+			if ('undefined' == typeof data.isExitWx) {
+				data.isExitWx = getApp().isOnlyOnePage()
+			}
+			self.setData({
+				isShowModalTip: true,
+				modal: { title: data.title || '提示', content: data.content, isExitWx: data.isExitWx }
+			})
+		},
+		showToast(title, isBack) {
+			self.setData({
+				isShowToast: true,
+				toastTitle: title
+			})
+			setTimeout(res => {
+				self.setData({
+					isShowToast: false,
+				})
+				if (isBack != 'noBack') self._naviBack()
+
+			}, 3000)
+		},
+		_naviBack() {
+			//如果页面栈中有多个页面，正常返回
+			if (!getApp().isOnlyOnePage()) {
+				wx.navigateBack()
+				return
+			}
+			//如果只有1个页面（即当前页面），显示模态框提示用户，并退出小程序
+			wx.hideLoading()
+			wx.hideToast()
+			self._showModalTip({ title: '提示', content: '即将退出小程序', isExitWx: true })
+		},
+		_closeEvaluate(){
+			self.setData({isEvaluate:false})
+			self._naviBack()
+		},
 	}
 })

@@ -19,6 +19,13 @@ Component({
    */
   properties: {
     orderid: String,
+    order:Object,
+    inviteRole:Number,
+    isInviteBReject:Boolean,
+    isAUserLeaveRoom:Boolean,
+    isBUserLeaveRoom:Boolean,
+    phase:Number,
+    doctor:Object,
     // 必要的初始化参数
     config: {
       type: Object,
@@ -37,6 +44,7 @@ Component({
         })
       },
     },
+
   },
 
   /**
@@ -94,7 +102,9 @@ Component({
       { value: 'cerisered', label: '樱红' },
     ],
     audioReverbType: 0,
-    audioReverbTypeArray: ['关闭', 'KTV', '小房间', '大会堂', '低沉', '洪亮', '金属声', '磁性']
+    audioReverbTypeArray: ['关闭', 'KTV', '小房间', '大会堂', '低沉', '洪亮', '金属声', '磁性'],
+    patient:null,
+
 },
   /**
    * 生命周期方法
@@ -114,6 +124,10 @@ Component({
     attached: function() {
       // 在组件实例进入页面节点树时执行
       console.log(TAG_NAME, 'attached')
+      this.setData({
+        patient:wx.getStorageSync('patient')
+      })
+
       this._init()
       MTA.Page.stat()
     },
@@ -137,30 +151,33 @@ Component({
   pageLifetimes: {
     show: function() {
       // 组件所在的页面被展示时执行
+
       console.log(TAG_NAME, 'show status:', this.status)
       console.log(this.status);
       console.log(this.status.pageLife)
       console.log(this.status.isOnHideAddStream)
       console.log(this.data.streamList)
+      self.requestRtcLog('1', 'this.status.pageLife'+this.status.pageLife);
+
       if (this.status.isPending) {
-        // 经历了 5000 挂起事件
-        this.status.isPending = false
-        // 修复iOS 最小化触发5000事件后，音频推流失败的问题
-        self.requestRtcLog('2', '修复iOS 最小化触发5000事件-音频推流失败的问题')
-        // if (ENV.IS_IOS && this.data.pusher.enableMic) {
-        //   this.unpublishLocalAudio().then(()=>{
-        //     this.publishLocalAudio()
-        //   })
-        // }
-        // 经历了 5001 浮窗关闭事件，小程序底层会自动退房，恢复小程序时组件需要重新进房
-        // 重新进房
-        this.enterRoom({ roomID: this.data.config.roomID }).then(()=>{
-          // 进房后开始推送视频或音频
-          // setTimeout(()=>{
-          //   this.publishLocalVideo()
-          //   this.publishLocalAudio()
-          // }, 2000)
-        })
+          // 经历了 5000 挂起事件
+          this.status.isPending = false
+          // 修复iOS 最小化触发5000事件后，音频推流失败的问题
+          self.requestRtcLog('2', '修复iOS 最小化触发5000事件-音频推流失败的问题')
+          if (ENV.IS_IOS && this.data.pusher.enableMic) {
+            // this.unpublishLocalAudio().then(()=>{
+            //   this.publishLocalAudio()
+            // })
+          }
+          // 经历了 5001 浮窗关闭事件，小程序底层会自动退房，恢复小程序时组件需要重新进房
+          // 重新进房
+          this.enterRoom({ roomID: this.data.config.roomID }).then(()=>{
+            // 进房后开始推送视频或音频
+            // setTimeout(()=>{
+            //   this.publishLocalVideo()
+            //   this.publishLocalAudio()
+            // }, 2000)
+          })
       } else if (ENV.IS_ANDROID && this.status.pageLife === 'hide' && this.status.isOnHideAddStream && this.data.streamList.length > 0) {
         // 微信没有提供明确的最小化事件，onHide事件，不一定是最小化
         // 获取所有的player 清空 src 重新赋值 验证无效
@@ -320,12 +337,20 @@ Component({
             this.data.pusher.getPusherContext().start()
               self.requestRtcLog('2', 'TRTC-start', self.data.orderid)
 
-            this.status.isPush = true
+            this.status.isPush = true;
+            //自己加的
+          if (this.data.pusher.enableMic) {
+            this.unpublishLocalAudio().then(()=>{
+              this.publishLocalAudio()
+            })
+          }
             resolve()
           })
         }).catch((res)=> {
           // 进房失败需要通过 pusher state 事件通知，目前还没有准确的事件通知
           console.error(TAG_NAME, 'enterRoom error', res)
+          self.requestRtcLog('2', 'TRTC-fail'+JSON.stringify(res), self.data.orderid)
+
           reject(res)
         })
         // 初始化 IM SDK
@@ -370,10 +395,26 @@ Component({
      * 开启摄像头
      * @returns {Promise}
      */
+
+
+    startPreview(){
+      this.data.pusher.autopush = false;
+      this.data.pusher.getPusherContext().startPreview();
+      this.setData({
+        pusher:this.data.pusher
+      })
+    }, 
+    stopPreview(){
+      this.data.pusher.autopush = true;
+      this.data.pusher.getPusherContext().stopPreview();
+      this.setData({
+        pusher:this.data.pusher
+      })
+    },
     publishLocalVideo() {
       // 设置 pusher enableCamera
       console.log(TAG_NAME, 'publishLocalVideo 开启摄像头')
-        self.requestRtcLog('2', 'TRTC-publishLocalVideo 开启摄像头', self.data.orderid)
+      self.requestRtcLog('2', 'TRTC-publishLocalVideo 开启摄像头', self.data.orderid)
       return this._setPusherConfig({ enableCamera: true })
     },
     /**
@@ -414,7 +455,7 @@ Component({
      */
     subscribeRemoteVideo(params) {
       console.log(TAG_NAME, 'subscribeRemoteVideo', params)
-        self.requestRtcLog('2', 'TRTC-subscribeRemoteVideo 订阅远端视频', self.data.orderid)
+        self.requestRtcLog('3', 'TRTC-subscribeRemoteVideo 订阅远端视频', self.data.orderid)
       // 设置指定 user streamType 的 muteVideo 为 false
       const config = {
         muteVideo: false,
@@ -453,7 +494,7 @@ Component({
      */
     unsubscribeRemoteVideo(params) {
       console.log(TAG_NAME, 'unsubscribeRemoteVideo', params)
-        self.requestRtcLog('2', 'TRTC-unsubscribeRemoteVideo 取消订阅远端视频', self.data.orderid)
+        self.requestRtcLog('3', 'TRTC-unsubscribeRemoteVideo 取消订阅远端视频', self.data.orderid)
       const stream = this.userController.getStream({
         userID: params.userID,
         streamType: params.streamType,
@@ -475,7 +516,7 @@ Component({
      */
     subscribeRemoteAudio(params) {
       console.log(TAG_NAME, 'subscribeRemoteAudio', params)
-        self.requestRtcLog('2', 'TRTC-subscribeRemoteAudio 订阅远端音频', self.data.orderid)
+        self.requestRtcLog('3', 'TRTC-subscribeRemoteAudio 订阅远端音频', self.data.orderid)
       return this._setPlayerConfig({
         userID: params.userID,
         streamType: 'main',
@@ -491,7 +532,7 @@ Component({
      */
     unsubscribeRemoteAudio(params) {
       console.log(TAG_NAME, 'unsubscribeRemoteAudio', params)
-        self.requestRtcLog('2', 'TRTC-unsubscribeRemoteAudio 取消订阅远端音频', self.data.orderid)
+        self.requestRtcLog('3', 'TRTC-unsubscribeRemoteAudio 取消订阅远端音频', self.data.orderid)
       return this._setPlayerConfig({
         userID: params.userID,
         streamType: 'main',
@@ -529,7 +570,7 @@ Component({
       this.data.pusher.getPusherContext().switchCamera({
 			success(){
 				wx.showToast({
-                    title: self.data.cameraPosition=='front'?'已为您切换至前置摄像头':'已为您切换至后置摄像头',
+          title: self.data.cameraPosition=='front'?'已为您切换至前置摄像头':'已为您切换至后置摄像头',
 					icon:'none',
 					mask:true,
 					duration:800
@@ -1051,6 +1092,8 @@ Component({
             // console.log(TAG_NAME, '_setPlayerConfig complete', params, 'streamList:', this.data.streamList)
             resolve(params)
           })
+          console.log('visibleStreamList',self.data.visibleStreamList)
+
         } else {
           // 不需要reject，静默处理
           console.warn(TAG_NAME, '指定 userID 或者 streamType 不存在')
@@ -1147,6 +1190,7 @@ Component({
             // 字符串房间号
             roomID = '&strroomid=' + rtcConfig.roomID
           }
+
           setTimeout(()=> {
             const pushUrl = 'room://cloud.tencent.com/rtc?sdkappid=' + rtcConfig.sdkAppID +
                             roomID +
@@ -1375,7 +1419,7 @@ Component({
         }).then(() => {
           stream.playerContext = wx.createLivePlayerContext(stream.streamID, this)
           // 新增的需要触发一次play 默认属性才能生效
-          // stream.playerContext.play()
+          stream.playerContext.play()
           // console.log(TAG_NAME, 'REMOTE_AUDIO_ADD playerContext.play()', stream)
           this._emitter.emit(EVENT.REMOTE_AUDIO_ADD, { userID: stream.userID, streamType: stream.streamType })
         })
@@ -1980,6 +2024,19 @@ Component({
       } else {
         this.publishLocalAudio()
       }
+    },
+    allUnRemoteAudio(){
+      let visibleStreamList = this.data.visibleStreamList;
+      console.log('visibleStreamList',visibleStreamList)
+      visibleStreamList.map((item,index)=>{
+        this.unsubscribeRemoteAudio({userID:item.userID})
+      })
+    },
+    allRemoteAudio(){
+      let visibleStreamList = this.data.visibleStreamList;
+      visibleStreamList.map((item,index)=>{
+        this.subscribeRemoteAudio({userID:item.userID})
+      })
     },
     _debugToggleRemoteVideo(event) {
       console.log(TAG_NAME, '_debugToggleRemoteVideo', event.currentTarget.dataset)

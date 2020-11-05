@@ -1,0 +1,522 @@
+<!-- 各类型消息模版 -->
+<!-- 1.文本消息模版 -->
+<wxs src="../wxs/common.wxs" module="common" />
+<template name='msgText'>
+  <view class='msg-row {{"c"==from?"user":""}}' id='msg{{time}}'>
+    <view class='msg-img'>
+      <image class='img-head'
+        src='{{("d"==from&&asst.photo)?asst.photo:head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70'>
+      </image>
+    </view>
+    <view class='msg-body {{"c"==from?"user":""}}'>
+      <block wx:if='{{"c"!=from}}'>
+        <view class='msg-name'>{{asst.name?asst.name:name}}</view>
+      </block>
+      <view class='msg-content-main {{"c"==from?"user":""}}'>
+        <!-- <view class='msg {{"c"==from?"user":""}} text'>{{text}}</view> -->
+        <view class='msg {{"c"==from?"user":""}} text' wx:if='{{!common.getCheckUrl(text)}}'>
+          <text>{{text}}</text>
+        </view>
+        <navigator wx:else hover-class="none" class='msg {{"c"==from?"user":""}} text'
+          url='{{basePath}}innerpages/view/view?url={{common.encode(common.getTextUrl(text).url+"userToken="+userToken+"&sdkProductId="+sdkProductId)}}'>
+          <text wx:for='{{common.getTextUrl(text).textArr}}' style='color:{{item=="点此前往"?"#0592f5":"#666"}}'
+            wx:key='index'>{{item}}</text>
+        </navigator>
+      </view>
+    </view>
+  </view>
+</template>
+
+<!-- 2.图片消息模版 -->
+<template name='msgImg'>
+  <view class='msg-row {{"c"==from?"user":""}}' id='msg{{time}}'>
+    <view class='msg-img'>
+      <image class='img-head'
+        src='{{("d"==from&&asst.photo)?asst.photo:head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70'>
+      </image>
+    </view>
+    <view class='msg-body {{"c"==from?"user":""}}'>
+      <block wx:if='{{"c"!=from}}'>
+        <view class='msg-name'>{{asst.name?asst.name:name}}</view>
+      </block>
+      <view class='msg-content-main {{"c"==from?"user":""}}' catchtap='_previewImg' data-url='{{url}}'>
+        <image class='msg image' mode='widthFix' src='{{thumbnail}}'></image>
+      </view>
+    </view>
+  </view>
+</template>
+
+<!-- 3.音频消息模版 -->
+<template name='msgAudio'>
+  <view class='msg-row {{"c"==from?"user":""}}' id='msg{{time}}'>
+    <view class='msg-img'>
+      <image class='img-head'
+        src='{{("d"==from&&asst.photo)?asst.photo:head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70'>
+      </image>
+
+    </view>
+    <view class='msg-body {{"c"==from?"user":""}}'>
+      <block wx:if='{{"c"!=from}}'>
+        <view class='msg-name'>{{asst.name?asst.name:name}}</view>
+      </block>
+      <view class='msg-content-main {{"c"==from?"user":""}}'>
+        <view class='msg {{"c"==from?"user":""}} audio' catchtap='_playAudio' data-url='{{url}}' data-id='msg{{time}}'
+          data-dur='{{dur}}'>
+          <view class='sound-icon {{"c"==from?"user":""}} arc1 {{"c"==from?"user":""}}'></view>
+          <view class='sound-icon {{"c"==from?"user":""}} arc2 {{"c"==from?"user":""}}'></view>
+          <view class='sound-icon {{"c"==from?"user":""}} arc3 {{"c"==from?"user":""}}'></view>
+        </view>
+        <view class='sound-length {{"c"==from?"user":""}}'>{{durText}}"</view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<!-- 4.视频咨询总结卡片消息模版 -->
+<template name='msgCardSummary'>
+  <view class='msg-row' id='msg{{time}}'>
+    <view class='msg-img'>
+      <image class='img-head' src='{{head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70'>
+      </image>
+    </view>
+    <view class='msg-body card'>
+      <view class='msg-name'>{{name}}</view>
+      <view class='msg-content-main'>
+        <view class='msg card' catchtap='_viewSummary' data-mrid="{{bodyContent.medicRecordId}}"
+          data-patient="{{patient}}">
+          <view class='msg-card-head'>{{title?title:'家庭医生视频咨询总结'}}</view>
+          <view class='msg-card-body summary'>
+            <view class='summary-row'>
+              <view class='summary name'>咨询人</view>
+              <view class='summary value'>{{bodyContent.name}}</view>
+            </view>
+            <view class='summary-row'>
+              <view class='summary name'>咨询时间</view>
+              <view class='summary value'>{{timeText}}</view>
+            </view>
+          </view>
+          <view class='msg-card-foot' data-mrid='{{bodyContent.medicRecordId}}' data-patient='{{patient}}'>
+            <view class='show-more'>
+              <view class='show-more-text'></view>
+              <view class='show-more-arraw'></view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<!-- 5.用药指导卡片模版 -->
+<template name='msgCardMed'>
+  <view class='msg-row' id='msg{{time}}'>
+    <view class='msg-img'>
+      <image class='img-head' src='{{head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70'>
+      </image>
+    </view>
+    <view class='msg-body card'>
+      <view class='msg-name'>{{name}}</view>
+      <view class='msg-content-main'>
+        <view class='msg card'>
+          <view class='msg-card-head'>{{title?title:bodyContent.name+'用药建议'}}</view>
+          <view class='msg-card-body medicine'>
+            <block wx:for='{{bodyContent.medicationList}}' wx:for-item='medicine' wx:key='name'>
+              <view class='medicine-row'>
+                <view class='medicine'>
+                  <view class='medicine-name'>{{medicine.name}}</view>
+                  <view class='medicine-count'>{{medicine.count}}</view>
+                </view>
+                <view class='medicine-remark'>{{medicine.remark}}</view>
+              </view>
+            </block>
+          </view>
+          <view class='msg-card-foot' wx:if='{{bodyContent.trans}}' catchtap='_buyMedicine'
+            data-id='{{id}}'
+            data-medic-record-id='{{body.medicRecordId?body.medicRecordId:""}}'
+            data-source='{{bodyContent.source?bodyContent.source:""}}'
+            data-patient-uuid='{{body.patientUuid?body.patientUuid:""}}'
+            data-drugid='{{bodyContent.drugOrderId}}' 
+            data-trans='{{bodyContent.trans}}'
+            data-carturl='{{bodyContent.cartUrl?bodyContent.cartUrl:""}}'>
+            <view class='show-more'>
+              <view class='show-more-btn {{bodyContent.trans?"":"disabled"}}'
+                style='{{bodyContent.trans?btnStyle:""}};'>{{bodyContent.trans?bodyContent.buttonName:'本单不支持配送'}}</view>
+            </view>
+          </view>
+          <view class='msg-disclaimer {{bodyContent.tipsClass}}'>{{bodyContent.tips}}
+          </view>
+
+        </view>
+
+      </view>
+    </view>
+  </view>
+</template>
+
+<!-- 6.视频卡片消息模版 -->
+<template name='msgCardVideoAdv'>
+  <view class='msg-row' id='msg{{time}}'>
+    <view class='msg-img'>
+      <image class='img-head' src='{{head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70'>
+      </image>
+    </view>
+    <view class='msg-body card'>
+      <view class='msg-name'>{{name}}</view>
+      <view class='msg-content-main'>
+        <view class='msg card'>
+          <view class='msg-card-head'>{{title?title:bodyContent.title}}</view>
+          <view class='msg-card-body videoAdv'>
+            <video src='{{bodyContent.content}}' poster='{{bodyContent.thumb}}'></video>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<!-- 7.购买套餐卡片模版 -->
+<template name='msgCardBuy'>
+  <view class='msg-row' id='msg{{time}}'>
+    <view class='msg-img'>
+      <image class='img-head' src='{{head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70'
+        wx:if='{{head}}'></image>
+      <image class='img-head' src='../images/avatar.png' wx:else> </image>
+    </view>
+    <view class='msg-body card'>
+      <view class='msg-name'>{{name}}</view>
+      <view class='msg-content-main' catchtap='_buyProduct' data-price='{{bodyContent.price}}'
+        data-pid='{{bodyContent.productId}}'>
+        <view class='msg card'>
+          <view class='msg-card-head'>{{title?title:'和缓会员'}}</view>
+          <view class='msg-card-body summary'>
+            <block wx:for='{{bodyContent.services}}' wx:for-item='sevice' wx:key='index'>
+              <view class='summary-row'>{{sevice}}</view>
+            </block>
+          </view>
+          <view class='msg-card-foot'>
+            <view class='show-more'>
+              <view class='show-more-text custom'>{{bodyContent.price}}</view>
+              <view class='show-more-arraw'></view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<!-- 8.会员开通成功卡片 -->
+<template name='msgCardServiceTip'>
+  <view class='msg-row' id='msg{{time}}'>
+    <view class='msg-img'>
+      <image class='img-head' src='{{head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70'
+        wx:if='{{head}}'></image>
+      <image class='img-head' src='../images/avatar.png' wx:else> </image>
+    </view>
+    <view class='msg-body card'>
+      <view class='msg-name'>{{name}}</view>
+      <view class='msg-content-main'>
+        <!-- 会员开通成功的卡片内容 -->
+        <block wx:if='{{bodyContent.content&&!bodyContent.productRightsList}}'>
+          <view class='msg card' catchtap='_viewMoreRightList' data-url="{{bodyContent.forwardUrl}}" >
+            <view class='msg-card-head'>会员开通成功</view>
+            <view class='msg-card-body summary'>
+              <block wx:for='{{bodyContent.content}}' wx:for-item='tip' wx:key='id'>
+                <view class='summary-row tip'>{{tip}}</view>
+              </block>
+            </view>
+            <view class='msg-card-foot' catchtap=''>
+              <view class='show-more'>
+                <view class='show-more-text custom'>{{bodyContent.expireTips}}</view>
+                <view class='show-more-text-right'></view>
+                <view class='show-more-arraw'></view>
+              </view>
+            </view>
+          </view>
+        </block>
+       
+
+        <!-- 会员权益类的卡片 -->
+        <block wx:if='{{bodyContent.productRightsList}}'>
+          <view class='msg card' catchtap='_viewMoreRightList' data-url="{{bodyContent.forwardUrl}}" >
+            <view class='msg-card-head'>{{title?title:'开通成功'}}</view>
+            <view class='msg-card-body summary'>
+              <view class='equity-body'>
+                <view class='equity-title'>会员权益</view>
+                <view class='equity-list'>
+                  <view class='equity-item' wx:for='{{bodyContent.productRightsList}}' wx:key='index'>
+                    <image src='{{item.icon}}' class='equity-icon'></image>  
+                    <text>{{item.title}}</text>
+                  </view>
+                </view>
+              </view>
+            </view>
+            <view class='msg-card-foot' >
+              <view class='show-more'>
+                <view class='show-more-text'></view>
+                <view class='show-more-arraw'></view>
+              </view>
+            </view>
+         </view>
+        </block>
+      </view>
+    </view>
+  </view>
+</template>
+
+<!-- 9.专家视频预约时间卡片消息模版 -->
+<template name='msgCardExpert'>
+  <view class='msg-row' id='msg{{time}}'>
+    <view class='msg-img'>
+      <image class='img-head' src='{{head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70'>
+      </image>
+    </view>
+    <view class='msg-body card'>
+      <view class='msg-name'>{{name}}</view>
+      <view class='msg-content-main'>
+        <view class='msg card'>
+          <view class='msg-card-head'>{{title?title:'预约视频咨询成功'}}</view>
+          <view class='msg-card-body'>
+            <view class='summary-row'>
+              <view class='summary name'>预约时间</view>
+              <view class='summary value'>{{bodyContent.timeText}}</view>
+            </view>
+            <view class='summary-row'>
+              <view class='summary name'>专家姓名</view>
+              <view class='summary value'>{{bodyContent.doctor.name}}</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<!-- 10.心理咨询卡片(申请、评价) -->
+<template name='msgCardPsychol'>
+  <view class='msg-row' id='msg{{time}}'>
+    <view class='msg-img'>
+      <image class='img-head' src='{{head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70'>
+      </image>
+    </view>
+    <view class='msg-body card'>
+      <view class='msg-name'>{{name}}</view>
+      <view class='msg-content-main'>
+        <view class='msg card' catchtap='_tapViewUrl' data-url="{{bodyContent.url}}">
+          <view class='msg-card-head'>{{'psycholForm'==bodyContent.command?'心理咨询申请':'心理咨询评价'}}</view>
+          <view class='msg-card-body summary'>
+            <view class='summary-row'>
+              <view class='summary name'>咨询人</view>
+              <view class='summary value'>{{bodyContent.userName}}</view>
+            </view>
+            <view class='summary-row'>
+              <view class='summary name'>咨询师</view>
+              <view class='summary value'>
+                {{'psycholForm'==bodyContent.command?bodyContent.expertName:bodyContent.doctor.name}}</view>
+            </view>
+          </view>
+          <view class='msg-card-foot'>
+            <view class='show-more'>
+              <view class='show-more-default'>{{'psycholForm'==bodyContent.command?'立即申请':'评价'}}</view>
+              <view class='show-more-arraw'></view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+
+<!-- 11.普通图片tip -->
+<template name='msgCardTips'>
+  <view class='msg-row' id='msg{{time}}'>
+    <view class='msg-img'>
+      <image class='img-head' src='{{head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70'>
+      </image>
+    </view>
+    <view class='msg-body card'>
+      <view class='msg-name'>{{name}}</view>
+      <view class='msg-content-main'>
+        <view class='msg card' catchtap='_tapViewUrl' data-url="{{bodyContent.url}}">
+          <view class='msg-card-head'>{{bodyContent.title}}</view>
+          <view class='msg-card-body image'>
+            <image src="{{bodyContent.imageUrl}}" mode='widthFix' style="width:100%;"></image>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+
+<!-- 12.推荐专家卡片 -->
+<template name='msgCardRecommentDoctor'>
+  <view class='msg-row' id='msg{{time}}'>
+    <view class='msg-img'>
+      <image class='img-head' src='{{head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70'>
+      </image>
+    </view>
+    <view class='msg-body card'>
+      <view class='msg-name'>{{name}}</view>
+      <view class='msg-content-main'>
+        <view class='msg card' catchtap='_tapViewDoctorInfo' data-doctor-id="{{bodyContent.doctor.doctorid}}">
+          <view class='msg-card-head'>专家介绍</view>
+          <view class='msg-card-body summary'>
+            <view class="expert-wrap">
+              <image class="expert-image" src="{{bodyContent.doctor.photourl}}" mode="aspectFill"></image>
+              <view class="expert-info-wrap">
+                <view class="expert-name">{{bodyContent.doctor.name}}</view>
+                <view class="expert-info">{{bodyContent.doctor.department}} {{bodyContent.doctor.title}}</view>
+                <view class="expert-title">{{bodyContent.doctor.hospital}}</view>
+              </view>
+            </view>
+          </view>
+          <view class='msg-card-foot'>
+            <view class='show-more'>
+              <view class='show-more-text'></view>
+              <view class='show-more-arraw'></view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+
+
+<!-- 13.挂号服务 -->
+<template name='haoForm'>
+  <view class='msg-row' id='msg{{time}}'>
+    <view class='msg-img'>
+      <image class='img-head' src='{{head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70'>
+      </image>
+    </view>
+    <view class='msg-body card'>
+      <view class='msg-name'>{{name}}</view>
+      <view class='msg-content-main'>
+        <view class='msg card' catchtap='_tapViewUrl' data-url="{{bodyContent.forwardUrl}}" >
+          <view class='msg-card-head'>{{title?title:'挂号服务'}}</view>
+          <view class='msg-card-body summary'>
+            <view class='summary-row'>
+              <view class='summary name'>患者姓名</view>
+              <view class='summary value'>{{bodyContent.name}}</view>
+            </view>
+            <view class='summary-row'>
+              <view class='summary name'>服务提供</view>
+              <view class='summary value'>{{bodyContent.factory}}</view>
+            </view>
+          </view>
+          <view class='msg-card-foot' >
+            <view class='show-more'>
+              <view class='show-more-text'></view>
+              <view class='show-more-arraw'></view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<!-- 14.护理报告 -->
+<template name='nurseReport'>
+  <view class='msg-row' id='msg{{time}}'>
+    <view class='msg-img'>
+      <image class='img-head' src='{{head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70'>
+      </image>
+    </view>
+    <view class='msg-body card'>
+      <view class='msg-name'>{{name}}</view>
+      <view class='msg-content-main'>
+        <view class='msg card' catchtap='_viewOriginUrl' data-url="{{bodyContent.forwardUrl}}" >
+          <view class='msg-card-head'>{{title?title:'护理报告'}}</view>
+          <view class='msg-card-body summary'>
+            <view class='summary-row'>
+              <view class='summary name'>患者姓名</view>
+              <view class='summary value'>{{bodyContent.name}}</view>
+            </view>
+            <view class='summary-row'>
+              <view class='summary name'>服务提供</view>
+              <view class='summary value'>{{bodyContent.factory}}</view>
+            </view>
+          </view>
+          <view class='msg-card-foot' >
+            <view class='show-more'>
+              <view class='show-more-text'></view>
+              <view class='show-more-arraw'></view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<!-- 15.护理详情 -->
+<template name='nurseDetail'>
+  <view class='msg-row' id='msg{{time}}'>
+    <view class='msg-img'>
+      <image class='img-head' src='{{head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70'>
+      </image>
+    </view>
+    <view class='msg-body card'>
+      <view class='msg-name'>{{name}}</view>
+      <view class='msg-content-main'>
+        <view class='msg card' catchtap='_viewOriginUrl' data-url="{{bodyContent.forwardUrl}}" >
+          <view class='msg-card-head'>{{title?title:'护理服务'}}</view>
+          <view class='msg-card-body summary'>
+            <view class='summary-row'>
+              <view class='summary name'>患者姓名</view>
+              <view class='summary value'>{{bodyContent.name}}</view>
+            </view>
+            <view class='summary-row'>
+              <view class='summary name'>服务提供</view>
+              <view class='summary value'>{{bodyContent.factory}}</view>
+            </view>
+          </view>
+          <view class='msg-card-foot' >
+            <view class='show-more'>
+              <view class='show-more-text'></view>
+              <view class='show-more-arraw'></view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+<!-- <template name='equity'>
+  <view class='msg-row' id='msg{{time}}'>
+    <view class='msg-img'>
+      <image class='img-head' src='{{head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70'>
+      </image>
+    </view>
+    <view class='msg-body card'>
+      <view class='msg-name'>{{name}}</view>
+      <view class='msg-content-main'>
+        <view class='msg card' catchtap='_tapViewUrl' data-url="{{bodyContent.forwardUrl}}" >
+          <view class='msg-card-head'>{{title?title:'开通成功'}}</view>
+          <view class='msg-card-body summary'>
+            <view class='equity-body'>
+              <view class='equity-title'>会员权益</view>
+              <view class='equity-list'>
+                <view class='equity-item' wx:for='{{7}}'>
+                  <image src='https://imgs.hh-medic.com/icon/wmp/icon-right-01.png' class='equity-icon'></image>  
+                  <text>视频医生</text>
+                </view>
+              </view>
+            </view>
+          </view>
+          <view class='msg-card-foot' >
+            <view class='show-more'>
+              <view class='show-more-text'></view>
+              <view class='show-more-arraw'></view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template> -->

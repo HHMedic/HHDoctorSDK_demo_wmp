@@ -100,7 +100,7 @@ module.exports = Behavior({
     app = getApp();
   },
   methods: {
-      
+
     propertyChanged(newVal, oldVal, changedPath) {
       if (!newVal) {
         return;
@@ -182,6 +182,7 @@ module.exports = Behavior({
       //this._logInfo('当前组件:' + this.data._name);
       switch (this.data._name) {
         case 'hh-im':
+        case 'hh-top':
         case 'hh-head':
         case 'hh-ehr':
         case 'hh-personal':
@@ -194,7 +195,7 @@ module.exports = Behavior({
 
           break;
         case 'hh-rtc':
-		  case 'hh-trtc':
+		    case 'hh-trtc':
         case 'hh-call':
           if (!this.data._request.dept &&
             (this.data._request.appointedDoctorId || this.data._request.appointedOrderId) &&
@@ -394,6 +395,15 @@ module.exports = Behavior({
         '&_=' + new Date().getTime();
       this._viewUrl(url);
     },
+    //查看更多权益
+    _viewMoreRightList(){
+      let host = this.data._host.secHost;
+      let url = host+'hhmy/quanyi/quanyi.html?'+
+      'UserToken=' + this.data._request.userToken 
+      console.log(url)
+      this._viewUrl(url)
+
+    },
 
     _viewAddressList() {
       if (this._isUnReg(true)) return;
@@ -547,12 +557,14 @@ module.exports = Behavior({
     },
 
     _viewUrl(url) {
+      console.log(this.data.basePath)
       url = this._appendUrlParams(url);
       var pageUrl = this.data.basePath + 'innerpages/view/view?url=' + encodeURIComponent(url);
       wx.navigateTo({
         url: pageUrl
       })
     },
+
 
     _buyProduct(productId) {
       if (!this.data._request.payPage) {
@@ -564,17 +576,19 @@ module.exports = Behavior({
       })
     },
 
-    _viewActiveCode() {
+    _viewActiveCode(e) {
       if (this._isUnReg(true)) return;
-
+      console.log('>>> _viewActiveCode:', e)
+      let msg = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.msg || ''
       let param = 'sdkProductId=' + this.data._request.sdkProductId +
         '&userToken=' + this.data._request.userToken +
         '&openId=' + this.data._request.openId +
         '&profileName=' + this.data._request.profileName +
         '&subDomain=' + this.data._request.subDomain +
         '&source=wmpSdk' +
-        '&version=' + this.data._sdkVersion;
-        let pageUrl = this.data.basePath + 'innerpages/invitationcode/invitationcode?' + param;
+        '&version=' + this.data._sdkVersion +
+        '&activeCodeMsg=' + msg;
+      let pageUrl = this.data.basePath + 'innerpages/invitationcode/invitationcode?' + param;
       wx.navigateTo({
         url: pageUrl
       })
@@ -618,5 +632,11 @@ module.exports = Behavior({
       }
       return url;
     },
+    _clearIntervalHandler(handler) {
+      if (handler) {
+        clearInterval(handler);
+        handler = null;
+      }
+    }
   }
 })

@@ -224,8 +224,8 @@ Component({
     bindChangeDoctor() {
       if (getApp()._throttle('e-changedoctor')) return;
       let _options =hhDoctor.getOptions();
-      if (!_options || !_options.callPage) return
-      if (!getApp().globalData._hhSdkOptions || !getApp().globalData._hhSdkOptions._callPage) return
+      if (!_options || !_options.callPage) return;
+      // if (!getApp().globalData._hhSdkOptions || !getApp().globalData._hhSdkOptions._callPage) return
       wx.showLoading({ mask: true });
       apis.requestChangeDoctor(self.data.famOrderId).then(res => {
         wx.hideLoading();
@@ -250,7 +250,7 @@ Component({
     },
     //2.关闭评价
     bindCloseEvalate() {
-      wx.navigateBack();
+      this.triggerEvent('closeevalate', {}, {})
     },
 
 

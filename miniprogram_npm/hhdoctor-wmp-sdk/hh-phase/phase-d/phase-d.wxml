@@ -18,7 +18,7 @@
                 </view>
             </view>
             <!-- 更换医生按钮 -->
-            <view class="change-doctor" catchtap="bindIndexChangeDoctor" wx:if='{{_request.dept[0]!="F"}}'>
+            <view class="change-doctor" catchtap="bindIndexChangeDoctor" wx:if='{{_request.dept[0]!="F"&&_request.isInvite!=1}}'>
                 <image src="{{icons.change_doctor}}" class="change-doctor-img"></image>
             </view>
             <!-- 上传的照片 -->
@@ -39,7 +39,6 @@
                 </view>
                 <view class="bottom-item">
                     <button class='bottom-image' catchtap='bindChangeCamera' style='background-image:url({{icons.switch_camera}});' id='d-switch_camera'></button>
-
                 </view>
             </view>
         </view>
@@ -50,7 +49,7 @@
             <image bindload="bindImagesLoad" src="{{uploadImages[photoIdx]+'?x-oss-process=image/resize,m_fixed,w_750'}}" class="preview-img" mode='widthFix' style='width:{{setWidth}};height:{{setHeight}};'></image>
         </view>
         <!-- 执业医师资格证书预览模式 -->
-        <view class='cover-preview' hidden='{{!isCertificate}}' bindtap='_bindPreviewCertificate'>
+        <view class='cover-preview' hidden='{{!isCertificate}}' bindtap='_bindPreviewCertificate' >
             <image src='{{doctor.license}}' class='preview-img' mode='widthFix'></image>
         </view>
         <!-- 拍照弹窗 -->

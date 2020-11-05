@@ -1,97 +1,35 @@
 <wxs src="../wxs/common.wxs" module="common" />
-<view class='main-container' style='padding-top:{{sysInfo.statusBarHeight}}px' bindtap='_hideBtn'>
-	<!-- 顶部按纽 -->
-	<view class='btn-panel' style='height:{{msgPanelTop}}px;'>
-		<view class='topbtn-panel' style='background-color:{{navigationBar.bColor}};height:{{wxMbb.top+38}}px' wx:if='{{"custom"==navStyle}}'>
-      <view class='top-btns' style='top:{{wxMbb.top}}px;'>
-        <view class='top-btns-inner'>
-            <block wx:if='{{_request.naviToAppIconVisible}}'>
-            <view class='topbtn-naviback  {{personalIconLight}}' catchtap='_naviToApp' >
-              <button class="topbtn-navitoapp" open-type="launchApp" wx:if='{{sceneNum == 1069}}'></button>
-            </view>
-          </block>
-          <block wx:if='{{_request.personalIconVisible}}'>
-              <view class='topbtn-personal  {{personalIconLight}}' catchtap='_viewPers' ></view>
-          </block>
-        </view>
-      </view>
+<import src="./cards.wxml" />
 
-		<view class='topbtn-title' style='color:{{navigationBar.fColor}};top:{{wxMbb.top+4}}px;'>{{navigationBar.text}}</view>
-		</view>
-		<block wx:if='{{_request.callPage && _request.callBtnVisible}}'>
-			<view class='mainbtn-panel'>
-				<view class='btn-main' catchtap='_showHideBtn' style='{{customStyle.mainBtn?customStyle.mainBtn:""}}'>
-					<text>呼叫医生</text>
-				</view>
-			</view>
-		</block>
-	</view>
-	<view wx:if='{{disConnected}}' class='disconnect-info' style='top:{{wxMbb.top+95}}px;' animation='{{disconnAnimation}}'>网络中断，重新连接中...</view>
-
-  <!-- 选择成员呼叫列表 -->
-<block wx:if='{{_request.callPage}}'>
-	<view class='member-bg'  wx:if='{{callBtnsVisible}}'></view>
-  <view class='member-wrap' style='top:{{memberCallTop}}px;' animation="{{animationMemberData}}" >
-	<scroll-view style="{{memberList.length>6?'height:820rpx;':''}}" scroll-y='{{memberList.length>6}}'>
-			<view class='member-explain'>
-					<view class='member-check {{isAgreeExplain?"member-checked":""}}' catchtap='_bindIsAgreeExplain'></view>
-					<view class='member-text'>
-						咨询服务医生建议仅供参考，如症状未缓解或加重，请及时去医院就诊，同意<navigator 
-						url='{{basePath}}innerpages/view/view?url={{explainUrl}}' 
-						hover-class="none" 
-						hover-stop-propagation='{{true}}'
-						class='member-explain-link'>《视频医生服务说明》</navigator>
-					</view>
-			</view>
-		  <view class='member-choose'>请选择给谁咨询健康问题</view>
-			<view class='member-list'>
-				<view class='member-item' 
-                data-item='{{item}}'
-				style='color:{{index==0?"#0592F5":"#323232"}}'
-				wx:for='{{memberList}}'
-				wx:key='uuid'
-				data-dept='600002' 
-				catchtap='_callDoctor'
-				data-uuid='{{item.uuid}}' 
-				data-birthday='{{item.birthday}}'
-                data-sex='{{item.sex}}'
-				data-name='{{item.name}}'
-				>{{item.name}}</view>
-			</view>
-	</scroll-view>
-	  	<block wx:if='{{userCnt}}'>
-			 <view class='member-button' bindtap='bindAddFimily' wx:if='{{showAddBtn&&((userCnt==-1||userCnt>(memberList.length-1+deleteCount))&&!memberList[0].isAccount)}}' >添加成员</view>
-		</block>
-		 <!-- 演示模式 -->
-		 <block wx:if='{{demoStatus!=-1}}'>
-		 	<view class="demo-pattern demo-pattern-{{demoStatus}}" catchtap="_changeDemoStatus">进入演示模式</view>
-		 </block>
-
-   
-  </view>
-</block>
-<hh-Modal  isShowModal='{{isShowModal}}' wx:if='{{isShowModal}}' modalData="{{modalMsgData}}" bind:myConfirm='_bindMyConfirm' data-type='{{modalMsgData.source}}'></hh-Modal>
-
-
-	<!-- 直播banner -->
-	<view class="live-panel" style='top:{{msgPanelTop}}px;'>
-		<block wx:for='{{liveList}}' wx:for-item='live' wx:key='id'>
-			<view class="live-item" data-live="{{live}}" catchtap="_tapLive">
-				<image wx:if="{{live.liveStatus>=0}}" class="live-item-image status {{1==live.liveStatus?'active':'inactive'}}" src="{{live.imageUrl}}" mode="aspectFill"></image>
-			</view>
-		</block>
-	</view>
-
-
-
+<view class='main-container' style='padding-top:{{sysInfo.statusBarHeight}}px' >
+   <hh-top 
+   id='hhTop'
+   msgPanelTop='{{msgPanelTop}}'
+   navigationBar='{{navigationBar}}'
+   wxMbb='{{wxMbb}}'
+   navStyle='{{navStyle}}'
+   customStyle='{{customStyle}}'
+   request='{{_request}}'
+   basePath='{{basePath}}'
+   disConnected='{{disConnected}}'
+   demoStatusInit='{{demoStatusInit}}'
+   bind:livePanelHeight='bindLivePanelHeight'
+   sysInfo='{{sysInfo}}'
+   bind:onWsClose='bindOnWsClose'
+   ></hh-top>
 	<!-- 中部消息列表 -->
-	<scroll-view class='msg-panel-scroll' style='top:{{msgPanelTop+livePanelHeight}}px;height:{{msgPanelHeight-livePanelHeight}}px;' scroll-y scroll-into-view='{{lastMsgId}}'>
+	<scroll-view class='msg-panel-scroll'
+		style='top:{{msgPanelTop+livePanelHeight}}px;height:{{msgPanelHeight-livePanelHeight}}px;' scroll-y
+		scroll-into-view='{{lastMsgId}}' 
+		catchtap='bindScrollView'
+		>
 		<block wx:for='{{msgList}}' wx:for-item='msg' wx:key='msg'>
 			<view class='msg-row timestamp'>
 				<text class='msg-time'>{{msg.timeText}}</text>
 			</view>
 			<block wx:if='{{"text"==msg.type}}'>
-				<template is='msgText' data='{{...msg,asst:_request.style.asst,basePath,userToken,sdkProductId}}'></template>
+				<template is='msgText'
+					data='{{...msg,asst:_request.style.asst,basePath,userToken,sdkProductId}}'></template>
 			</block>
 			<block wx:if='{{"image"==msg.type}}'>
 				<template is='msgImg' data='{{...msg,asst:_request.style.asst}}'></template>
@@ -102,11 +40,13 @@
 			</block>
 
 			<block wx:if='{{"card"==msg.type && "summaryByFam"==msg.bodyContent.command}}'>
-				<template is='msgCardSummary' data='{{...msg,ehrPage:_request.ehrPage,title:_request.style.card.summaryTitle}}'></template>
+				<template is='msgCardSummary'
+					data='{{...msg,ehrPage:_request.ehrPage,title:_request.style.card.summaryTitle}}'></template>
 			</block>
 
 			<block wx:if='{{"card"==msg.type && "buyDrugInformation"==msg.bodyContent.command}}'>
-				<template is='msgCardMed' data='{{...msg,title:_request.style.card.medTitle,btnStyle:customStyle.mainBtn}}'></template>
+				<template is='msgCardMed'
+					data='{{...msg,title:_request.style.card.medTitle,btnStyle:customStyle.mainBtn}}'></template>
 			</block>
 
 			<block wx:if='{{"card"==msg.type && "videoAdv"==msg.bodyContent.command}}'>
@@ -121,29 +61,74 @@
 				<template is='msgCardServiceTip' data='{{...msg}}'></template>
 			</block>
 
+			<block wx:if='{{"card"==msg.type && "psycholTips"==msg.bodyContent.command}}'>
+				<template is='msgCardTips' data='{{...msg}}'></template>
+			</block>
+
+			<block
+				wx:if='{{"card"==msg.type && ("psycholForm"==msg.bodyContent.command ||"psycholFeedback"==msg.bodyContent.command)}}'>
+				<template is='msgCardPsychol' data='{{...msg}}'></template>
+			</block>
+
+			<block wx:if='{{"card"==msg.type && "command_recomment_doctor"==msg.bodyContent.command}}'>
+				<template is='msgCardRecommentDoctor' data='{{...msg}}'></template>
+			</block>
+
+			<block wx:if='{{"card"==msg.type && "appointmentExpertSuccess"==msg.bodyContent.command}}'>
+				<template is='msgCardExpert' data='{{...msg}}'></template>
+			</block>
+
+			<block wx:if='{{"card"==msg.type && "haoForm"==msg.bodyContent.command}}'>
+				<template is='haoForm' data='{{...msg}}'></template>
+			</block>
+
+			<block wx:if='{{"card"==msg.type && "nurseReport"==msg.bodyContent.command}}'>
+				<template is='nurseReport' data='{{...msg}}'></template>
+			</block>
+
+			<block wx:if='{{"card"==msg.type && "nurseDetail"==msg.bodyContent.command}}'>
+				<template is='nurseDetail' data='{{...msg}}'></template>
+			</block>
+			 <!-- <block>
+			 	<template is='equity' data='{{...msg}}'></template>
+			 </block> -->
+
 			<!-- <block>
 				<template is='msgCardExpert' data='{{...msg}}'></template>
 			</block> -->
-		</block>
-	</scroll-view>
 
-	<!-- 底部工具栏 -->
-	<view class='input-panel' style='height:{{bottomHeight}}px;bottom:{{safeAreaHight}}px' animation='{{utilsAnimation}}'>
-		<view class='input-tools'>
-			<!-- 左侧切换输入模式按纽 -->
+		</block>
+
+	</scroll-view>
+	<hh-bottom 
+	id='hhBottom'
+	safeAreaHight='{{safeAreaHight}}'
+	bind:sendTextMsg='bindSendTextMsg' 
+	bind:sendAudio='bindSendAudio'
+	bind:everyIcon = 'bindEveryIcon'
+	bind:isShowToolBar = 'bindIsShowToolBar'
+	></hh-bottom>
+
+	<view class='input-panel' style='height:{{bottomHeight}}px;bottom:{{safeAreaHight}}px' animation='{{utilsAnimation}}' wx:if='{{false}}'>
+		<view class='input-tools' >
 			<view class='input-btn-box' catchtap='_changeInputType'>
 				<view class='input-btn {{inputTypeClass}}'></view>
 			</view>
-			<!-- 中部输入区域 -->
 			<view class='input-text'>
 				<block wx:if='{{inputTextVisible}}'>
-					<input class='textarea' type='text' confirm-type='send' cursor-spacing='50' bindinput='_inputText' bindconfirm='_sendTextMsg' value='{{inputText}}' confirm-hold='true' adjust-position='false'></input>
+					<input class='textarea' type='text' confirm-type='send' cursor-spacing='50' bindinput='_inputText'
+					bindfocus='bindFocusText'
+					bindblur='bindBlurText'
+					placeholder="{{isInputTextFocus?'请输入非健康问题':'联系医助'}}"
+					style='text-align:{{!isInputTextFocus&&!inputText?"center":"left"}};'
+					placeholder-style="color:#969696;"
+					bindconfirm='_sendTextMsg' value='{{inputText}}' confirm-hold='true' adjust-position='false'></input>
 				</block>
 				<block wx:if='{{!inputTextVisible}}'>
-					<view class='input-record' catchtouchstart='_startRecord' catchtouchend='_stopRecord' catchtouchmove='_cancelRecord'>{{recordBtnTip}}</view>
+					<view class='input-record' catchtouchstart='_startRecord' catchtouchend='_stopRecord'
+						catchtouchmove='_cancelRecord'>{{recordBtnTip}}</view>
 				</block>
 			</view>
-			<!-- 右侧加号按纽 -->
 			<view class='input-btn-box' catchtap='_showHideUtils'>
 				<view class='input-btn plus'></view>
 			</view>
@@ -151,8 +136,7 @@
 
 		<view class='safe-area' style='height:{{safeAreaHight}}px'></view>
 
-		<!-- 点击右侧加号弹出层 -->
-		<view class='util-tools'>
+		<view class='util-tools' catchtap='_showHideUtils'>
 			<view class='util-tool' catchtap='_selectImage' data-type='camera'>
 				<view class='util-icon camera'></view>
 				<view class='util-text'>相机</view>
@@ -163,328 +147,20 @@
 			</view>
 		</view>
 
-		<!-- 扩展工具栏 -->
 		<view class='extend-panel' wx:if='{{extendBtns.length>0}}'>
 			<scroll-view class='extend-view' scroll-x>
 				<block wx:for='{{extendBtns}}' wx:for-item='extendBtn' wx:key=''>
-					<view class='extend-btn' catchtap='{{extendBtn.tap?extendBtn.tap:"_tapExtendBtn"}}' data-btn='{{extendBtn}}'>{{extendBtn.name}}</view>
+					<view class='extend-btn' catchtap='{{extendBtn.tap?extendBtn.tap:"_tapExtendBtn"}}' data-btn='{{extendBtn}}'>
+						{{extendBtn.name}}</view>
+
 				</block>
 			</scroll-view>
 		</view>
 	</view>
 </view>
 
-<!-- 录音提示遮罩层 -->
-<view class='record-mask {{recordMaskVisible}}'>
-	<view class='record-msg-box'>
-		<view class='record-msg-icon {{recordCancel?"cancel":""}}'></view>
-		<view class='record-msg-text {{recordCancel?"cancel":""}}'></view>
-	</view>
-</view>
-
-
-
-<!-- 各类型消息模版 -->
-<!-- 1.文本消息模版 -->
-<template name='msgText'>
-	<view class='msg-row {{"c"==from?"user":""}}' id='msg{{time}}'>
-		<view class='msg-img'>
-			<image class='img-head' src='{{("d"==from&&asst.photo)?asst.photo:head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70' ></image>
-
-		</view>
-		<view class='msg-body {{"c"==from?"user":""}}'>
-			<block wx:if='{{"c"!=from}}'>
-				<view class='msg-name'>{{asst.name?asst.name:name}}</view>
-			</block>
-			<view class='msg-content-main {{"c"==from?"user":""}}'>
-				<!-- <view class='msg {{"c"==from?"user":""}} text'>{{text}}</view> -->
-				<view class='msg {{"c"==from?"user":""}} text' wx:if='{{!common.getCheckUrl(text)}}'>
-					<text>{{text}}</text>
-				</view>
-                <navigator wx:else hover-class="none"
-                class='msg {{"c"==from?"user":""}} text'
-                 url='{{basePath}}innerpages/view/view?url={{common.encode(common.getTextUrl(text).url+"userToken="+userToken+"&sdkProductId="+sdkProductId)}}' >
-                    <text wx:for='{{common.getTextUrl(text).textArr}}' style='color:{{item=="点此前往"?"#0592f5":"#666"}}'
-                    wx:key='index'>{{item}}</text>
-
-                </navigator>
-			</view>
-		</view>
-	</view>
-</template>
-
-<!-- 2.图片消息模版 -->
-<template name='msgImg'>
-	<view class='msg-row {{"c"==from?"user":""}}' id='msg{{time}}'>
-		<view class='msg-img'>
-			<image class='img-head' src='{{("d"==from&&asst.photo)?asst.photo:head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70'  ></image>
-
-		</view>
-		<view class='msg-body {{"c"==from?"user":""}}'>
-			<block wx:if='{{"c"!=from}}'>
-				<view class='msg-name'>{{asst.name?asst.name:name}}</view>
-			</block>
-			<view class='msg-content-main {{"c"==from?"user":""}}' catchtap='_previewImg' data-url='{{url}}'>
-				<image class='msg image' mode='widthFix' src='{{thumbnail}}'></image>
-			</view>
-		</view>
-	</view>
-</template>
-
-<!-- 3.音频消息模版 -->
-<template name='msgAudio'>
-	<view class='msg-row {{"c"==from?"user":""}}' id='msg{{time}}'>
-		<view class='msg-img'>
-			<image class='img-head' src='{{("d"==from&&asst.photo)?asst.photo:head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70' ></image>
-
-		</view>
-		<view class='msg-body {{"c"==from?"user":""}}'>
-			<block wx:if='{{"c"!=from}}'>
-				<view class='msg-name'>{{asst.name?asst.name:name}}</view>
-			</block>
-			<view class='msg-content-main {{"c"==from?"user":""}}'>
-				<view class='msg {{"c"==from?"user":""}} audio' catchtap='_playAudio' data-url='{{url}}' data-id='msg{{time}}' data-dur='{{dur}}'>
-					<view class='sound-icon {{"c"==from?"user":""}} arc1 {{"c"==from?"user":""}}'></view>
-					<view class='sound-icon {{"c"==from?"user":""}} arc2 {{"c"==from?"user":""}}'></view>
-					<view class='sound-icon {{"c"==from?"user":""}} arc3 {{"c"==from?"user":""}}'></view>
-				</view>
-				<view class='sound-length {{"c"==from?"user":""}}'>{{durText}}"</view>
-			</view>
-		</view>
-	</view>
-</template>
-
-<!-- 4.视频咨询总结卡片消息模版 -->
-<template name='msgCardSummary'>
-	<view class='msg-row' id='msg{{time}}'>
-		<view class='msg-img'>
-			<image class='img-head' src='{{head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70' ></image>
-		</view>
-		<view class='msg-body card'>
-			<view class='msg-name'>{{name}}</view>
-			<view class='msg-content-main'>
-				<view class='msg card' catchtap='_viewSummary' data-mrid="{{bodyContent.medicRecordId}}" data-patient="{{patient}}">
-					<view class='msg-card-head'>{{title?title:'家庭医生视频咨询总结'}}</view>
-					<view class='msg-card-body summary'>
-						<view class='summary-row'>
-							<view class='summary name'>咨询人</view>
-							<view class='summary value'>{{bodyContent.name}}</view>
-						</view>
-						<view class='summary-row'>
-							<view class='summary name'>咨询时间</view>
-							<view class='summary value'>{{timeText}}</view>
-						</view>
-					</view>
-					<view class='msg-card-foot'  data-mrid='{{bodyContent.medicRecordId}}' data-patient='{{patient}}'>
-						<view class='show-more'>
-							<view class='show-more-text'></view>
-							<view class='show-more-arraw'></view>
-						</view>
-					</view>
-				</view>
-			</view>
-		</view>
-	</view>
-</template>
-
-<!-- <template name='msgCardMed'>
-  <view class='msg-row' id='msg{{time}}'>
-    <view class='msg-img'>
-      <image class='img-head' src='{{head}}?x-oss-process=image/resize,m_fixed,h_70,w_70'></image>
-    </view>
-    <view class='msg-body card'>
-      <view class='msg-name'>{{name}}</view>
-      <view class='msg-content-main'>
-        <view class='msg card'>
-          <view class='msg-card-head'>{{title?title:'用药说明'}}</view>
-          <view class='msg-card-body medicine'>
-            <view class='summary-row'>
-              <view class='summary medicine name'>用药人</view>
-              <view class='summary medicine value'>{{bodyContent.name}}</view>
-            </view>
-            <block wx:for='{{bodyContent.medicationList}}' wx:for-item='medicine' wx:key='{{name}}'>
-              <view class='medicine-row'>
-                <view class='medicine'>{{medicine.name}}
-                  <text class='medicine count'>{{medicine.count}}{{medicine.unit}}</text>
-                </view>
-                <view class='medicine-remark'>{{medicine.remark}}</view>
-              </view>
-            </block>
-          </view>
-        </view>
-      </view>
-    </view>
-  </view>
-</template> -->
-
-<!-- 5.用药指导卡片模版 -->
-<template name='msgCardMed'>
-	<view class='msg-row' id='msg{{time}}'>
-		<view class='msg-img'>
-			<image class='img-head' src='{{head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70' ></image>
-		</view>
-		<view class='msg-body card'>
-			<view class='msg-name'>{{name}}</view>
-			<view class='msg-content-main'>
-				<view class='msg card'>
-					<view class='msg-card-head'>{{title?title:bodyContent.name+'用药建议'}}</view>
-					<view class='msg-card-body medicine'>
-						<!-- <view class='medicine-row' wx:if='{{bodyContent.diagnose&&bodyContent.diagnose!=""}}'>
-							<view class='medicine'><view class='medicine-name'>初步诊断</view></view>
-							<view class='medicine-remark'>{{bodyContent.diagnose}}</view>
-						</view> -->
-						<block wx:for='{{bodyContent.medicationList}}' wx:for-item='medicine' wx:key='name'>					
-							<view class='medicine-row'>
-								<view class='medicine'>
-									<view class='medicine-name'>{{medicine.name}}</view>
-									<view class='medicine-count'>{{medicine.count}}</view>
-								</view>
-								<view class='medicine-remark'>{{medicine.remark}}</view>
-							</view>
-						</block>
-					</view>
-					<view class='msg-card-foot' wx:if='{{bodyContent.trans}}'  catchtap='_buyMedicine' data-drugid='{{bodyContent.drugOrderId}}' data-trans='{{bodyContent.trans}}' data-carturl='{{bodyContent.cartUrl}}'>
-						<view class='show-more'>
-							<view class='show-more-btn {{bodyContent.trans?"":"disabled"}}' style='{{bodyContent.trans?btnStyle:""}};'>{{bodyContent.trans?bodyContent.buttonName:'本单不支持配送'}}</view>
-						</view>
-					</view>
-          <view class='msg-disclaimer'>{{bodyContent.tips || '此建议是根据您提供的具体信息出具的单次咨询意见，不涉及任何诊疗和处方行为，如您有任何不适，建议您尽快就医。'}}</view>
-
-				</view>
-
-			</view>
-		</view>
-	</view>
-</template>
-
-<!-- 6.视频卡片消息模版 -->
-<template name='msgCardVideoAdv'>
-	<view class='msg-row' id='msg{{time}}'>
-		<view class='msg-img'>
-			<image class='img-head' src='{{head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70'  ></image>
-		</view>
-		<view class='msg-body card'>
-			<view class='msg-name'>{{name}}</view>
-			<view class='msg-content-main'>
-				<view class='msg card'>
-					<view class='msg-card-head'>{{title?title:bodyContent.title}}</view>
-					<view class='msg-card-body videoAdv'>
-						<video src='{{bodyContent.content}}' poster='{{bodyContent.thumb}}'></video>
-					</view>
-				</view>
-			</view>
-		</view>
-	</view>
-</template>
-
-<!-- 7.购买套餐卡片模版 -->
-<template name='msgCardBuy'>
-	<view class='msg-row' id='msg{{time}}'>
-		<view class='msg-img'>
-			<image class='img-head' src='{{head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70' wx:if='{{head}}'></image>
-            <image class='img-head' src='../images/avatar.png' wx:else> </image>
-		</view>
-		<view class='msg-body card'>
-			<view class='msg-name'>{{name}}</view>
-			<view class='msg-content-main' catchtap='_buyProduct' data-price='{{bodyContent.price}}' data-pid='{{bodyContent.productId}}'>
-				<view class='msg card'>
-					<view class='msg-card-head'>{{title?title:'和缓会员'}}</view>
-					<view class='msg-card-body summary'>
-						<block wx:for='{{bodyContent.services}}' wx:for-item='sevice' wx:key='index'>
-							<view class='summary-row'>{{sevice}}</view>
-						</block>
-					</view>
-					<view class='msg-card-foot' >
-						<view class='show-more'>
-							<view class='show-more-text custom'>{{bodyContent.price}}</view>
-							<view class='show-more-arraw'></view>
-						</view>
-					</view>
-				</view>
-			</view>
-		</view>
-	</view>
-</template>
-
-<!-- 8.会员开通成功卡片 -->
-<template name='msgCardServiceTip'>
-	<view class='msg-row' id='msg{{time}}'>
-		<view class='msg-img'>
-			<image class='img-head' src='{{head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70' wx:if='{{head}}'></image>
-            <image class='img-head' src='../images/avatar.png' wx:else> </image>
-		</view>
-		<view class='msg-body card'>
-			<view class='msg-name'>{{name}}</view>
-			<view class='msg-content-main'>
-				<view class='msg card'>
-					<view class='msg-card-head'>会员开通成功</view>
-					<view class='msg-card-body summary'>
-						<block wx:for='{{bodyContent.content}}' wx:for-item='tip' wx:key='id'>
-							<view class='summary-row tip'>{{tip}}</view>
-						</block>
-					</view>
-					<view class='msg-card-foot' catchtap=''>
-						<view class='show-more'>
-							<view class='show-more-text custom'>{{bodyContent.expireTips}}</view>
-							<!-- <view class='show-more-text-right'></view> -->
-							<!-- <view class='show-more-arraw'></view> -->
-						</view>
-					</view>
-				</view>
-			</view>
-		</view>
-	</view>
-</template>
-
-
-
-<!-- 9.专家视频预约时间卡片消息模版 -->
-<!-- <template name='msgCardExpert'>
-	<view class='msg-row' id='msg{{time}}'>
-		<view class='msg-img'>
-			<image class='img-head' src='{{head?head:"../images/avatar.png"}}?x-oss-process=image/resize,m_fixed,h_70,w_70' ></image>
-		</view>
-		<view class='msg-body card'>
-			<view class='msg-name'>{{name}}</view>
-			<view class='msg-content-main'>
-				<view class='msg card' catchtap='_viewSummary' data-mrid="{{bodyContent.medicRecordId}}" data-patient="{{patient}}">
-					<view class='msg-card-head'>{{title?title:'预约专家视频成功'}}</view>
-					<view class='msg-card-body summary'>
-						<view class='summary-row'>
-							<view class='summary name'>咨询时间</view>
-							<view class='summary value'>{{timeText}}</view>
-						</view>
-						<view class='summary-row'>
-							<view class='summary name'>咨询人</view>
-							<view class='summary value'>{{bodyContent.name}}</view>
-						</view>
-						<view class='summary-tip'>
-							请在视频前10分钟打开本应用等待专家呼入
-						</view>
-					
-					</view>
-					<view class='msg-card-foot'  data-mrid='{{bodyContent.medicRecordId}}' data-patient='{{patient}}'>
-						<view class='show-more'>
-							<view class='show-more-text'></view>
-							<view class='show-more-arraw'></view>
-						</view>
-					</view>
-				</view>
-			</view>
-		</view>
-	</view>
-</template> -->
-
-
-
-<!-- 未授权 -->
-<block wx:if='{{isAuthBox}}'>
-	<cover-view class='auth-box'>
-		<cover-view class='auth-text'>您未授权小程序使用您的麦克风或摄像头，无法使用相应功能</cover-view>
-		<button class='auth-button' open-type="openSetting" catchtap='bindAuthButton'>现在去授权</button>
-	</cover-view>
-</block>
 
 <block wx:if='{{isEnterFace}}'>
-	<hh-face sysInfo='{{sysInfo}}' patient='{{patient}}' parent='{{parent}}' bind:closeFace='bindCloseFaceVerify' bind:beginFaceVerify='bindBeginFaceVerify' bind:continue='bindContinue'></hh-face>
+	<hh-face sysInfo='{{sysInfo}}' patient='{{patient}}' parent='{{parent}}' bind:closeFace='bindCloseFaceVerify'
+		bind:beginFaceVerify='bindBeginFaceVerify' bind:continue='bindContinue'></hh-face>
 </block>

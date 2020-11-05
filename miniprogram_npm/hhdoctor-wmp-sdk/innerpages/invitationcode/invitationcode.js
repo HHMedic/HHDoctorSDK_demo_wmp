@@ -19,7 +19,7 @@ Page({
     keyboardOptions: {
       maxLength: 6
     },
-    isConnect:true
+    isConnect: true
   },
   /**
    * 页面事件
@@ -52,11 +52,11 @@ Page({
               content: res.data.message ? res.data.message : '激活成功',
               showCancel: false,
               success: function () {
-                  hhDoctor.getUserInfo().then(res => {
-                      wx.navigateBack({
-                          delta: 1
-                      });
+                hhDoctor.getUserInfo().then(res => {
+                  wx.navigateBack({
+                    delta: 1
                   });
+                });
               }
             })
           } else {
@@ -102,9 +102,17 @@ Page({
     this.setData({
       request: options
     })
+    if (options.activeCodeMsg) {
+      wx.showModal({
+        content: options.activeCodeMsg,
+        showCancel: false,
+        confirmText: '我知道了',
+        confirmColor: '#0592f5'
+      })
+    }
   },
-  onShow:function(){
-      this.setData({ isConnect: getApp().globalData.isConnect })
+  onShow: function () {
+    this.setData({ isConnect: getApp().globalData.isConnect })
   }
 
 })

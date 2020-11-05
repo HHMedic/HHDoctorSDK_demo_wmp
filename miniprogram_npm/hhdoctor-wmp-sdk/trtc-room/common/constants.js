@@ -37,8 +37,8 @@ export const DEFAULT_COMPONENT_CONFIG = {
 export const DEFAULT_PUSHER_CONFIG = {
   url: '',
   mode: 'RTC', // RTC：实时通话（trtc sdk） live：直播模式（liteav sdk）
-  autopush: false, // 自动推送
-  enableCamera: false, // 是否开启摄像头
+  autopush: true, // 自动推送
+  enableCamera: true, // 是否开启摄像头
   enableMic: false, // 是否开启麦克风
   enableAgc: false, // 是否开启音频自动增益
   enableAns: false, // 是否开启音频噪声抑制

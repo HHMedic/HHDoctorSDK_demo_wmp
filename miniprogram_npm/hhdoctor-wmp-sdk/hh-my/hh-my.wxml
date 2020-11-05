@@ -5,7 +5,7 @@
   <view class='card'>
     <image class='card-image {{primeLevel}}' src='{{"prime"==primeLevel?"https://imgs.hh-medic.com/icon/wmp/card-prime-back.png":"https://imgs.hh-medic.com/icon/wmp/card-normal-back.png"}}' mode='widthFix'></image>
 
-    <view class='view-right {{primeLevel}}' catchtap='_viewRight' wx:if='{{product && _request.userAcl.showProductRight}}'>查看权益></view>
+    <!-- <view class='view-right {{primeLevel}}' catchtap='_viewRight' wx:if='{{product && _request.userAcl.showProductRight}}'>查看权益></view> -->
     <view class='info {{primeLevel}}'>
       <image class='head-image' src='{{user.photourl||"../images/avatar.png"}}'></image>
       <view class='info-list'>
@@ -41,7 +41,8 @@
     </view>
   </view>
 </view>
-
+<!--会员权益-->
+<user-equity product='{{product}}' request='{{_request}}' wx:if='{{product}}' base-path='../../'></user-equity>
 <view class='panel list'>
   <view class='menu-group'>
     <view class='menu-item' catchtap='_viewEhrFamily' wx:if='{{_request.userAcl.showEhr}}'>
@@ -79,7 +80,7 @@
   </view>
 
   <view class='menu-group'>
-    <view class='menu-item' catchtap='_viewActiveCode' wx:if='{{_request.userAcl.showActiveCode}}'>
+    <view class='menu-item' catchtap='_viewActiveCode' data-msg='{{_request.userAcl.activeCodeMsg}}' wx:if='{{_request.userAcl.showActiveCode}}'>
       <view class='menu-icon code'></view>
       <view class='menu-name'>邀请码激活</view>
       <view class='menu-remark'></view>

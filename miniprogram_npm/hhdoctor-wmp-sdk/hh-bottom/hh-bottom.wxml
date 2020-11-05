@@ -1,0 +1,74 @@
+<!--components/hh-bottom/hh-bottom.wxml-->
+
+<view class='input-panel' >
+    <view class='input-tools' >
+        <!-- 左侧切换输入模式按纽 -->
+        <view class='input-btn-box' catchtap='_changeInputType'>
+            <view class='input-btn {{inputTypeClass}}'></view>
+        </view>
+        <!-- 中部输入区域 -->
+        <view class='input-text'>
+            <block wx:if='{{inputTextVisible}}'>
+                <input class='textarea' type='text' confirm-type='send' cursor-spacing='50' bindinput='_inputText'
+                    bindfocus='bindFocusText' bindblur='bindBlurText'
+                    placeholder="{{isInputTextFocus?'请输入非健康问题':'联系医助'}}"
+                    style='text-align:{{!isInputTextFocus&&!inputText?"center":"left"}};'
+                    placeholder-style="color:#969696;" bindconfirm='_sendTextMsg' value='{{inputText}}'
+                    confirm-hold='true' adjust-position='false' cursor-spacing='10'></input>
+            </block>
+            <block wx:if='{{!inputTextVisible}}'>
+                <view class='input-record' catchtouchstart='_startRecord' catchtouchend='_stopRecord'
+                    catchtouchmove='_cancelRecord'>{{recordBtnTip}}</view>
+            </block>
+        </view>
+        <!-- 右侧加号按纽 -->
+        <view class='input-btn-box' catchtap='_showHideUtils'>
+            <view class='input-btn plus'></view>
+        </view>
+    </view>
+    <!-- 工具栏 wx:if='{{!patient.isAccount&&memberList.length>1&&manyVideo}}' -->
+    <view  class='tool-bar' wx:if='{{isShowToolBar}}' catchtap='_showHideUtils'>
+        <swiper indicator-dots="{{tools.length>1?true:false}}" autoplay="{{autoplay}}" class='swiper-view'>
+            <block wx:for="{{tools}}" wx:key="*this">
+                <swiper-item class='swiper-item'>
+                    <view class='bottom-page' >
+                        <view class='bottom-icon icon-{{every.icon}}' data-name='name' 
+                        wx:for='{{item}}' wx:key='index' 
+                        bindtap='bindEveryIcon'
+                        data-type='{{every.icon}}'
+                        wx:for-item='every'>{{every.name}}</view>
+                    </view>
+                </swiper-item>
+            </block>
+        </swiper>
+    </view>
+
+   
+
+    <!-- 扩展工具栏 -->
+    <!-- <view class='extend-panel' wx:if='{{extendBtns.length>0}}'>
+            <scroll-view class='extend-view' scroll-x>
+                <block wx:for='{{extendBtns}}' wx:for-item='extendBtn' wx:key=''>
+                    <view class='extend-btn' catchtap='{{extendBtn.tap?extendBtn.tap:"_tapExtendBtn"}}'
+                        data-btn='{{extendBtn}}'>
+                        {{extendBtn.name}}</view>
+
+                </block>
+            </scroll-view>
+        </view> -->
+        <view style='height:{{safeAreaHight}}px'></view>
+</view>
+<!-- 录音提示遮罩层 -->
+<view class='record-mask {{recordMaskVisible}}'>
+    <view class='record-msg-box'>
+        <view class='record-msg-icon {{recordCancel?"cancel":""}}'></view>
+        <view class='record-msg-text {{recordCancel?"cancel":""}}'></view>
+    </view>
+</view>
+<!-- 未授权 -->
+<block wx:if='{{isAuthBox}}'>
+    <cover-view class='auth-box'>
+        <cover-view class='auth-text'>您未授权小程序使用您的麦克风或摄像头，无法使用相应功能</cover-view>
+        <button class='auth-button' open-type="openSetting" catchtap='bindAuthButton'>现在去授权</button>
+    </cover-view>
+</block>

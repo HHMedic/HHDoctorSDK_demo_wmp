@@ -6,9 +6,8 @@ Component({
    */
   properties: {
 	doctor:Object,
-	callTips:Object
+  callTips:Object,
   },
-
   /**
    * 组件的初始数据
    */

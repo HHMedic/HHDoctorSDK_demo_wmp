@@ -40,7 +40,7 @@
         <text class='price-num-raw'>{{productPrice}}</text>/{{common.getPeriod2(batchType,batchNum,validateMonth)}}
       </view>
     </block>
-    <view wx:if='{{productDetail && productDetail.length>0}}' class='view-right' catchtap='_viewProductRight' data-pid='{{productServiceId}}'>查看权益</view>
+    <view wx:if='{{productDetail && productDetail.length>0}}' class='view-right' catchtap='_viewRight' data-pid='{{productServiceId}}'>查看权益</view>
   </view>
 </template>
 
@@ -66,6 +66,6 @@
         <text class='price-num-raw'>{{productPrice}}</text>/{{common.getPeriod2(batchType,batchNum,validateMonth)}}
       </view>
     </block>
-    <view wx:if='{{productDetail && productDetail.length>0}}' class='view-right prime' catchtap='_viewProductRight' data-pid='{{productServiceId}}'>查看权益</view>
+    <view wx:if='{{productDetail && productDetail.length>0}}' class='view-right prime' catchtap='_viewRight' data-pid='{{productServiceId}}'>查看权益</view>
   </view>
 </template>
