@@ -7,7 +7,8 @@ Page({
    * 页面的初始数据
    */
   data: {
-    isConnect: true
+    isConnect: true,
+    basePath: '/components/'
   },
 
   /**
@@ -17,7 +18,9 @@ Page({
     that = this;
     wx.hideShareMenu();
     let hhRequest = options
-
+    if (options && options.basePath) {
+      this.setData({ basePath: decodeURIComponent(options.basePath) })
+    }
     if (options.q) {
       //来自二维码
       let params = commonUtil.getRequestParams(options.q)

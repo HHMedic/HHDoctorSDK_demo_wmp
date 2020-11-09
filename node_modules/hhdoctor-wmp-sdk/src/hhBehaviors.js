@@ -486,9 +486,6 @@ module.exports = Behavior({
       wx.navigateTo({
         url: pageUrl
       })
-      // wx.navigateTo({
-      //   url: '/components/innerpages/hh-ehr/ehr-index/ehr-index',
-      // })
     },
 
 

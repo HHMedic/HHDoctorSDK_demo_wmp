@@ -553,7 +553,7 @@ Component({
           case 'member':
                 let params = '?isUpdate=' + true + '&pageUrl=' + that.data._request.callPage + '&memberUuid=' + that.data.memberUuid + '&item=' + JSON.stringify(that.data.storeMsg);
             wx.navigateTo({
-              url: `/components/innerpages/ehr-addmember/ehr-addmember${params}`
+              url: `${that.data.basePath}innerpages/ehr-addmember/ehr-addmember${params}`
             })
             break;
          case 'addmember':that.navigateAddMember(); 
@@ -582,6 +582,7 @@ Component({
               '&enableLiveShare=' + that.data._request.enableLiveShare +
               '&filterType=live' +
               '&videoType=live' +
+              '&basePath=' + encodeURIComponent(that.data.basePath) +
               '&videoId=' + live.id;
             wx.navigateTo({
               url: pageUrl,
