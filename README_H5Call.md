@@ -104,16 +104,13 @@
 
 ## 常见问题
 
-* 使用浏览器访问H5页面无法显示`<wx-open-launch-weapp />`开放标签
-
+* 使用浏览器访问H5页面无法显示`<wx-open-launch-weapp />`开放标签<br />
 ***解决方法***:使用微信访问相应的H5页面，方可正常显示开放标签，并唤起小程序.
 
-* 使用iOS设备使用微信访问H5页面可以显示`<wx-open-launch-weapp />`开放标签，但Android设备无法显示
-
+* 使用iOS设备使用微信访问H5页面可以显示`<wx-open-launch-weapp />`开放标签，但Android设备无法显示<br />
 ***解决方法***:H5页面的js代码执行`wx.config()`时，`jsApiList`参数必须传入至少一个api名称，如为空（`jsApiList: []`），则Android设备微信浏览器初始化jsapi会失败，进入`wx.error()`，无法显示开放标签。
 
-* 可以唤起小程序，但登录用户不是path参数中传入的userToken对应的用户
-
+* 可以唤起小程序，但登录用户不是path参数中传入的userToken对应的用户<br />
 ***解决方法***:`<wx-open-launch-weapp />`开放标签的`path`参数值不可手工回车换行。如`path`参数值中存在回车换行符，首个回车换行符后的数据无法正常传入小程序，导致小程序无法获取正确的参数。
 
 ---
