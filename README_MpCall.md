@@ -8,7 +8,7 @@
 
 ### 2.navigator组件参数：
 ```
-      <navigator target="miniProgram" open-type="navigate" app-id="wx15e414719996d59f" path="pages/newIndex/newIndex?sdkProductId={{sdkProductId}}&userToken={{userToken}}" extra-data="" version="release">
+      <navigator target="miniProgram" open-type="navigate" app-id="wx15e414719996d59f" path="pages/newIndex/newIndex?sdkProductId={{sdkProductId}}&userToken={{userToken}}&profileName={{profileName}}" extra-data="" version="release">
         呼叫视频医生
       </navigator>
 ```
@@ -16,6 +16,6 @@
 ### 3.步骤2中的参数说明如下：
  - ***`sdkProductId`*** :和缓分配的sdkProductId。
  - ***`userToken`*** :服务端注册用户接口返回的userToken。
- - ***`version`*** :release:线上生产小程序     trial:体验版小程序
+ - ***`profileName`*** :prod:生产环境    test:测试环境。
 
   
