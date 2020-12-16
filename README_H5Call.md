@@ -19,11 +19,25 @@
 
 ***username***: `gh_95e7300edf4c`
 
-***path-视频医生首页***: `pages/newIndex/newIndex.html?sdkProductId={sdkProductId}&userToken={userToken}`
+***path-视频医生首页***: `pages/newIndex/newIndex.html?profileName={profileName}&sdkProductId={sdkProductId}&userToken={userToken}`
 
-***path-呼叫视频医生***: `pages/room/room.html?profileName=prod&subDomain=mp&dept=600002&sdkProductId={sdkProductId}&userToken={userToken}&openId={openId}`
+***path-呼叫视频医生***: `pages/room/room.html?profileName={profileName}&subDomain=mp&dept=600002&sdkProductId={sdkProductId}&userToken={userToken}&openId={openId}`
 
-***path-选择成员呼叫视频医生***: `pages/room/room.html?profileName=prod&subDomain=mp&dept=600002&sdkProductId={sdkProductId}&userToken={userToken}&openId={openId}&realPatientUserToken={realPatientUserToken}`
+***path-选择成员呼叫视频医生***: `pages/room/room.html?profileName={profileName}&subDomain=mp&dept=600002&sdkProductId={sdkProductId}&userToken={userToken}&openId={openId}&realPatientUserToken={realPatientUserToken}`
+
+---
+
+## 参数说明
+
+***profileName***: 环境变量，test:测试环境   prod:生产环境 。开发阶段建议填写test，正式上线填写prod。
+
+***sdkProductId***: 和缓分配的产品id，一般是一个数字，例如：56789。
+
+***userToken***: 调用和缓服务器用户注册接口后获取到的用户唯一标识，须传入主账号userToken或者独立子账号的userToken。
+
+***openId***: 用户在微信下的openId。
+
+***realPatientUserToken***: 实际需要咨询医生的用户userToken，可以跟前面的userToken相同，也可以是主账号家庭成员内部的其他用户userToken。
 
 ---
 
@@ -112,6 +126,9 @@
 
 * 可以唤起小程序，但登录用户不是path参数中传入的userToken对应的用户<br />
 ***解决方法***:`<wx-open-launch-weapp />`开放标签的`path`参数值不可手工回车换行。如`path`参数值中存在回车换行符，首个回车换行符后的数据无法正常传入小程序，导致小程序无法获取正确的参数。
+
+* H5页面代码已经修改并部署至服务器，但使用微信浏览器访问H5页面时依旧不生效/无法实现期望的效果 <br />
+***解决方法***: 微信内置浏览器可能存在因页面静态缓存导致无法正常刷新的现象，还请根据项目实际情况采取相应的禁用缓存等措施，例如：在H5页面head中增加禁用缓存的meta信息、页面url中增加版本号或者时间戳等。
 
 ---
 
