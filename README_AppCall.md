@@ -8,7 +8,7 @@
 
 ### 2.步骤一文档中的参数设置如下：
  - ***`userName`*** :和缓微信小程序ID，`gh_95e7300edf4c`。
- - ***`path`*** :填写`pages/newIndex/newIndex?sdkProductId={SDKPRODUCTID}&userToken={USERTOKEN}`，其中sdkProductId参数填写和缓分配的sdkProductId，userToken参数填写服务端注册用户接口返回的userToken。
+ - ***`path`*** :填写`pages/newIndex/newIndex?sdkProductId={SDKPRODUCTID}&userToken={USERTOKEN}&profileName={{PROFILENAME}}`，其中sdkProductId参数填写和缓分配的sdkProductId，userToken参数填写服务端注册用户接口返回的userToken，profileName填写环境变量（prod:生产环境， test:测试环境）
  - ***`miniProgramType`*** :微信小程序类型，默认是线上版本：
   - iOS：`.release`
   - Android:`WXLaunchMiniProgram.Req.MINIPTOGRAM_TYPE_RELEASE`
