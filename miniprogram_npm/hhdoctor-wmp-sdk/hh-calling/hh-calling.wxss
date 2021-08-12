@@ -1,0 +1,448 @@
+.btn-panel {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 128px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  z-index: 9;
+}
+
+.topbtn-panel {
+  width: 100%;
+  height: 64px;
+  /* background-color: rgba(255, 255, 255, 1); */
+  background-color: rgba(0, 0, 0, 0);
+  z-index: 9;
+  box-sizing: border-box;
+  /* border-bottom: solid 0.5px #ebebeb; */
+  position: relative;
+}
+
+.top-btns {
+  box-sizing: border-box;
+  width: 120px;
+  position: absolute;
+  z-index: 10;
+  padding-left: 9px;
+
+}
+
+.top-btns-inner {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.topbtn-personal,
+.topbtn-naviback {
+  width: 30px;
+  height: 30px;
+  margin-right: 16px;
+}
+
+.topbtn-personal {
+  background: url('https://imgs.hh-medic.com/icon/wmp/topbtn-personal.png') no-repeat;
+  background-size: cover;
+}
+
+.topbtn-naviback {
+  background: url('https://imgs.hh-medic.com/icon/wmp/topbtn-naviback.png') no-repeat;
+  background-size: cover;
+}
+
+.topbtn-personal.light {
+  background: url('https://imgs.hh-medic.com/icon/wmp/topbtn-personal-light.png') no-repeat;
+  background-size: cover;
+}
+
+.topbtn-naviback.light {
+  background: url('https://imgs.hh-medic.com/icon/wmp/topbtn-naviback-light.png') no-repeat;
+  background-size: cover;
+}
+
+.topbtn-title {
+  position: absolute;
+  top: 30px;
+  width: 370rpx;
+  right: 190rpx;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.topbtn-navitoapp {
+  background-color: transparent;
+  border: none;
+  width: 100%;
+  height: 100%;
+}
+
+.topbtn-navitoapp::after {
+  content: '';
+  border: none;
+}
+
+.disconnect-info {
+  position: fixed;
+  left: 0px;
+  width: 100%;
+  height: 36rpx;
+  text-align: center;
+  font-size: 30rpx;
+  line-height: 36rpx;
+  color: #646464;
+  z-index: 19;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.mainbtn-panel {
+  /* position: absolute; */
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 64px;
+  box-sizing: border-box;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 1);
+  z-index: 9;
+}
+
+.btn-main {
+  background-color: #0592f5;
+  height: 100%;
+  width: 710rpx;
+  margin: auto;
+  border-radius: 5px;
+  color: #fff;
+  text-align: center;
+  line-height: 49px;
+  font-size: 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-main::before {
+  content: '';
+  width: 28px;
+  height: 20px;
+  margin-right: 10px;
+  background-image: url("https://imgs.hh-medic.com/icon/wmp/online-video.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+
+
+.demo-status {
+  font-size: 13px;
+  box-sizing: border-box;
+  padding-left: 65px;
+  color: #0592f5;
+}
+
+.demo-status-1 {
+  display: none;
+}
+
+.demo-status0::before {
+  content: '';
+  position: absolute;
+  left: 40px;
+  top: -1px;
+  width: 20px;
+  height: 20px;
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/icon_uncheck.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.demo-status1::before {
+  content: '';
+  position: absolute;
+  left: 40px;
+  top: -1px;
+  width: 20px;
+  height: 20px;
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/icon_checked.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.live-panel {
+  position: fixed;
+  left: 0px;
+  width: 100%;
+  height: 130px;
+  box-sizing: border-box;
+  padding: 5px 5px 15px 5px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+}
+
+.live-item {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 0px 5px;
+  position: relative;
+}
+
+.live-item-image {
+  width: 100%;
+  height: 100%;
+}
+
+.live-item-image.status::after {
+  content: '';
+  position: absolute;
+  left: 19px;
+  top: 15px;
+  width: 66.5px;
+  height: 17px;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.live-item-image.status.active::after {
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/live-active.png');
+}
+
+.live-item-image.status.inactive::after {
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/live-inactive.png');
+}
+
+/* 顶部成员列表 */
+.member-wrap {
+  position: fixed;
+  overflow: hidden;
+  left: 0;
+  font-family: PingFang SC;
+  text-align: center;
+  padding: 0 20rpx;
+  width: 750rpx;
+  z-index: 8;
+  box-sizing: border-box;
+  background: #fff;
+  /* border-top:1px solid #E6E6E6; */
+}
+
+.member-bg {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, .3);
+  z-index: 8;
+}
+
+
+.member-title {
+  font-size: 30rpx;
+  color: #646464;
+  font-weight: 400;
+  padding: 30rpx 0;
+  font-family: PingFangSC-Regular;
+}
+
+.member-item,
+.member-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 690rpx;
+  height: 88rpx;
+  border: 1px solid #e6e6e6;
+  line-height: 88rpx;
+  border-radius: 10rpx;
+  margin-top: 20rpx;
+
+}
+
+/* {
+    height: 98rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-top: 1px solid #E6E6E6;
+    color:#0592F5;
+    background: #fff;
+    box-sizing: border-box;
+    line-height:98rpx;
+  } */
+.member-button::before,
+.calling-button:before {
+  content: '';
+  display: block;
+  width: 28rpx;
+  height: 28rpx;
+  margin: 0 15rpx;
+  background: url('https://imgs.hh-medic.com/icon/wmp/calling-button.png') no-repeat;
+  background-size: cover;
+}
+
+.member-button::after,
+.calling-button:after {
+  content: '添加成员';
+  color: #969696;
+
+}
+
+/* //演示模式 */
+.demo-pattern {
+  height: 106rpx;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  border-top: 1px solid #e6e6e6;
+  font-size: 26rpx;
+  color: rgba(150, 150, 150, 1);
+}
+
+.demo-pattern::before {
+  content: '';
+  display: block;
+  width: 50rpx;
+  height: 50rpx;
+  margin-right: 10rpx;
+  background: url('https://imgs.hh-medic.com/icon/wmp/demo-pattern.png') no-repeat;
+  background-size: cover;
+}
+
+.demo-pattern-1::before {
+  content: '';
+  display: block;
+  width: 50rpx;
+  height: 50rpx;
+  margin-right: 10rpx;
+  background: url('https://imgs.hh-medic.com/icon/wmp/demo-pattern-1.png') no-repeat;
+  background-size: cover;
+}
+
+/* 顶部 视频医生说明勾选部分 */
+.member-explain {
+  font-size: 26rpx;
+  font-family: PingFang SC;
+  font-weight: 400;
+  color: #b4b4b4;
+  padding: 28rpx 0 28rpx 0;
+  display: flex;
+  color: #969696;
+  align-items: flex-start;
+}
+
+.member-check:before {
+  content: '';
+  display: block;
+  width: 40rpx;
+  height: 40rpx;
+  background: url('https://imgs.hh-medic.com/icon/wmp/member-check.png') no-repeat;
+  background-size: 30rpx 30rpx;
+  background-position: center center;
+
+}
+
+.member-checked:before {
+  background: url('https://imgs.hh-medic.com/icon/wmp/member-checked.png') no-repeat;
+  background-size: 30rpx 30rpx;
+  background-position: center center;
+
+}
+
+.member-text {
+  line-height: 40rpx;
+  text-align: left;
+  margin-left: 10rpx;
+}
+
+.member-explain-link {
+  color: #0592F5;
+  display: inline;
+}
+
+.member-demo {
+  padding: 0 5rpx 30rpx 5rpx;
+  color: #969696;
+  text-decoration: underline;
+  font-size: 26rpx;
+  width: 100%;
+  text-align: left;
+}
+
+.member-cancal {
+  height: 100rpx;
+  color: #1187ff;
+  font-size: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.member-isaccount {
+  color: #969696;
+  font-size: 26rpx;
+}
+
+/* calling部 */
+.calling-bottom {
+  position: fixed;
+  overflow: hidden;
+  left: 0;
+  font-family: PingFang SC;
+  text-align: center;
+  width: 750rpx;
+  z-index: 8;
+  box-sizing: border-box;
+  background: #fff;
+  bottom: 0;
+  border-radius: 20rpx 20rpx 0 0;
+}
+
+.calling-cancel {
+  height: 88rpx;
+  line-height: 88rpx;
+  padding-bottom: 17rpx;
+  font-size: 32rpx;
+  border-top: 20rpx solid #f6f6f6;
+  color: #323232;
+}
+
+.calling-item,
+.calling-button {
+  height: 100rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #e6e6e6;
+  color: #323232;
+}
+
+.calling-button {
+  border-top: 1px solid #e6e6e6;
+}
+
+.calling-title {
+  font-size: 30rpx;
+  height: 135rpx;
+  line-height: 135rpx;
+  border-bottom: 1px solid #e6e6e6;
+  color: #646464;
+}

@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "hhNetwork": "../../hh-network/hh-network"
+},
+  "navigationBarBackgroundColor": "#fff",
+  "navigationBarTextStyle": "black",
+  "navigationBarTitleText": "加载中..."
+}

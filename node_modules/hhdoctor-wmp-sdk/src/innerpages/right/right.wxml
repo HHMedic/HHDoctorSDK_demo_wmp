@@ -1,0 +1,2 @@
+<hhRight request='{{hhRequest}}' base-path='../../'></hhRight>
+<hhNetwork wx:if='{{!isConnect}}'></hhNetwork>

@@ -3,6 +3,7 @@ var APIURLs = {
   getMembers: "ehr/v2/api/getMemberList", // 获取家庭成员
   addUserMember: "ehr/v2/api/addUserMember", //添加家庭成员
   updateUserMember: 'ehr/v2/api/updateUserMember', //更新成员信息
+  completeUserInfo: 'ehr/v2/api/completeUserInfo', //完善成员信息
   deleteMember: "ehr/v2/api/delUserMember", //删除家庭成员
   addEhr: "/ehr/v2/api/addEhr", //添加档案
   getAuthCode: "/ehr/v2/api/getAuthCode",//获取授权码
@@ -10,7 +11,6 @@ var APIURLs = {
   getEhrDetail: "ehr/v2/api/getEhrDetail", //获取档案详情,
   createFamOrder: 'trtc/createFamOrder', //trtc-begin 创建订单
   hangup: 'trtc/hangup', //rtc-挂断呼叫
-  rtcLog: 'trtc/log', //rtc-上报日志
   transfer: 'wmp/transferCall', //rtc-获取转呼医生信息
   addAttatch: 'trtc/addAttatch', //trc-上传图片成功后上传附件
   callResponse: 'trtc/callResponse', //rtc-回拨接听调取的接口
@@ -25,7 +25,13 @@ var APIURLs = {
   getRxPatientInfo: 'trtc/getRxDrugOrderPatientInfo',  //获取处方患者信息 
   updateDrugCount: 'trtc/updateDrugCount',  //更新药卡中的药品数量 
   sendCustomerMessage: 'trtc/sendCustomerMessage',
-  getCardInfo: 'trtc/getCardInfo'
+  getCardInfo: 'trtc/getCardInfo',//获取药卡信息
+  getDoctorsTeam: 'yangguang/getDoctorsTeam',//阳光-获取私人医生团队列表
+  deleteDoctorFromTeam: 'yangguang/deleteDoctorFromTeam',//删除私人医生
+  requestAddDoctorToTeam: "yangguang/addDoctorToTeam",//添加医生到私人医生
+  requestGetUserInfo: "trtc/getUserInfo",//获取用户相关信息
+  getPsycholMed: 'trtc/getPsycholMed', //获取心理测评链接
+  viewWhiteboard: 'trtc/whiteboard',  //白板地址
 };
 
 
@@ -88,6 +94,12 @@ function requestUpdateMember(member, memberUuid) {
     memberUuid
   })
 }
+function requestCompleteMember(member, memberUuid) {
+  return request(APIURLs.completeUserInfo, {
+    member,
+    memberUuid
+  })
+}
 //4.删除家庭成员
 function requestDeleteMember(memberUuid) {
   return request(APIURLs.deleteMember, {
@@ -145,7 +157,7 @@ function requestRtc(url, data, isLog) {
 //rtc-1.创建订单
 // ?dept = ${ this.data._request.dept }`
 
-function requestCreateFamOrder(dept, famOrderId, orderType, platform, sdkVersion, realPatientUuid, realPatientUserToken, appointedDoctorId, appointedOrderId, mrId, hospitalId,ext) {
+function requestCreateFamOrder(dept, famOrderId, orderType, platform, sdkVersion, hhDoctorSdkVersion, realPatientUuid, realPatientUserToken, appointedDoctorId, appointedOrderId, mrId, hospitalId, ext) {
   console.log('orderType', orderType)
   let obj = {};
   obj['sdkProductId'] = getApp().globalData._hhSdkOptions._sdkProductId;
@@ -156,6 +168,7 @@ function requestCreateFamOrder(dept, famOrderId, orderType, platform, sdkVersion
   obj['orderType'] = orderType || '';
   obj['platform'] = platform;
   obj['sdkVersion'] = sdkVersion;
+  obj['hhDoctorSdkVersion'] = hhDoctorSdkVersion;
   obj['realPatientUuid'] = realPatientUuid;
   obj['realPatientUserToken'] = realPatientUserToken || '';
   obj['appointedDoctorId'] = appointedDoctorId || '';
@@ -182,16 +195,6 @@ function sendCustomerMessage(fromUser, toUser, command, famOrderId, data) {
 function requestHangUp(params) {
   let query = `sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}`
   return requestRtc(APIURLs.hangup + params + '&' + query, {})
-}
-//rtc-3. 上报日志
-function requestRtcLog(type, content, orderId) {
-  let query = `sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}`
-  let orderid = orderId ? orderId : getApp().globalData.orderId ? getApp().globalData.orderId : '';
-  return requestRtc(APIURLs.rtcLog + '?' + query, {
-    type,
-    content: content || '',
-    orderId: orderid
-  }, true)
 }
 
 //rtc-4. 获取医生资源
@@ -270,6 +273,32 @@ function requestGetCardInfo(id) {
   let url = `?sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}&id=${id}`;
   return requestRtc(APIURLs.getCardInfo + url, {})
 }
+function requestGetDoctorsTeam() {
+  let url = `?sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}`;
+  return requestRtc(APIURLs.getDoctorsTeam + url, {})
+}
+function requestDeleteDoctorFromTeam(doctorId) {
+  let url = `?sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}&doctorId=${doctorId}`;
+  return requestRtc(APIURLs.deleteDoctorFromTeam + url, {})
+
+}
+function requestAddDoctorToTeam(doctorId) {
+  let url = `?sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}&doctorId=${doctorId}`;
+  return requestRtc(APIURLs.requestAddDoctorToTeam + url, {})
+}
+function requestGetUserInfo() {
+  let url = `?sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}`;
+  return requestRtc(APIURLs.requestGetUserInfo + url, {})
+}
+function requestGetPsycholMed() {
+  let url = `?sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}`;
+  return requestRtc(APIURLs.getPsycholMed + url, {})
+}
+
+function getWhiteboardUrl(classId, orderId, videoStartTime) {
+  let url = `?sdkProductId=${getApp().globalData._hhSdkOptions._sdkProductId}&userToken=${getApp().globalData._hhSdkOptions._userToken}&classId=${classId}&famOrderId=${orderId}&videoStartTime=${videoStartTime}`;
+  return getRtcUrl(APIURLs.viewWhiteboard) + url
+}
 
 module.exports = {
   getUploadUrl,
@@ -281,9 +310,9 @@ module.exports = {
   requestGetEhrList,
   requestGetEhrDetail,
   requestUpdateMember,
+  requestCompleteMember,
   requestCreateFamOrder,
   requestHangUp,
-  requestRtcLog,
   requestDoctor,
   getRtcUploadUrl,
   requestAddAttatch,
@@ -299,5 +328,11 @@ module.exports = {
   requestGetRxPatientInfo,
   requestUpdateDrugCount,
   sendCustomerMessage,
-  requestGetCardInfo
+  requestGetCardInfo,
+  requestGetDoctorsTeam,
+  requestDeleteDoctorFromTeam,
+  requestAddDoctorToTeam,
+  requestGetUserInfo,
+  requestGetPsycholMed,
+  getWhiteboardUrl
 }

@@ -1,4 +1,9 @@
-@import "../wxss/image.wxss";
+
+.image-norepeat {
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  -moz-background-size: 100% 100%;
+}
 
 input,
 textarea {

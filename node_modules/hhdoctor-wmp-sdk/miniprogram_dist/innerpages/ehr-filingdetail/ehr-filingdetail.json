@@ -1,0 +1,12 @@
+{
+"navigationStyle": "default",
+"navigationBarBackgroundColor": "#fff",
+"navigationBarTitleText": "",
+"navigationBarTextStyle": "black",
+"usingComponents": {
+    "detail-item": "../../filing-detail-item/filing-detail-item",
+    "list-images": "../../list-images/list-images",
+    "filing-detail-reply": "../../filing-detail-reply/filing-detail-reply",
+    "hhNetwork": "../../hh-network/hh-network"
+}
+}

@@ -1,0 +1,61 @@
+/* components/hh-phase/trtc-modal/trtc-modal.wxss */
+.modal-wrap{
+  background:rgba(0,0,0,.5);
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:9000
+}
+.modal-content{
+  width:600rpx;
+  background:#fff;
+  border-radius:20rpx;
+  position:absolute;
+  top:40vh;
+  left:75rpx;
+  text-align:center;
+  box-sizing: border-box;
+}
+.modal-title{
+  font-size:38rpx;
+  color:rgba(50,50,50,1);
+  height:120rpx;
+  line-height:130rpx;
+  font-weight:500;
+
+}
+.modal-text{
+  padding:0 40rpx;
+  margin-bottom:26rpx;
+  font-size:36rpx;
+  min-height:100rpx;
+  display:flex;
+  align-items: center;
+  justify-content: center;
+  font-weight:400;
+  color:rgba(50,50,50,1);
+  line-height:48rpx;
+  text-align: center;
+}
+.modal-button{
+  height:110rpx;
+  border-top:1px solid #E6E6E6;
+  display:flex;
+  align-items: center;
+  font-size: 36rpx;
+}
+.modal-cancel{
+  height:90rpx;
+  line-height:90rpx;
+  color:rgba(100,100,100,1);
+  flex-grow:1;
+  border-right:1px solid #E6E6E6;
+}
+.modal-confirm{
+  height:90rpx;
+  line-height:90rpx;
+  color:rgba(0,166,255,1);
+  flex-grow:1;
+}

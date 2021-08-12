@@ -1,6 +1,6 @@
-let hhSdk;
 let app = getApp();
 let self;
+const hhDoctor = require('../../miniprogram_npm/hhdoctor-wmp-sdk/hhDoctor');;
 Page({
 
   /**
@@ -27,8 +27,6 @@ Page({
       .catch(() => {
         console.error('视频医生登录失败')
       })
-
-    hhSdk = this.selectComponent('#hhSdk');
   },
 
   /** 呼叫医生 */
@@ -58,7 +56,7 @@ Page({
 
   /** 查看购药订单 */
   viewDrugOrder() {
-    hhSdk.navigateTo({
+    hhDoctor.navigateTo({
       page: 'drugOrder',
       drugOrderId: 'Y2019061812110776705', //购药订单ID
       redirectPage: '/pages/index/index' //订单支付完成后跳转目的页面
@@ -67,21 +65,17 @@ Page({
 
   /** 查看购药订单列表 */
   viewDrugOrderList() {
-    hhSdk.navigateTo({
+    hhDoctor.navigateTo({
       page: 'drugOrderList'
     })
   },
   /** 查看个人页面 */
   viewPersonal() {
-    hhSdk.navigateTo({
-      page: 'personalPage'
-    })
+    hhDoctor.navigateTo({ page: 'personalPage' })
   },
   /** 查看地址列表 */
   viewAddrList() {
-    hhSdk.navigateTo({
-      page: 'addressList'
-    })
+    hhDoctor.navigateTo({ page: 'addressList' })
   },
   /** 咨询助理 */
   viewIm() {
@@ -92,20 +86,21 @@ Page({
   },
   /** 查看档案库首页 */
   viewEhrList() {
-    hhSdk.navigateTo({
+    hhDoctor.navigateTo({
       page: 'ehrMemberList'
     })
   },
   /** 查看指定成员的档案列表 */
   viewMemberEhr() {
-    hhSdk.navigateTo({
+    hhDoctor.navigateTo({
       page: 'ehrList',
-      patient: 'E6E6E880BB3AD4A1D8B31FE763B6ADEB3F0D04F68EA2608F6783B874E4F50EEF'  //实际患者userToken
+      patient: 'E6E6E880BB3AD4A1D8B31FE763B6ADEB3F0D04F68EA2608F6783B874E4F50EEF',  //实际患者userToken
+      nickname: '成员姓名'
     })
   },
   /** 查看指定的档案详情 */
   viewEhrDetail() {
-    hhSdk.navigateTo({
+    hhDoctor.navigateTo({
       page: 'ehrDetail',
       patient: 'E6E6E880BB3AD4A1D8B31FE763B6ADEB3F0D04F68EA2608F6783B874E4F50EEF',  //实际患者userToken
       medicRecordId: '1600335682145'                                                //档案id

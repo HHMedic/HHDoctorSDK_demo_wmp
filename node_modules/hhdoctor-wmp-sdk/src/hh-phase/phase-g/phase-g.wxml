@@ -1,0 +1,17 @@
+<!--components/hh-phase/phase-g/phase-g.wxml-->
+<view class="room-box" style="background-image:url({{doctor.photourl}})">
+	<view class="room-modal">
+		<view class="room-name">{{doctor.name}}</view>
+		<view class="room-status">{{isInvite==1? order.patientName +'邀请你一起视频咨询...': '邀请你视频...'}}</view>
+		<view class="room-icons">
+			<view class="room-icon" >
+                <button class='bottom-image' bindtap='bindHangUp' style='background-image:url({{icons.hangup}});'  id='e-hangup'></button>
+				<view class="room-cancel">拒绝</view>
+			</view>
+			<view class="room-icon" >
+                <button class='bottom-image' bindtap='bindAccept' style='background-image:url({{icons.accept}});'  id='e-accept'></button>
+				<view class="room-cancel">接听</view>
+			</view>
+		</view>
+	</view>
+</view>

@@ -90,18 +90,18 @@
 
 	<!-- 报名抽奖 -->
 	<button wx:if="{{'NOT_APPLY'==lottery.state}}" class="lottery not-apply" data-seckillid="{{lottery.stock.seckillId}}" open-type="{{'unreg'==request.userToken || !phoneData?'getPhoneNumber':''}}" bindgetphonenumber="_tapApplySeckill" catchtap="_tapApplySeckill">
-		<view class="lottery-not-apply-img image-norepeat gift-white"></view>
+		<view class="lottery-not-apply-img image-norepeat" style="background-image: url('{{bgImages.giftWhite}}')"></view>
 		<view>报名抽奖</view>
 	</button>
 	<!-- 等待抽奖、抽奖倒计时 -->
 	<view wx:if="{{'READIED'==lottery.state && (-1 == lottery.stock.state || countdown)}}" class="lottery wait">
-		<view class="lottery-wait-img image-norepeat gift-red"></view>
+		<view class="lottery-wait-img image-norepeat" style="background-image: url('{{bgImages.giftRed}}')"></view>
 		<view>{{0==lottery.stock.state?'抽奖倒计时：'+countdown:'等待抽奖'}}</view>
 	</view>
 	<!-- 抽奖卡片 -->
 	<view wx:if="{{'READIED'==lottery.state}}" class="license-wrap {{showLottery?'':'hidden'}}">
-		<view class="lottery-wrap image-norepeat lottery-background">
-			<view class="lottery-close image-norepeat x-with-cycle" catchtap="_tapCloseLottery" data-exec="{{false}}"></view>
+		<view class="lottery-wrap image-norepeat" style="background-image: url('{{bgImages.lotteryBackground}}')">
+			<view class="lottery-close image-norepeat" style="background-image: url('{{bgImages.xWithCycle}}')" catchtap="_tapCloseLottery" data-exec="{{false}}"></view>
 			<view class="lottery-name">{{lottery.stock.name}}</view>
 			<view class="lottery-image-wrap">
 				<image src="{{lottery.stock.imageUrl}}" class="lottery-image"></image>
@@ -112,16 +112,16 @@
 	<!-- 抽奖结果卡片 -->
 	<view wx:if="{{lotteryState}}" class="license-wrap">
 		<view class="lottery-result-wrap">
-			<view class="lottery-result-close image-norepeat x-with-cycle" catchtap="_tapCloseLotteryResult" data-address="{{false}}"></view>
+			<view class="lottery-result-close image-norepeat" style="background-image: url('{{bgImages.xWithCycle}}')" catchtap="_tapCloseLotteryResult" data-address="{{false}}"></view>
 			<block wx:if="{{'SUCCESS'==lotteryState}}">
-				<view class="lottery-success-pos image-norepeat lottery-success"></view>
+				<view class="lottery-success-pos image-norepeat" style="background-image: url('{{bgImages.lotterySuccess}}')"></view>
 				<view class="lottery-success-title">恭喜您获得</view>
 				<view class="lottery-success-name">{{lottery.stock.name}}</view>
 				<view wx:if="{{0==goodsCategory}}" class="lottery-succes-desc {{0==goodsCategory?'virtual':''}}">会员权益24小时内自动开通</view>
 				<view class="lottery-succes-desc {{0==goodsCategory?'virtual':''}}">稍后还有大奖，继续加油</view>
 			</block>
 			<block wx:if="{{'FAIL'==lotteryState}}">
-				<view class="lottery-fail image-norepeat emoji-cry"></view>
+				<view class="lottery-fail image-norepeat" style="background-image: url('{{bgImages.emojiCry}}')"></view>
 				<view class="lottery-fail-title">未中奖</view>
 				<view class="lottery-fail-desc">稍后主播会继续抽大奖，继续加油</view>
 			</block>
@@ -132,7 +132,7 @@
 	<!-- 地址列表 -->
 	<view wx:if="{{'LIST'==addressState}}" class="license-wrap">
 		<view class="address-wrap">
-			<view class="address-close image-norepeat x-with-cycle" catchtap="_tapCloseAddress"></view>
+			<view class="address-close image-norepeat"  style="background-image: url('{{bgImages.xWithCycle}}')" catchtap="_tapCloseAddress"></view>
 			<view class="address-title">选择收货地址</view>
 			<view class="address-body-wrap">
 				<scroll-view class="address-list" scroll-y="{{true}}">
@@ -157,7 +157,7 @@
 	<!-- 新增地址 -->
 	<view wx:if="{{'NEW'==addressState}}" class="license-wrap">
 		<view class="address-wrap">
-			<view class="address-close image-norepeat x-with-cycle" catchtap="_tapCloseAddress"></view>
+			<view class="address-close image-norepeat" style="background-image: url('{{bgImages.xWithCycle}}')" catchtap="_tapCloseAddress"></view>
 			<view class="address-title">请填写收货地址</view>
 			<view class="address-body-wrap addnew">
 				<view class="input-wrap">
@@ -187,13 +187,13 @@
 
 	<view class="license-wrap" wx:if="{{showLicense}}">
 		<view class="license-panel">
-			<view class="license-close image-norepeat x-with-cycle" catchtap="_tapCloseLicense" data-accept="{{false}}"></view>
+			<view class="license-close image-norepeat" style="background-image: url('{{bgImages.xWithCycle}}')" catchtap="_tapCloseLicense" data-accept="{{false}}"></view>
 			<scroll-view class="license-content-wrap" scroll-y="{{true}}">
 				<rich-text class="license-content" nodes="{{licenseNodes}}"></rich-text>
 			</scroll-view>
 			<button class="license-btn" catchtap="_tapCloseLicense" data-accept="{{true}}">我知道了</button>
 			<view class="license-agree-wrap">
-				<view class="license-agree-check image-norepeat ok-with-cycle"></view>
+				<view class="license-agree-check image-norepeat" style="background-image: url('{{bgImages.okWithCycle}}')"></view>
 				<view>同意</view>
 				<view class="license-name">注册协议</view>
 			</view>

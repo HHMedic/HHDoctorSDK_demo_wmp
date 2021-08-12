@@ -1,0 +1,2 @@
+/* components/hh-phase/phase-c/phase-c.wxss */
+@import '../phase.wxss'

@@ -1,6 +1,5 @@
 const commonUtil = require('../../utils/commonUtil.js')
-var that;
-let apiUtil
+let appUtil, that, apiUtil
 Page({
 
   /**
@@ -81,7 +80,8 @@ Page({
     if (options && options.sdkProductId) getApp().globalData.appId = options.sdkProductId
     if (options && options.profileName) getApp().globalData.profile = options.profileName
     if (options && options.subDomain) getApp().globalData.subDomain = options.subDomain
-    getApp().initProfile()
+    if (!appUtil) appUtil = require('../../../utils/appUtil')
+    appUtil.initProfile()
     getApp().globalData.loginUser = null
     getApp().getLoginUser()
       .then((loginUser) => {
@@ -167,19 +167,21 @@ Page({
   },
   /** 播放列表为空 */
   onLiveListEmpty(e) {
-    if (e && e.detail && e.detail.liveInfo && e.detail.liveInfo.preUrl) {
-      wx.redirectTo({
-        url: '../view/view?url=' + encodeURIComponent(e.detail.liveInfo.preUrl)
-      })
-      return
+    if (e && e.detail && e.detail.liveInfo && 0 == e.detail.liveInfo.liveStatus && e.detail.liveInfo.preUrl) {
+      return wx.redirectTo({ url: '../view/view?url=' + encodeURIComponent(e.detail.liveInfo.preUrl) })
     }
+
     let msg = '当前直播未开始或已结束';
+    let msgMap = ['亲，直播尚未开始，期待您按时观看并参加互动，赢取精美礼品哦！', '', '本场直播结束啦，期待您下次参加互动，赢取精美礼品哦！']
+    if (e && e.detail && e.detail.liveInfo) {
+      msg = msgMap[e.detail.liveInfo.liveStatus]
+    }
     let unRegUser = !getApp().globalData._hhSdkOptions._userToken;
     if (!getApp().globalData._hhSdkOptions._userToken) {
-      msg += '，现在注册即可每天观看医生直播，还可享1对1视频咨询医生';
+      //msg += '，现在注册即可每天观看医生直播，还可享1对1视频咨询医生';
     }
     wx.showModal({
-      title: '提示',
+      title: '',
       content: msg,
       showCancel: unRegUser,
       confirmText: unRegUser ? '前往注册' : '返回',

@@ -1,0 +1,90 @@
+<!--components/innerpages/eleme-message/eleme-message.wxml-->
+<view class='page-purchase' wx:if='{{status==-1}}'>
+    <view class='purchase-icon'>当前药品未到起送价格，您可以</view>
+    <view class='purchase-text'>去药店购买</view>
+    <view class='purchase-or'>或</view>
+    <view class='purchase-btn' bindtap='bindUpdateDrugCount'>购买{{drugCount}}份该药品，{{buttonName}}</view>
+    <view class='purchase-statement'>起送价由配送药店自己确定，与本平台无关</view>
+</view>
+<view class='page' wx:if='{{status == 0}}'>
+    <view class='msg-tip'>据规定：购买处方药品需实名认证，请如实填写</view>
+    <view class='msg-list msg-nickname'>{{nickname}}</view>
+    <block>
+        <view class='msg-list msg-name'>
+            <input class="msg-name-input" bindinput='bindInputMsgName' 
+            bindblur='bindBlurMsg'
+            value='{{username}}' 
+            data-type='username'
+            maxlength="20"
+            placeholder="请输入患者真实姓名"  
+            placeholder-class='msg-placeholder' />
+            <view class='msg-close' wx:if='{{username}}' bindtap='bindCloseInput' data-type='username'></view>
+        </view>
+        <view class='msg-list msg-idcard'>
+            <input class="msg-idcard-input" 
+            bindinput='bindInputMsgIdCard' 
+            bindblur='bindBlurMsg'
+            value='{{useridcard}}' 
+            data-type='useridcard'
+            placeholder="请输入患者真实身份证号码" 
+            placeholder-class='msg-placeholder' type='idcard'/>
+            <view class='msg-close' wx:if='{{useridcard}}' bindtap='bindCloseInput' data-type='useridcard'></view>
+        </view>
+        <view class='msg-err' wx:if='{{errorText}}'>{{errorText}}</view>
+    </block>
+    <view class='msg-list msg-phone'>
+        <input class="msg-phone-input" 
+        bindinput='bindInputMsgPhone' 
+        value='{{userphone}}' 
+        bindblur='bindBlurMsg'
+        data-type='userphone'
+        placeholder="请输入联系人电话" 
+        placeholder-class='msg-placeholder' maxlength='11' type='number'/>
+        <view class='msg-close' wx:if='{{userphone}}' bindtap='bindCloseInput' data-type='userphone'></view>
+    </view>
+    <view class='msg-gray'>完成实名认证后，系统将自动同步您的信息至档案库。</view>
+    <button class='msg-btn' bindtap='bindSubmit'>确定</button>
+</view>
+<!-- 处方 -->
+<view class='page-recipe' wx:if='{{status == 1 }}'>
+    <view class='recipe-icon'>正在生成处方并授权</view>
+    <view class='load-wrap' >
+        <view class='load-circle'>
+            <view class='circle' wx:for='{{3}}' wx:key='index'></view>
+      </view>
+    </view>
+    <view class='auth-box' wx:if='{{isShowAuth}}'>
+        <view class='auth-pannel'>
+            <view class='auth-title'>个人信息授权</view>
+            <view class='auth-content'>
+                <view style='text-indent:50rpx;'>
+                    尊敬的用户，在您确认授权后，将跳转至北京和缓医疗科技有限公司合作平台内药品服务平台使用药品配送服务。
+                </view>
+                <view>
+                    您对以上服务事项确认授权的内容包括:
+                </view>
+                <view style='margin-top:30rpx;'>
+                    1.同意药品服务平台获取您的处方和地址信息以完成药品购买配送服务;
+                </view>
+                <veiw>
+                    2.同意药品服务平台将您购买药品的部分数据传输给北京和缓医疗科技有限公司，包括订单编号、支付状态、订单创建时间、订单支付时间、药品明细信息等，以便北京和缓医疗科技有限公司记录实际购买情况，进行后续与您相关权益的更新及结算之目的使用，提供更好的服务体验。 
+                </veiw>
+                <view style='margin-top:30rpx;'>
+                    您同意授权后，即视为您全面知悉并同意上述授权内容，本授权声明即具有法律效力。
+                </view>
+            </view>
+            <view class='auth-btns' >
+                <view class='auth-reject' bindtap='bindBackIndex'>拒绝</view>
+                <view class='auth-confirm' bindtap='bindAuthAgree'>同意并继续</view>
+            </view>
+        </view>
+    </view>
+</view>
+
+<!-- 支付失败 -->
+<view class='page-fail' wx:if='{{status == 2}}'>
+    <view class='fail-icon'>购药失败，请到药店或医院购买</view>
+    <button class='back-index' bindtap='bindBackIndex'>返回首页</button>
+</view>
+<view class='page-fail' wx:if='{{status==3}}'></view>
+<hhNetwork wx:if='{{!isConnect}}'></hhNetwork>

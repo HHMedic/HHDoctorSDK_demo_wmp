@@ -1,0 +1,2 @@
+<hhBuy request='{{hhRequest}}' base-path='../../'></hhBuy>
+<hhNetwork wx:if='{{!isConnect}}'></hhNetwork>

@@ -42,6 +42,7 @@ Component({
       this.setData({
         isShowModal:false
       })
+      this.triggerEvent('myCancel')
     },
     bindConfirm(){
       this.triggerEvent('myConfirm');

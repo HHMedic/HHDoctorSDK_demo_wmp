@@ -1,0 +1,10 @@
+{
+"navigationStyle": "default",
+"navigationBarBackgroundColor": "#fff",
+"navigationBarTitleText": "自建档案",
+"navigationBarTextStyle": "black",
+"usingComponents": {
+    "list-images": "../../list-images/list-images",
+    "hhNetwork": "../../hh-network/hh-network"
+}
+}

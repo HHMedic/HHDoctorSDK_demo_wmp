@@ -46,6 +46,9 @@
               wx:if='{{(starIdx<4&&item.answerOne=="1-4") || (starIdx>=4&&item.answerOne=="5")}}'
               >{{item.content}}</view>
             </view>
+            <view class='evaluate-input-wrap' wx:if='{{enableInputEvaluate}}'>
+            <textarea class="evaluate-input" maxlength="256" bindinput="bindInputContent" ></textarea>
+            </view>
             <view class='evaluate-confirm' bindtap='bindStarSubmit'>匿名提交</view>
           </view>
         </view>
@@ -94,7 +97,7 @@
           <view class='thanks-button' bindtap='bindChangeDoctor'>换个医生问问</view>
         </view>
       </block>
-      <view class='complain-link' hidden='{{template==4||template==5||template==6}}' bindtap='bindComplainLink'>我要投诉</view>
+      <view class='complain-link' hidden='{{template==4||template==5||template==6||!enableComplain}}' bindtap='bindComplainLink'>我要投诉</view>
     </view>
   </view>
 </view>

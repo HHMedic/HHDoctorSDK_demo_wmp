@@ -3,46 +3,24 @@ const eventOption = {};
 var that, app;
 module.exports = Behavior({
   behaviors: [],
-  properties: {
-
-  },
-  data: {
-
-  },
+  properties: {},
+  data: {},
 
   attached() {
     that = this;
     app = getApp();
   },
   methods: {
-    propertyChanged(newVal, oldVal, changedPath) {
-
-    },
-
-    _logInfo(content, ...args) {
-      if (!this.data._request || 'prod' == this.data._request.profileName) {
-        return;
-      }
-      //console.log('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK:' + this.data._name + '] ' + content);
-      console.log('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK:' + this.data._name + '] ' + content, args);
-    },
-
-    _logError(content, ...args) {
-      if (!this.data._request || 'prod' == this.data._request.profileName) {
-        return;
-      }
-      console.error('[' + common.formatDate('hh:mm:ss.S') + '] [HH-IM-SDK:' + this.data._name + '] ' + content, args);
-    },
-    _ttt() {
-      console.log(123);
-    },
-
+    propertyChanged(newVal, oldVal, changedPath) { },
     _triggerEvent(name, detail) {
       this.triggerEvent(name, detail, eventOption)
-      //this.triggerEvent(name, detail, eventOption)
     },
-
     _getPublicRequestParams() {
+      let wmpVersion = ''
+      if (app.globalData.wxAppId && 'wx15e414719996d59f' == app.globalData.wxAppId
+        && app.globalData.wmpVersion) {
+        wmpVersion = app.globalData.wmpVersion
+      }
       var params = 'profileName=' + this.data._request.profileName +
         '&subDomain=' + this.data._request.subDomain +
         '&sdkProductId=' + this.data._request.sdkProductId +
@@ -50,34 +28,23 @@ module.exports = Behavior({
         '&openId=' + this.data._request.openId +
         '&source=wmpSdk' +
         '&version=' + this.data._sdkVersion +
+        '&wmpVersion=' + wmpVersion +
         '&_=' + new Date().getTime();
       return params
     },
 
-    _appendUrlParams(url) {
-      if (url.indexOf('?') >= 0) {
-        url += '&';
-      } else {
-        url += '?';
+    _clearIntervalHandler(handler) {
+      if (handler) {
+        clearInterval(handler);
+        handler = null;
       }
-      url += ('_=' + new Date().getTime() + '&source=wmpSdk');
-
-      if (url.indexOf('openId=') < 0 && this.data._request.openId) {
-        url += ('&openId=' + this.data._request.openId);
+    },
+    _isUnReg(alert) {
+      if ('unreg' == this.data._request.userToken) {
+        if (alert) wx.showToast({ title: '请注册登录后再试', icon: 'none' })
+        return true;
       }
-      if (url.indexOf('wmpVersion=') < 0 && getApp().globalData.wmpVersion) {
-        url += ('&wmpVersion=' + getApp().globalData.wmpVersion);
-      }
-      if (url.indexOf('sdkVersion=') < 0) {
-        url += ('&sdkVersion=' + this.data._sdkVersion);
-      }
-      if (url.indexOf('sdkProductId=') < 0 && this.data._request.sdkProductId) {
-        url += ('&sdkProductId=' + this.data._request.sdkProductId);
-      }
-      if (url.indexOf('wxAppId=') < 0 && getApp().globalData.wxAppId) {
-        url += ('&wxAppId=' + getApp().globalData.wxAppId);
-      }
-      return url;
-    }
+      return false;
+    },
   }
 })

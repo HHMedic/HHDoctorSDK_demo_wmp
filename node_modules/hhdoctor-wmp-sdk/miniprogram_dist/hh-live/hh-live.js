@@ -22,15 +22,13 @@ let regSource
 let sysInfo
 
 Component({
-  behaviors: [require('../behaviors/hhCommon.js'),
-  require('../behaviors/hhStarter.js'),
-  require('./behaviorUser.js'),
-  require('./behaviorLottery.js'),
-  require('./behaviorAddress.js')],
-
-  /**
-   * 组件的属性列表
-   */
+  behaviors: [
+    require('../behaviors/hhStarter'),
+    require('../behaviors/hhCommon'),
+    require('./behaviorUser.js'),
+    require('./behaviorLottery.js'),
+    require('./behaviorAddress.js')
+  ],
   properties: {
     height: Number
   },
@@ -111,7 +109,16 @@ Component({
     addressState: '',
     newAddress: {},
     cleanScreen: false,
-    videoRatio: 0.6
+    videoRatio: 0.6,
+    bgImages: {
+      lotteryBackground: 'https://imgs.hh-medic.com/icon/wmp/live/lottery-background.png',
+      xWithCycle: 'https://imgs.hh-medic.com/icon/wmp/live/x-with-cycle.png',
+      okWithCycle: 'https://imgs.hh-medic.com/icon/wmp/live/ok-with-cycle.png',
+      giftWhite: 'https://imgs.hh-medic.com/icon/wmp/live/gift-white.png',
+      giftRed: 'https://imgs.hh-medic.com/icon/wmp/live/gift-red.png',
+      emojiCry: 'https://imgs.hh-medic.com/icon/wmp/live/emoji-cry.png',
+      lotterySuccess: 'https://imgs.hh-medic.com/icon/wmp/live/lottery-success.png'
+    }
   },
 
   /**

@@ -10,7 +10,7 @@ Component({
   },
   observers: {
     'value': function(val) {
-      console.log('val',val)
+      //console.log('val',val)
       if (val.control) {
         this.setData({
           keyText: kbUtil.getControlKeyText(val.control),

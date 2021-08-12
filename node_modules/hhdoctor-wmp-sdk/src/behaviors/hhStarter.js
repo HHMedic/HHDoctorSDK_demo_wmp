@@ -1,5 +1,6 @@
 const common = require('../utils/commonUtil.js');
 const hostUtil = require('../utils/hostUtil.js');
+const cStyle = require('../utils/consoleStyle')
 const eventOption = {};
 var that, app;
 module.exports = Behavior({
@@ -9,7 +10,7 @@ module.exports = Behavior({
       type: Object,
       value: {},
       observer(newVal, oldVal, changedPath) {
-        this.propertyChanged(newVal, oldVal, changedPath);
+        this.paramRequestChange(newVal, oldVal, changedPath);
       }
     },
     basePath: {
@@ -18,11 +19,11 @@ module.exports = Behavior({
     }
   },
   data: {
-    _sdkVersion: '1.0.9',
+    _sdkVersion: '3.1.0',
     _request: {
       //公共属性
       subDomain: '',
-      profileName: 'test',
+      profileName: getApp().globalData.profile || 'test',
       sdkProductId: null,
       userToken: null,
       openId: null,
@@ -33,10 +34,14 @@ module.exports = Behavior({
       ehrPage: null,
       personalPage: '',
       personalIconVisible: true,
+      naviToAppIconVisible: false,
       medicinePage: null,
       addressPage: '',
       payPage: '',
+      redirectPage: '',
       serviceType: 'asst',
+      callBtnVisible: true,
+      bottomToolsVisible: true,
       //hh-ehr属性
       viewModule: 'memberList',
       addMember: true,
@@ -54,6 +59,11 @@ module.exports = Behavior({
       playTimeoutMessage: '播放视频失败，请重启微信再呼叫',
       weakNetworkTimeout: 6,
       ringtone: 'https://imgs.hh-medic.com/icon/ring.mp3',
+      evaluateTemplate: 1,
+      enableChangeDoctor: true,
+      enableComplain: true,
+      enableInputEvaluate: false,
+      localVideoStatus: 2,   //视频右上角本地视频的状态。-1:永远关闭,0:默认关闭，用户可开启,1:默认开启，用户可关闭,2:永远开启
       //hh-personal属性
       personalModule: 'personal',
       //hh-addresslist属性
@@ -63,11 +73,6 @@ module.exports = Behavior({
       addressId: null,
       //hh-medicine属性
       drugOrderId: null,
-      //hh-live属性
-      enableInputComment: true, //是否允许输入评论
-      enableLiveShare: false, // 是否允许分享
-      //hh-productright属性
-      productId: null,
       //hh-my属性
       autoAcl: false,
       userAcl: {
@@ -87,9 +92,11 @@ module.exports = Behavior({
         showProductRight: true //查看权益
       },
       regPage: '',
+      enableLiveShare: false,
       //其他属性
       hospitalId: null
-    }
+    },
+    _requestCheck: false
   },
 
   attached() {
@@ -97,20 +104,9 @@ module.exports = Behavior({
     app = getApp();
   },
   methods: {
-    propertyChanged(newVal, oldVal, changedPath) {
-      if (!newVal) {
-        return;
-      }
-      var _req = Object.assign(this.data._request, newVal);
-      this.setData({
-        _request: _req
-      })
-
-      var _host = this._getHost();
-      this.setData({
-        _host: _host
-      })
-
+    paramRequestChange(newVal, oldVal, changedPath) {
+      if (!newVal) return
+      this.setData({ _request: Object.assign(this.data._request, newVal), _host: this._getHost() })
       if (!this.data._request.userToken && this.data._request.uuid && this.data._request.token) {
         this._getUserToken();
       } else {
@@ -127,6 +123,7 @@ module.exports = Behavior({
         'im/getUserToken?sdkProductId=' + this.data._request.sdkProductId +
         '&uuid=' + this.data._request.uuid +
         '&token=' + this.data._request.token;
+      console.log(url);
       wx.request({
         url: url,
         data: {},
@@ -142,8 +139,7 @@ module.exports = Behavior({
               _request: _req
             })
           } else {
-            that._logError('初始化失败！请检查uuid和token参数');
-            return;
+            console.log('>>> _getUserToken failed!');
           }
           that._checkRequest();
         }
@@ -154,16 +150,19 @@ module.exports = Behavior({
       if (!this.data._request.sdkProductId ||
         !this.data._request.userToken ||
         !this.data._request.openId) {
-        this._logError('缺少必要参数：sdkProductId、userToken或openId，无法使用组件:' + this.data._name);
         return;
       }
-      if ('string' == typeof(this.data._request.enableLiveShare)) {
-        this.setData({
-          "_request.enableLiveShare": 'true' == this.data._request.enableLiveShare
-        })
+      if ('undefined' === this.data._request.sdkProductId ||
+        'undefined' === this.data._request.userToken ||
+        'undefined' === this.data._request.openId) {
+        console.error('请勿将字符串“undefined”赋值给request参数的sdkProductId、userToken或openId', this.data._request)
+        return;
       }
+      console.log('%c 初始化组件:' + this.is, cStyle.info);
       switch (this.data._name) {
         case 'hh-im':
+        case 'hh-bottom':
+        case 'hh-calling':
         case 'hh-head':
         case 'hh-ehr':
         case 'hh-personal':
@@ -172,38 +171,34 @@ module.exports = Behavior({
         case 'hh-addresssearch':
         case 'hh-right':
         case 'hh-buyproduct':
-        case 'hh-sdkcontext':
         case 'hh-live':
           break;
+        case 'hh-rtc':
+        case 'hh-trtc':
         case 'hh-call':
           if (!this.data._request.dept &&
             (this.data._request.appointedDoctorId || this.data._request.appointedOrderId) &&
             !this.data._request.medicRecordId) {
-            this._logError('缺少必要参数:dept');
+            console.error('缺少必要参数:dept');
             return;
           }
           break;
         case 'hh-addressedit':
           if ('update' == this.data._request.editType && !this.data._request.addressId) {
-            this._logError('editType为update时，需传入addressId');
+            console.error('editType为update时，需传入addressId');
             return;
           }
           break;
         case 'hh-medicine':
           if (!this.data._request.drugOrderId) {
-            this._logError('缺少必要参数:drugOrderId');
-            return;
-          }
-          break;
-        case 'hh-productright':
-          if (!this.data._request.productId) {
-            this._logError('缺少必要参数:productId');
+            console.error('缺少必要参数:drugOrderId');
             return;
           }
           break;
         default:
           return;
       }
+      //console.log( '检查request参数完成');
       var sdkOptions = {
         _host: this.data._host,
         _sdkProductId: this.data._request.sdkProductId,
@@ -212,9 +207,8 @@ module.exports = Behavior({
         _profileName: this.data._request.profileName,
         _subDomain: this.data._request.subDomain
       };
-      this._logInfo('检查request参数完成,sdkOptions:', sdkOptions);
       getApp().globalData._hhSdkOptions = sdkOptions;
-
+      this.setData({ _requestCheck: true })
       this._requestComplete();
     }
   }

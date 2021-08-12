@@ -1,4 +1,4 @@
-# 和缓视频医生微信小程序SDK使用指南（3.0.8）
+# 和缓视频医生微信小程序SDK使用指南（3.1.0）
 
 和缓视频医生微信小程序SDK（**本SDK**）为小程序自定义组件形式，使用npm方式发布。本文引导开发者从零开始，一步一步搭建起和缓视频医生基本功能框架。如果开发者是在现有项目中集成本SDK，可直接从第2步开始阅读。
 
@@ -6,6 +6,8 @@
 *  点击IDE右上角的“详情”，修改AppID。
 *  使用命令提示符或终端，进入当前项目所在本地目录，执行命令更新SDK：`npm i hhdoctor-wmp-sdk@latest --production`。
 *  点击IDE菜单中的“工具”-“构建 npm”。
+
+---
 
 ## 旧版本SDK文档
 
@@ -17,6 +19,8 @@
 
  查看2.*版本文档请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_2.0.md) 
  
+ ---
+
 ## 特别说明（重点关注事项）
 
 1. 本项目所使用的AppId为接口测试号AppId，在终端上执行预览会提示错误信息，请更换为实际可用的AppId。
@@ -37,9 +41,11 @@
 
 9. 本SDK从3.0.3版本开始，呼叫时需要调用wx.getLocation()获取用户位置，<u>因此请在项目的app.json文件中增加获取位置相关权限说明</u>，请[点击此处](https://developers.weixin.qq.com/miniprogram/dev/reference/configuration/app.html#permission)查看说明
 
-10. 如果您是从 `1.*` 版本SDK升级到 `2.*` 版本SDK，请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_upgrade_1_to_2.md)查看升级指南。
+10. 本SDK从3.1.0版本开始，移除了hh-sdkcontext组件，其下的navigateTo()方法移到hhDoctor组件中，使用hhDoctor.navigateTo()可实现前述跳转功能，方法接口参数不变
 
-11. 如果您是从 `2.*` 版本SDK升级到 `3.*` 版本SDK，请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_upgrade_2_to_3.md)查看升级指南。
+11. 如果您是从 `1.*` 版本SDK升级到 `2.*` 版本SDK，请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_upgrade_1_to_2.md)查看升级指南。
+
+12. 如果您是从 `2.*` 版本SDK升级到 `3.*` 版本SDK，请[点击此处](https://github.com/HHMedic/HHDoctorSDK_demo_wmp/blob/master/README_upgrade_2_to_3.md)查看升级指南。
 
 ---
 
@@ -153,6 +159,7 @@
     
 ### 6. 在“设置”-“基本设置”下，将“基础库最低版本设置”设置为2.10.0或更高版本。
 
+---
 
 ## SDK说明
 
@@ -176,6 +183,33 @@ hhDoctorLogin() {
 }
 
 ```
+
+ - **方法** ：
+
+   - ***`navigateTo(options)`*** :跳转至相应页面，使用方法可参考pages/index/custom页面。
+    
+     - ****`options`**** :Object，跳转参数，结构如下：
+
+     ```json
+     {
+       page:'',          //Enum，跳转页面名称，具体指参见下方说明;
+       drugOrderId:'',   //String,购药订单ID，当page='drugOrder'时必填。
+       redirectPage:'',  //String,支付完成后跳转页面，留空默认跳转至'pages/index/index'
+       patient:'',       //String,实际患者的userToken，当page='ehrList'或page='ehrDetail'时必填
+       medicRecordId:''  //String,要查看的档案的medicRecordId，当page='ehrDetail'时必填
+     }
+     ```
+
+      page参数枚举值说明
+     ```
+     'drugOrder':购药订单详情页; 
+     'drugOrderList':购药订单列表页; 
+     'personalPage':个人主页; 
+     'addressList':地址列表;
+     'ehrMemberList':档案库首页; 
+     'ehrList':指定成员的档案列表; 
+     'ehrDetail': 指定的档案详情;
+     ```
 
 ### 2. hh-im组件
 
@@ -229,45 +263,7 @@ hhDoctorLogin() {
     }
     ```
 
-
-   
-### 4. hh-sdkcontext组件
-
- - **功能** :hhSdk实例，通过this.selectComponent(ID)获取，以调用hhSdk内部封装好的方法，使用方法可参考pages/index/custom页面
-
- - **入口** : hhdoctor-wmp-sdk/hh-sdkcontext/hh-sdkcontext
-
- - **参数说明** ：
-
-   - ***`request`*** :Object，请求参数，说明见下方。
-
- - **方法** ：
-
-   - ***`navigateTo(options)`*** :跳转至相应页面。
-    
-     - ****`options`**** :Object，跳转参数，结构如下：
-
-     ```json
-     {
-       page:'',          //Enum，跳转页面名称，具体指参见下方说明;
-       drugOrderId:'',   //String,购药订单ID，当page='drugOrder'时必填。
-       redirectPage:'',  //String,支付完成后跳转页面，留空默认跳转至'pages/index/index'
-       patient:'',       //String,实际患者的userToken，当page='ehrList'或page='ehrDetail'时必填
-       medicRecordId:''  //String,要查看的档案的medicRecordId，当page='ehrDetail'时必填
-     }
-     ```
-
-      page参数枚举值说明
-     ```
-     'drugOrder':购药订单详情页; 
-     'drugOrderList':购药订单列表页; 
-     'personalPage':个人主页; 
-     'addressList':地址列表;
-     'ehrMemberList':档案库首页; 
-     'ehrList':指定成员的档案列表; 
-     'ehrDetail': 指定的档案详情;
-     ```
-
+---
 
 ## request参数说明
 

@@ -6,7 +6,7 @@
         {{modalData.content}}
       </text>
       <view class='modal-button'>
-        <view class='modal-cancel' bindtap='bindCancel'>取消</view>
+        <view class='modal-cancel' bindtap='bindCancel' wx:if='{{!modalData.ishidecancel}}'>取消</view>
         <view class='modal-confirm' bindtap='bindConfirm' >{{modalData.confirmText}}</view>
       </view>
     </view>

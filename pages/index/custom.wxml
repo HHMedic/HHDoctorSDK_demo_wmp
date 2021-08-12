@@ -1,4 +1,3 @@
-<hhSdk id='hhSdk' request='{{hhRequest}}'></hhSdk>
 <view class='tip'>自定义首页，点击按纽可直接调用相关功能</view>
 <button catchtap='viewIm'>咨询助理</button>
 <button catchtap='callDoctor' data-dept='600002'>开始咨询医生(成人)</button>

@@ -1,4 +1,8 @@
+const api = require('./api');
+
 let accessCardCommand = [];
+let findLinkFromText = require('./commonUtil').findLinkFromText
+let apiUtil
 
 function isAccessCardCommand(command) {
   if (0 == accessCardCommand.length) {
@@ -12,76 +16,22 @@ function isAccessCardCommand(command) {
     accessCardCommand['psycholFeedback'] = 1            //心理表反馈
     accessCardCommand['appointmentExpertSuccess'] = 1   //专家设置预约时间成功卡片
     accessCardCommand['psycholTips'] = 1                //心理介绍说明
-    accessCardCommand['haoForm'] = 1                    //挂号表单
-    accessCardCommand['nurseReport'] = 1                  //护理报告
-    accessCardCommand['nurseDetail'] = 1                  //护理服务详情
+    accessCardCommand['nurseReport'] = 1                //护理报告
+    accessCardCommand['nurseDetail'] = 1                //护理服务详情
+    accessCardCommand['drugProductUser'] = 1            //药卡活动有套餐老用户推送卡片
+    accessCardCommand['drugNoProductUser'] = 1          //药卡活动无套餐用户推送卡片
+    accessCardCommand['drugOrderHangUp'] = 1            //药卡活动挂断卡片
+    accessCardCommand['commandNetHospitalRx'] = 1       //处方笺卡片(互联网医院)
+    accessCardCommand['welcomeTips'] = 1                //欢迎卡片
+    accessCardCommand['fastchannel'] = 1                //重疾通道
+    accessCardCommand['nurse_home'] = 1                 //医护到家
+    accessCardCommand['hao'] = 1                        //挂号表单
+    accessCardCommand['fastchannel_detail'] = 1         //重疾通道
+    accessCardCommand['nurse_home_detail'] = 1          //医护到家
+    accessCardCommand['hao_detail'] = 1                 //挂号表单
+
   }
   return accessCardCommand[command] && 1 == accessCardCommand[command]
-}
-
-function parseMsgReceive(msg) {
-  let data, attach, content;
-  console.log('<<<', msg);
-  switch (msg.data.msgType) {
-    case 'PICTURE': //图片消息
-      let attach = JSON.parse(msg.data.attach);
-      data = {
-        id: msg.data.msgidServer,
-        type: 'image',
-        from: 'd',
-        text: '',
-        url: attach.url,
-        thumbnail: attach.url + '?x-oss-process=image/resize,m_fixed,w_200',
-        head: '',
-        name: '',
-        time: msg.data.msgTimestamp
-      };
-      break;
-    case 'AUDIO': //音频消息
-      attach = JSON.parse(msg.data.attach);
-      data = {
-        id: msg.data.msgidServer,
-        type: 'audio',
-        from: 'd',
-        text: '',
-        url: getAudioMsgUrl(attach.ext, msg.data.fromAccount, msg.data.msgidServer, attach.url),
-        dur: attach.dur,
-        head: '',
-        name: '',
-        time: msg.data.msgTimestamp
-      };
-      break;
-    case 'CARD': //卡片消息
-      attach = JSON.parse(msg.data.attach);
-      content = JSON.parse(attach.content);
-      content = processDrugCard(attach, content)
-      if (!isAccessCardCommand(content.command)) break
-      data = {
-        id: msg.data.msgidServer,
-        from: 'd',
-        type: 'card',
-        from: attach.talkUuid,
-        head: attach.talkUserPic,
-        name: attach.talkName,
-        time: attach.createTime,
-        patient: attach.patientUuid,
-        body: attach,
-        bodyContent: content
-      };
-      break;
-    default: //默认是文本
-      data = {
-        id: msg.data.msgidServer,
-        type: 'text',
-        from: 'd',
-        text: msg.data.body,
-        head: '',
-        name: '',
-        time: msg.data.msgTimestamp
-      };
-      break;
-  }
-  return data;
 }
 
 /** 解析服务器推送的历史消息 */
@@ -101,6 +51,7 @@ function parseMsgHistory(msgHis, uuid) {
           name: '',
           time: msg.sendtime,
           text: msg.body.msg,
+          textArr: findLinkFromText(msg.body.msg),
         });
         break;
       case 1: //图片消息
@@ -184,7 +135,7 @@ function checkElemeDrugIsExpired(body, content) {
         //超过24小时
         content.trans = false
         content.tips = '该药品订单已超24小时，请呼叫医生重新获取药卡'
-        content.tipsClass = 'warn'
+        // content.tipsClass = 'warn'
       }
       break;
   }
@@ -195,11 +146,111 @@ function checkSystemTips(body, content) {
   if ('buyDrugInformation' != body.command || (!body.systemTips && !content.systemTips)) return content;
   content.trans = false
   content.tips = body.systemTips || content.systemTips
-  content.tipsClass = 'warn'
+  content.tipsClass = content.tips == '该药品订单已超24小时，请呼叫医生重新获取药卡' ? '' : 'warn'
   return content
 }
 
+function generateId() {
+  let app = getApp()
+  let sdkProductId = app.globalData._hhSdkOptions && app.globalData._hhSdkOptions._sdkProductId || 3009
+  let id = 'sdk' + sdkProductId + '_' + new Date().getTime()
+  return id
+}
+/** 获取图片或音频文件信息 */
+function getFileInfo(file, fileType) {
+  return new Promise((resolve, reject) => {
+    wx.getFileInfo({
+      filePath: file,
+      digestAlgorithm: 'md5',
+      success: fileResult => {
+        if ('image' == fileType) {
+          wx.getImageInfo({
+            src: file,
+            success: imageResult => {
+              resolve({
+                size: fileResult.size,
+                digest: fileResult.digest,
+                height: imageResult.height,
+                width: imageResult.width
+              })
+            },
+            fail: errImg => reject()
+          })
+        } else {
+          resolve({
+            size: fileResult.size,
+            digest: fileResult.digest,
+            height: 0,
+            width: 0
+          })
+        }
+      },
+      fail: err => reject()
+    })
+  })
+}
+
+/** 发送文字消息 */
+function sendText(from, to, text, appointedOrderId) {
+  var msg = {
+    id: generateId(),
+    type: 'text',
+    text,
+    to,
+    from
+  }
+  if (appointedOrderId) msg.data.appointedOrderId = appointedOrderId
+  return sendMsg(msg)
+}
+
+/** 发送音频或图片文件 */
+function sendFile(from, to, fileType, file, duration, appointedOrderId) {
+  return new Promise((resolve, reject) => {
+    getFileInfo(file, fileType)
+      .then(resFile => {
+        if (!apiUtil) apiUtil = require('./apiUtil')
+        apiUtil.uploadFile(file, fileType)
+          .then(res => {
+            let fileUrl = res
+            let msg = {
+              id: generateId(),
+              type: fileType,
+              url: fileUrl,
+              size: resFile.size,
+              digest: resFile.digest,
+              height: resFile.height,
+              width: resFile.width,
+              dur: duration,
+              to,
+              from
+            }
+            if (appointedOrderId) msg.appointedOrderId = appointedOrderId
+            sendMsg(msg)
+              .then(resSend => {
+                resSend.url = fileUrl
+                resolve(resSend)
+              })
+              .catch(() => reject())
+          })
+          .catch(err => reject())
+      })
+      .catch(err => reject())
+  })
+
+}
+
+function sendMsg(msg) {
+  if (!apiUtil) apiUtil = require('./apiUtil')
+  return apiUtil.sendImMessage(msg)
+}
+
+function doReject(data) {
+  return new Promise((resolve, reject) => reject(data))
+}
+
 module.exports = {
-  parseMsgReceive,
+  sendText,
+  sendFile,
+  //parseMsgReceive,
   parseMsgHistory
 }

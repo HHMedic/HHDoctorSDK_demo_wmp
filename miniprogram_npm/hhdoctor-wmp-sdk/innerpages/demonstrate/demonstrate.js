@@ -24,22 +24,23 @@ Page({
     showCallBtn: false,//播放完成后是否显示呼叫医生按纽
     showPusher: false,//是否显示右上角推流
     showHangupBtn: false, //是否显示挂断按纽
-    showWaitting:false,
-    objectFit:'cover',
-    isConnect:true
+    showWaitting: false,
+    objectFit: 'cover',
+    isConnect: true
   },
 
   /**
    * 生命周期函数--监听页面加载
    */
-  onLoad: function(options) {
+  onLoad: function (options) {
+    wx.hideShareMenu()
     timeStart = new Date().getTime();
     wx.hideShareMenu();
     console.log(options)
     // ${ getApp().globalData.openId }
     deptId = options.dept;
     openType = options.openType || 4;
-    let url = `${getApp().globalData.host}wmp/getDemoVideo?sdkProductId=${options.sdkProductId}&userToken=${options.userToken}&deptId=${options.dept}&openId=${getApp().globalData.openId }`;
+    let url = `${getApp().globalData.host}wmp/getDemoVideo?sdkProductId=${options.sdkProductId}&userToken=${options.userToken}&deptId=${options.dept}&openId=${getApp().globalData.openId}`;
     let optString = this.getOptions(options);
     console.log(optString)
     this.setData({
@@ -47,14 +48,14 @@ Page({
       optString
     })
   },
-  onShow: function() {
+  onShow: function () {
     this.setData({ isConnect: getApp().globalData.isConnect })
     this.getAuth();
   },
   //获取options遍历方法
-  getOptions: function(obj) {
+  getOptions: function (obj) {
     let url = '';
-    Object.keys(obj).forEach(function(key) {
+    Object.keys(obj).forEach(function (key) {
       if (obj[key]) {
         url += `${key}=${obj[key]}&`
       }
@@ -62,16 +63,13 @@ Page({
     return url.slice(0, url.lastIndexOf('&'));
   },
 
-  onUnload: function() {
-    if (getApp().globalData._hhim && getApp().globalData._hhim.loginStatus()) {
-      let timeSpan = (new Date().getTime() - timeStart) / 1000;
-      getApp().globalData._hhim.sendLog(openType, deptId + ',' + timeSpan.toFixed(0));
-    }
+  onUnload: function () {
+
   },
 
 
   // 获取授权
-  getAuth: function() {
+  getAuth: function () {
     let self = this;
     wx.getSetting({
       success(res) {
@@ -84,10 +82,10 @@ Page({
     })
     wx.authorize({
       scope: 'scope.record',
-      success: function() {
+      success: function () {
         wx.authorize({
           scope: 'scope.camera',
-          success: function(res) {
+          success: function (res) {
             if (res.errMsg.indexOf('ok') != -1) {
               self.setData({
                 isAuth: true
@@ -103,13 +101,13 @@ Page({
 
   },
   //取消拨号
-  bindCancelHangup: function() {
+  bindCancelHangup: function () {
     this.data.myaudio && this.data.myaudio.stop();
     this.data.videoContext && this.data.videoContext.stop();
     wx.navigateBack()
   },
   //创建音频并播放
-  getCreateAudio: function() {
+  getCreateAudio: function () {
     if (!this.data.myaudio) {
       this.data.myaudio = wx.createInnerAudioContext({});
       this.data.myaudio.src = this.data.audio.url;
@@ -128,7 +126,7 @@ Page({
 
   },
   //创建视频
-  getCreateVideo: function() {
+  getCreateVideo: function () {
     if (!this.data.videoContext) {
       this.data.videoContext = wx.createVideoContext('myVideo');
     }
@@ -136,17 +134,17 @@ Page({
 
   },
   //点击挂断按钮
-  bindHangUp: function() {
+  bindHangUp: function () {
     this.data.videoContext.stop();
     wx.navigateBack()
   },
   // 创建实时视频
-  getCreateLivePusher: function() {
+  getCreateLivePusher: function () {
     this.data.livePusher = wx.createLivePusherContext('myLivePusher');
     this.data.livePusher.startPreview();
   },
   //获取视频地址
-  requestVideoData: function(url) {
+  requestVideoData: function (url) {
     let self = this;
     wx.showLoading({
       mask: true
@@ -184,13 +182,13 @@ Page({
     })
   },
   // 视频播放到末尾的时候触发显示呼叫医生按钮
-  bindVideoEnd: function(e) {
+  bindVideoEnd: function (e) {
     this.setData({
       isVideoEnd: true
     })
   },
   //点击呼叫医生
-  bindCallDoctor: function() {
+  bindCallDoctor: function () {
     wx.redirectTo({
       url: `/pages/room/room?${this.data.optString}`
     })

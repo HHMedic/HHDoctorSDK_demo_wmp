@@ -1,0 +1,38 @@
+<!--components/realName/realName.wxml-->
+<view class="page" >
+    <view class='page-title' style="padding-top:{{topVal}}px"> <view class='page-back' catchtap='bindClose'></view> 实名认证</view>
+    <view class='msg-list msg-nickname'>{{realNameMsg.name}}</view>
+    <view class='msg-list msg-name'>
+        <input class="msg-name-input" bindinput='bindInputMsgName' 
+        bindfocus='bindFocusMsg'
+        value='{{username}}' 
+        data-type='username'
+        maxlength="20"
+        placeholder="请输入患者真实姓名"  
+        placeholder-class='msg-placeholder' />
+        <view class='msg-close' wx:if='{{username}}' bindtap='bindCloseInput' data-type='username'></view>
+    </view>
+    <view class='msg-list msg-idcard'>
+        <input class="msg-idcard-input" 
+        bindinput='bindInputMsgIdCard' 
+        bindfocus='bindFocusMsg'
+        value='{{useridcard}}' 
+        data-type='useridcard'
+        placeholder="请输入患者真实身份证号码" 
+        placeholder-class='msg-placeholder' type='idcard'/>
+        <view class='msg-close' wx:if='{{useridcard}}' bindtap='bindCloseInput' data-type='useridcard'></view>
+    </view>
+    <view class='msg-err' wx:if='{{errorText}}'>{{errorText}}</view>
+    <view class='msg-list msg-phone'>
+        <input class="msg-phone-input" 
+        bindinput='bindInputMsgPhone' 
+        value='{{userphone}}' 
+        bindfocus='bindFocusMsg'
+        data-type='userphone'
+        placeholder="请输入联系人电话" 
+        placeholder-class='msg-placeholder' maxlength='11' type='number'/>
+        <view class='msg-close' wx:if='{{userphone}}' bindtap='bindCloseInput' data-type='userphone'></view>
+    </view>
+    <view class='msg-gray'>完成实名认证后，后续使用该服务时无需再次认证。</view>
+    <button class='msg-btn' bindtap='bindSubmit'>确定</button>
+</view>

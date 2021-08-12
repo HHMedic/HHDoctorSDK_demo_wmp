@@ -1,2 +1,0 @@
-<hhProdRight request='{{hhRequest}}'></hhProdRight>
-<hhNetwork wx:if='{{!isConnect}}'></hhNetwork>

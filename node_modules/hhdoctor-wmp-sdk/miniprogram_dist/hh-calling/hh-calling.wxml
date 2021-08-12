@@ -1,0 +1,113 @@
+<!-- 上方滑出呼叫列表 -->
+<view  bindtap='_hideBtn'>
+    <!-- 顶部按纽 -->
+    <view class='btn-panel' style='height:{{msgPanelTop}}px;'>
+        <view class='topbtn-panel' style='background-color:{{navigationBar.bColor}};height:{{wxMbb.top+38}}px'
+            wx:if='{{"custom"==navStyle}}'>
+            <view class='top-btns' style='top:{{wxMbb.top}}px;'>
+                <view class='top-btns-inner'>
+                    <block wx:if='{{_request.naviToAppIconVisible}}'>
+                        <view class='topbtn-naviback  {{personalIconLight}}' catchtap='_naviToApp'>
+                            <button class="topbtn-navitoapp" open-type="launchApp"
+                                wx:if='{{sceneNum == 1069}}'></button>
+                        </view>
+                    </block>
+                    <block wx:if='{{_request.personalIconVisible}}'>
+                        <view class='topbtn-personal  {{personalIconLight}}' catchtap='_viewPers'></view>
+                    </block>
+                </view>
+            </view>
+            <view class='topbtn-title' style='color:{{navigationBar.fColor}};top:{{wxMbb.top+4}}px;'>
+                {{navigationBar.text}}</view>
+        </view>
+        <block wx:if='{{_request.callPage && _request.callBtnVisible}}'>
+            <view class='mainbtn-panel'>
+                <!-- _showHideBtn -->
+                <view class='btn-main' catchtap='_bindCheckAuthList' style='{{customStyle.mainBtn?customStyle.mainBtn:""}}'>
+                    <text>呼叫医生</text>
+                </view>
+            </view>
+        </block>
+    </view>
+    <view wx:if='{{disConnected}}' class='disconnect-info' style='top:{{wxMbb.top+95}}px;'
+        animation='{{disconnAnimation}}'>网络连接中...</view>
+    <!-- 直播banner -->
+    <view class="live-panel" style='top:{{msgPanelTop}}px;' wx:if="{{liveList.length>0}}">
+        <block wx:for='{{liveList}}' wx:for-item='live' wx:key='id'>
+            <view class="live-item" data-live="{{live}}" catchtap="_tapLive">
+                <image wx:if="{{live.liveStatus>=0}}"
+                    class="live-item-image status {{1==live.liveStatus?'active':'inactive'}}" src="{{live.imageUrl}}"
+                    mode="aspectFill"></image>
+            </view>
+        </block>
+    </view>
+    <!-- 选择成员呼叫列表 -->
+    <block wx:if='{{_request.callPage}}'>
+        <view class='member-bg' wx:if='{{callBtnsVisible}}'></view>
+        <view class='member-wrap ' style='top:{{memberCallTop}}px;' animation="{{animationMemberData}}">
+            <view class='member-title'>请选择给谁咨询</view>
+            <scroll-view style="{{memberList.length>5?'height:600rpx;':''}}" scroll-y='{{memberList.length>5}}'>
+                <view class='member-list' >
+                    <view class='member-item' 
+                        wx:for='{{memberList}}' 
+                        wx:key='uuid'                 
+                        data-dept='600002' 
+                        catchtap='_callDoctor'
+                        data-uuid='{{item.uuid}}' 
+                        data-item='{{item}}'
+                        data-birthday='{{item.birthday}}' 
+                        data-sex='{{item.sex}}'
+                        data-isaccount='{{item.isAccount}}'
+                        data-name='{{item.name}}'>{{item.name}} <text class='member-isaccount'>{{item.isAccount&&isInvite==1?'(独立登录)':''}}</text></view>
+                </view>
+            </scroll-view>
+            <block wx:if='{{product&&isInvite==0&&showAddBtn&&_request.sdkProductId!=10182}}'>
+                <view class='member-button' catchtap='bindAddFimily' wx:if='{{(product.userCnt==-1||product.userCnt>(memberList.length-1+deleteCount))&&!memberList[0].isAccount&&isLoading}}'></view>
+            </block>
+            <view class='member-explain member-check {{isAgreeExplain?"member-checked":""}}' catchtap='_bindIsAgreeExplain'>
+               <view class='member-text'>同意<text class='member-explain-link' catchtap='_bindExplainBook'>《服务说明》</text>咨询建议仅参考，如症状未缓解请到医院就诊</view>
+            </view>
+          
+            <view catchtap="_callDemo" wx:if='{{isInvite==0}}' class='member-demo'>演示模式</view>
+
+        </view>
+    </block>
+</view>
+<block wx:if='{{isEnterFace}}'>
+	<hh-face sysInfo='{{sysInfo}}' patient='{{patient}}' parent='{{parent}}' bind:closeFace='bindCloseFaceVerify' bind:beginFaceVerify='bindBeginFaceVerify' bind:continue='bindContinue'></hh-face>
+</block>
+
+
+<!-- 下方弹出呼叫列表 -->
+<block wx:if='{{callingVisible}}'>
+    <view class='member-bg' bindtap='bindCallingVisible'></view>
+    <view class='calling-bottom'  >
+            <view class='calling-title'>{{title}}</view>
+            <scroll-view style="{{memberList.length>5?'height:450rpx;':''}}" scroll-y='{{memberList.length>5}}'>
+                <view class='calling-list' >
+                    <view class='calling-item' 
+                        wx:for='{{memberList}}' 
+                        wx:key='uuid'  
+                        hidden='{{patient.uuid==item.uuid&&isInvite==1}}'               
+                        data-dept='600002' 
+                        catchtap='_callDoctor'
+                        data-uuid='{{item.uuid}}' 
+                        data-item='{{item}}'
+                        data-birthday='{{item.birthday}}' 
+                        data-sex='{{item.sex}}'
+                        data-isaccount='{{item.isAccount}}'
+                        data-name='{{item.name}}'>{{item.name}} 
+                        <text class='member-isaccount'>{{item.isAccount&&isInvite==1?'(独立登录)':''}}</text>
+                    </view>
+                </view>
+            </scroll-view>
+            <block wx:if='{{userCnt&&showAddBtn&&_request.sdkProductId!=10182}}'>
+                <view class='calling-button' catchtap='bindAddFimily' wx:if='{{(product.userCnt==-1||product.userCnt>(memberList.length-1+deleteCount))&&!memberList[0].isAccount&&isLoading}}'></view>
+            </block>
+            <view class='calling-cancel' bindtap='bindCallingVisible'>取消</view>
+        </view>
+</block>
+
+<hh-Modal isShowModal='{{isShowModal}}' wx:if='{{isShowModal}}' modalData="{{modalMsgData}}"
+bind:myConfirm='_bindMyConfirm' data-type='{{modalMsgData.source}}'></hh-Modal>
+<hh-auth authList='{{authList}}'  wx:if='{{isShowAuthTip}}' bind:isShowAuthTip='bindIsShowAuthTip' bind:noAuth='bindNoAuth'></hh-auth>

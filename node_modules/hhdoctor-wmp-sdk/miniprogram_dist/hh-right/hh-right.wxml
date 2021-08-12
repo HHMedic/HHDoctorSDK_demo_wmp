@@ -1,0 +1,32 @@
+<view class='image-panel'>
+  <image class='right-image' src='https://imgs.hh-medic.com/icon/wmp/prod-right-top.png' mode='widthFix'></image>
+</view>
+
+<rightList product='{{product}}' base-path='{{basePath}}'></rightList>
+<!-- <view class='right-list'>
+  <view class='title'>
+    会员权益说明
+  </view>
+
+  <view class='right-row'>
+    <image class='right-icon' src='https://imgs.hh-medic.com/icon/wmp/prod-right-icon.png'></image>
+    <view class='right-item'>
+      <view class='item-title'>
+        全国唯一7x24小时呼叫视频医生
+      </view>
+      <view class='item-text'>7x24小时全年无休，随时随地，一键呼叫，居家旅行，为您守护
+      </view>
+    </view>
+  </view>
+
+  <view class='right-row'>
+    <image class='right-icon' src='https://imgs.hh-medic.com/icon/wmp/prod-right-icon.png'></image>
+    <view class='right-item'>
+      <view class='item-title'>
+        全国唯一7x24小时呼叫视频医生
+      </view>
+      <view class='item-text'>7x24小时全年无休，随时随地，一键呼叫，居家旅行，为您守护
+      </view>
+    </view>
+  </view>
+</view> -->

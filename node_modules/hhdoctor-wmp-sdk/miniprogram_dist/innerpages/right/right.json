@@ -1,0 +1,10 @@
+{
+  "usingComponents": {
+    "hhRight": "../../hh-right/hh-right",
+    "hhNetwork": "../../hh-network/hh-network"
+  },
+  "navigationStyle": "default",
+  "navigationBarBackgroundColor": "#ffffff",
+  "navigationBarTitleText": "会员权益",
+  "navigationBarTextStyle": "black"
+}

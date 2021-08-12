@@ -1,14 +1,12 @@
-// Component/hh-evaluate/hh-evaluate.js
-const app = getApp();
 const apis = require('../utils/api.js')
-const dateUtil = require('../utils/dateUtil.js')
-const hhDoctor = require('../hhDoctor.js');
+const hhDoctor = require('../hhDoctor.js')
+const throttle = require('../utils/commonUtil').throttle
 let self;
 Component({
   /**
    * 组件的属性列表
    */
-  behaviors: [require('../hhBehaviors.js')],
+  behaviors: [require('../behaviors/hhStarter')],
   properties: {
     evaluateData: {
       type: Object,
@@ -36,12 +34,24 @@ Component({
     stars: [0, 0, 0, 0, 0],
     starIdx: -1,
     starList: [],
-    photoUrl: 'https://imgs.hh-medic.com/icon/wmp/bg-default.jpg'
+    photoUrl: 'https://imgs.hh-medic.com/icon/wmp/bg-default.jpg',
+    enableChangeDoctor: true,   //是否允许更换医生
+    enableComplain: true,       //是否允许投诉
+    enableInputEvaluate: false,    //是否允许用户手工输入评价内容，默认false，从列表中选择
+    evaluateText: ''
   },
   lifetimes: {
     // 生命周期函数，可以为函数，或一个在methods段中定义的方法名
     attached: function () {
       self = this;
+      console.log('评价页参数log', this.data)
+      this.setData({
+        template: this.data._request.evaluateTemplate,
+        enableChangeDoctor: this.data._request.enableChangeDoctor,
+        enableComplain: this.data._request.enableComplain,
+        enableInputEvaluate: this.data._request.enableInputEvaluate
+      })
+      this.getRateContentList();
     },
     moved: function () { },
     detached: function () { },
@@ -49,8 +59,7 @@ Component({
   pageLifetimes: {
     // 组件所在页面的生命周期函数
     show: function () {
-
-
+      console.log('评价页参数log-show', this.data)
     },
     hide: function () { },
     resize: function () { },
@@ -61,14 +70,13 @@ Component({
   methods: {
     //1.匿名评价初始化页-第一步
     bindInitEvaluate(e) {
-      if (getApp()._throttle('evaluate')) return;
+      if (throttle('evaluate')) return;
       let data = e.currentTarget.dataset
       self.setData({ questionIdx: data.index })
       wx.showLoading();
       apis.requestCommitQuestion(self.data.evaluateData.question.id, data.answer, self.data.famOrderId).then(res => {
         wx.hideLoading();
         if (res.status == 200) {
-          self.getRateContentList();
           setTimeout(res => {
             self.setData({
               template: 2
@@ -94,6 +102,7 @@ Component({
       self.setData({
         starList: self.data.starList
       })
+
     },
 
     //2.点击星星 
@@ -135,6 +144,7 @@ Component({
         }
       })
       content = content.join(',');
+      if (this.data.enableInputEvaluate && this.data.evaluateText) content += (',' + this.data.evaluateText)
       let rate = self.data.starIdx + 1;
       let params = `&rate=${rate}&content=${content}&famOrderId=${self.data.famOrderId}`
       apis.requestCommitFeedback(params).then(res => {
@@ -142,8 +152,12 @@ Component({
         if (res.status == 200) {
           //如果不满意=>3 满意=>4
           self.setData({
-            template: rate < 5 ? 3 : 4
+            rate,
+            template: rate < 5 && this.properties.enableChangeDoctor ? 3 : 4
           })
+          console.log('doctor', self.data.doctor)
+          wx.setStorageSync('rate', rate)
+          wx.setStorageSync('doctor', self.data.doctor)
         }
       }).catch(res => {
         wx.hideLoading();
@@ -179,6 +193,9 @@ Component({
         phone
       })
     },
+    bindInputContent(e) {
+      this.setData({ evaluateText: e.detail.value.replace(/\s+/g, '') })
+    },
     //7.提交投诉
     bindComplainSubmit() {
       if (!self.data.textVal) {
@@ -202,7 +219,7 @@ Component({
         })
         return;
       }
-      if (getApp()._throttle('complain')) return;
+      if (throttle('complain')) return;
       wx.showLoading({
         mask: true
       })
@@ -222,8 +239,9 @@ Component({
     },
     //8.换个医生问问
     bindChangeDoctor() {
-      if (getApp()._throttle('e-changedoctor')) return;
-      let _options =hhDoctor.getOptions();
+      console.log('评价页参数log', this.data)
+      if (throttle('e-changedoctor')) return;
+      let _options = hhDoctor.getOptions();
       if (!_options || !_options.callPage) return;
       // if (!getApp().globalData._hhSdkOptions || !getApp().globalData._hhSdkOptions._callPage) return
       wx.showLoading({ mask: true });
@@ -232,7 +250,8 @@ Component({
         if (res.status == 200) {
           //跳转呼叫页重新呼叫 服务器返回成功后，重新进行呼叫，呼叫时的dept、实际患者uuid等参数使用用户上次呼叫时的参数值；
           //var pageUrl =  '/pages/room/room'+ '?' + hhDoctor.getPublicParams()+'&dept='+self.data._request.dept+'&uuid='+self.data._request.uuid;
-          let pageUrl = _options.callPage + '?' + hhDoctor.getPublicParams() + '&dept=' + self.data._request.dept + '&uuid=' + self.data._request.uuid;
+          let params = self.data._request.realPatientUuid ? ('&realPatientUuid=' + self.data._request.realPatientUuid) : ('&userToken=' + self.data._request.userToken);
+          let pageUrl = _options.callPage + '?' + hhDoctor.getPublicParams() + '&dept=' + self.data._request.dept + params;
           wx.redirectTo({
             url: pageUrl
           })

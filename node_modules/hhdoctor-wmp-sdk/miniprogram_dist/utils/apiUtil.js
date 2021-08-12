@@ -9,7 +9,8 @@ var urls = {
   videoList: wmpHost + 'video/list?channelType={0}',
   videoComment: wmpHost + 'video/comments?videoId={0}&lastCommentId={1}&channelType={2}',
   getLiveInfo: secHost + 'babyweb/page/v2.0/seckill/liveInfo?liveId={0}',
-  getHistoryMsg: wmpHost + 'trtc/getHistoryMsg?asstUuid={0}',
+  getHistoryMsg: wmpHost + 'trtc/getHistoryMsg?asstUuid={0}&isFirst={1}&lastTime={2}',
+  getUnregHistoryMsg: wmpHost + 'trtc/getUnregUserHistoryMessages',
   getCardInfo: wmpHost + 'trtc/getCardInfo?id={0}',
   decrypt: wmpHost + 'wx/decrypt',
   getLicense: wmpHost + 'wmp/license?type={0}',
@@ -24,7 +25,15 @@ var urls = {
   setAddress: secHost + 'babyweb/page/v2.0/seckill/setAddress',
   getAddressList: wmpHost + 'address/listP',
   saveAddress: wmpHost + 'address/saveAddress',
-  getDoctorInfo: wmpHost + 'wmp/getDoctorInfo?doctorId={0}'
+  getDoctorInfo: wmpHost + 'wmp/getDoctorInfo?doctorId={0}',
+  sendImMessage: wmpHost + 'trtc/sendImMessage',
+  uploadFile: wmpHost + 'im/upload',
+  getStyle: wmpHost + 'wmp/style?productId={0}&appId={1}&page={2}',
+  //---
+  getSdkInfo: wmpHost + 'wmp/getSdkInfo?wxAppId={0}',
+  checkRegToken: wmpHost + 'wmp/checkRegToken?sdkProductId={0}&token={1}&imei={2}',
+  getCountryCodes: wmpHost + 'wmp/getCountryCodes',
+  verifyCheckCode: wmpHost + 'bz/verifyCheckCode?phone={0}&code={1}&&countryCode={2}&sdkProductId={3}',
 }
 var requestHeader = {};
 
@@ -54,17 +63,6 @@ function doRequest(url, method, data) {
       },
       fail(res) {
         wx.navigateBack();
-        // wx.showModal({
-        //   title: '提示',
-        //   content: res && res.data && res.data.error || "网络请求错误",
-        //   showCancel: false,
-        //   success(){
-        //     wx.reLaunch({
-        //       url: '/pages/error/error'
-        //     })
-        //   }
-
-        // });
         reject();
       }
     });
@@ -75,6 +73,11 @@ function addPubVars(url) {
   url = addParam(url, 'sdkProductId', app.globalData._hhSdkOptions._sdkProductId);
   url = addParam(url, 'userToken', app.globalData._hhSdkOptions._userToken);
   url = addParam(url, 'openId', app.globalData._hhSdkOptions._openId);
+  if (app.globalData.wxAppId) {
+    url = addParam(url, 'wxAppId', app.globalData.wxAppId)
+    if ('wx15e414719996d59f' == app.globalData.wxAppId && app.globalData.wmpVersion)
+      url = addParam(url, 'wmpVersion', app.globalData.wmpVersion);
+  }
   url = addParam(url, '_', new Date().getTime());
   return url;
 }
@@ -117,8 +120,13 @@ function getVideoList(channelType) {
 }
 
 /** 获取历史IM消息 */
-function getHistoryMsg(asstUuid) {
-  let url = urls.getHistoryMsg.format(asstUuid);
+function getHistoryMsg(asstUuid, isFirst, lastTime) {
+  let url = urls.getHistoryMsg.format(asstUuid, isFirst, lastTime || '');
+  return doRequest(url, '', {});
+}
+
+function getUnregHistoryMsg() {
+  let url = urls.getUnregHistoryMsg
   return doRequest(url, '', {});
 }
 
@@ -214,9 +222,40 @@ function getDoctorInfo(doctorId) {
   let url = urls.getDoctorInfo.format(doctorId);
   return doRequest(url, '', {});
 }
+function sendImMessage(msgRequest) {
+  let url = urls.sendImMessage
+  return doRequest(url, '', msgRequest);
+}
+function uploadFile(filePath, fileType) {
+  let app = getApp()
+  return new Promise((resolve, reject) => {
+    wx.uploadFile({
+      filePath,
+      name: 'uploadFile',
+      url: urls.uploadFile,
+      formData: {
+        'sdkProductId': app.globalData._hhSdkOptions._sdkProductId,
+        'userToken': app.globalData._hhSdkOptions._userToken,
+        'openId': app.globalData._hhSdkOptions._openId,
+        'fileType': fileType || ''
+      },
+      success: res => {
+        let data = JSON.parse(res.data);
+        if (200 == data.statusCode) return resolve(data.data)
+        return reject()
+      },
+      fail: () => { reject() }
+    })
+  })
+}
+function getStyle(sdkProductId, wxAppId, page) {
+  let url = urls.getStyle.format(sdkProductId, wxAppId, page);
+  return doRequest(url, '', {});
+}
 
 module.exports = {
   regUser,
+  getStyle,
   leaveLive,
   updateUser,
   reportTrace,
@@ -224,6 +263,7 @@ module.exports = {
   getComment,
   getLicense,
   setAddress,
+  uploadFile,
   saveAddress,
   getLiveInfo,
   decryptData,
@@ -234,8 +274,10 @@ module.exports = {
   getUserPhone,
   seckillApply,
   getVideoList,
+  sendImMessage,
   getDoctorInfo,
   getHistoryMsg,
   getAddressList,
+  getUnregHistoryMsg,
   getLoginUserByPhone
 }

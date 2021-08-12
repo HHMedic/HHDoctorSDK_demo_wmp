@@ -1,0 +1,20 @@
+<view class="navi-back" catchtap="naviBack" style="top:{{naviBackTop}}px;" wx:if="{{naviBackVisible}}"></view>
+<view class="wrap">
+  <view class="top">
+    <image class="doctor-banner" mode="widthFix" src="https://imgs.hh-medic.com/icon/wmp/expert-banner.png"></image>
+    <view class="doctor-info">
+      <image class="doctor-image" src="{{doctorInfo.photourl}}"></image>
+      <view class="doctor-name">{{doctorInfo.name}}</view>
+      <view class="doctor-desc">{{doctorInfo.department}} | {{doctorInfo.title}}</view>
+      <view class="doctor-desc">{{doctorInfo.hospital}}</view>
+    </view>
+  </view>
+  <view class="info-wrap">
+    <view class="info-title">擅长</view>
+    <view>{{doctorInfo.speciality}}</view>
+  </view>
+  <view class="info-wrap">
+    <view class="info-title">履历</view>
+    <view>{{doctorInfo.introduction}}</view>
+  </view>
+</view>

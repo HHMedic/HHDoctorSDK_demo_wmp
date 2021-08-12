@@ -1,0 +1,90 @@
+.page{
+    min-height:100vh;
+    box-sizing: border-box;
+    border-top:1px solid #e6e6e6;
+  }
+  .doctor-list{
+    background:#fff;
+  }
+  .doctor-item{
+    position:relative;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  
+  .doctor-content {
+    width: 100%;
+    margin-right:0;
+    -webkit-transition: all 0.4s;
+    transition: all 0.4s;
+    -webkit-transform: translateX(90px);
+    transform: translateX(90px);
+    margin-left: -90px;
+  }
+  .doctor-inner{
+    border-bottom:1px solid #e6e6e6;
+    margin-left:32rpx;
+    height:223rpx;
+    display:flex;
+    align-items: center;
+	 font-family: PingFang SC Regular, PingFang SC Regular-Regular;
+  }
+  .doctor-avatar{
+    width:140rpx;
+    height:140rpx;
+    border-radius:50%;
+    margin-right:32rpx;
+	 background-repeat: no-repeat;
+	 background-size:140%;
+	 background-position: center top;
+  }
+  .doctor-msg{
+	  height:140rpx;
+	  display:flex;
+	  flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+
+  }
+  .doctor-name{
+    font-size: 30rpx;
+    font-weight: 500;
+  }
+  .doctor-desc{
+	font-size: 26rpx;
+	font-weight: 400;
+	color:#969696;
+  }
+  .doctor-tag{
+	  height:36rpx;
+	  line-height:36rpx;line-height:36rpx;
+	  border:1px solid #568DD8;
+	  color:#568DD8;
+	  border-radius:50rpx;
+	  font-size:24rpx;
+	  font-weight: 400;
+	  padding:0 11rpx;
+  }
+ 
+  
+  .doctor-del {
+    background-color: orangered;
+    width: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    -webkit-transform: translateX(90px);
+    transform: translateX(90px);
+    -webkit-transition: all 0.4s;
+    transition: all 0.4s;
+  }
+  .touch-move-active .doctor-content,.touch-move-active .doctor-del {
+   -webkit-transform: translateX(0);
+   transform: translateX(0);
+  }
+  
