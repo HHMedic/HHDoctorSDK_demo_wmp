@@ -31,17 +31,6 @@
 
 ***userToken***: **必填参数**。调用和缓服务器用户注册接口后获取到的用户唯一标识，须传入主账号userToken或者独立子账号的userToken。**特别提示：测试环境、生产环境的userToken不通用**，访问test.hh-medic.com时需传入测试环境userToken，访问wmp.hh-medic.com时需传入生产环境userToken。
 
-***page***: 可选参数。要跳转的小程序页面，需使用encodeURIComponent()对参数值进行URL编码，取值范围如下：
-
-* 视频医生首页信息流(**默认值**)：pages/newIndex/newIndex
-
-* 直接呼叫医生：pages/room/room
-
-
-### 3.2.呼叫医生参数
-
-***realPatientUserToken***: 实际需要咨询医生的用户userToken，可以跟前面的userToken相同，也可以是主账号家庭成员内部的其他用户userToken。
-
 ---
 
 ## 4.代码示例
@@ -53,11 +42,11 @@
 <a href="https://wmp.hh-medic.com/wmp/launch?sdkProductId=9003&userToken=AE87BF75164F200D227EB6312C432825CCCB578FFE9820E7F43A1807648A85D9">点击打开小程序</a>
 ```
 
-### 示例2:使用js唤起测试环境小程序并直接呼叫医生
+### 示例2:使用js唤起测试环境小程序
 
 ```javascript
 //需传入测试环境的userToken
-location.href="https://test.hh-medic.com/wmp/launch?sdkProductId=9003&userToken=E6E6E880BB3AD4A1D8B31FE763B6ADEB3F0D04F68EA2608F6783B874E4F50EEF&page=pages%2Froom%2Froom"
+location.href="https://test.hh-medic.com/wmp/launch?sdkProductId=9003&userToken=E6E6E880BB3AD4A1D8B31FE763B6ADEB3F0D04F68EA2608F6783B874E4F50EEF"
 ```
 
 ---
