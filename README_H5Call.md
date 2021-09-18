@@ -1,7 +1,7 @@
 # 和缓视频医生微信小程序使用指南（H5唤起小程序）
 
 
-## 1、(**重要**)适用范围和兼容性说明
+## 1.(**重要**)适用范围和兼容性说明
 
 * 本方案适用于移动端H5唤起和缓视频医生小程序，支持微信内和微信外的H5运行环境：
 
@@ -13,7 +13,7 @@
 
 ---
 
-## 2、使用指南
+## 2.使用指南
 
 测试环境下将H5页面导航至:*https://test.hh-medic.com/wmp/launch?sdkProductId={}&userToken={}*
 
@@ -21,11 +21,11 @@
 
 ---
 
-## 3、参数说明
+## 3.参数说明
 
 **所有参数均以QueryString的形式放入URL中，如参数值中含URL保留字符或中文，需使用encodeURIComponent()对其进行URL编码**
 
-### 3.1、通用参数
+### 3.1.通用参数
 
 ***sdkProductId***: **必填参数**。和缓分配的产品id，一般是一个数字，例如：56789。
 
@@ -38,13 +38,13 @@
 * 直接呼叫医生：pages/room/room
 
 
-### 3.2、呼叫医生参数
+### 3.2.呼叫医生参数
 
 ***realPatientUserToken***: 实际需要咨询医生的用户userToken，可以跟前面的userToken相同，也可以是主账号家庭成员内部的其他用户userToken。
 
 ---
 
-## 4、代码示例
+## 4.代码示例
 
 ### 示例1:使用a标签唤起生产环境小程序首页
 
@@ -62,7 +62,7 @@ location.href="https://test.hh-medic.com/wmp/launch?sdkProductId=9003&userToken=
 
 ---
 
-## 5、其他参考文档
+## 5.其他参考文档
 
 #### 请[点击此处](https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_Open_Tag.html)参考微信官网文档
 
