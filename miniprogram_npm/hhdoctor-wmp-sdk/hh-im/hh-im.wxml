@@ -1,7 +1,6 @@
 <wxs src="../wxs/common.wxs" module="common" />
 <import src="./cards.wxml" />
-
-<view class='main-container' style='padding-top:{{sysInfo.statusBarHeight}}px' >
+<view class='main-container'  >
    <hh-calling
    msgPanelTop='{{msgPanelTop}}'
    navigationBar='{{navigationBar}}'
@@ -19,10 +18,15 @@
    bind:memberList='getMemberList'
    manyVideo='{{manyVideo}}'
    product='{{product}}' 
+   loadcfg='{{loadcfg}}'
+	 isAuth='{{isAuth}}'
+   bind:doRealName="_doRealName"
    ></hh-calling>
+	 <view id="hhRealName" class="real-name-wrap" wx:if="{{!isAuth}}" style="top: {{(_request.callBtnVisible)?('custom'==navStyle?108+sysInfo.statusBarHeight:64):('custom'==navStyle?(wxMbb.bottom+5):0)}}px;">据互联网诊疗管理办法，诊疗及购药需实名<text class="real-name-btn" catchtap="_doRealName">去实名认证</text></view>
 	<!-- 中部消息列表 -->
 	<scroll-view class='msg-panel-scroll'
-		style='top:{{msgPanelTop+livePanelHeight}}px;height:{{msgPanelHeight-livePanelHeight}}px;' scroll-y
+		style='margin-top:{{msgPanelTop+livePanelHeight+authHeight}}px;height:{{msgPanelHeight-livePanelHeight-authHeight}}px;' 
+		scroll-y
 		scroll-into-view='{{lastMsgId}}' 
 		catchtap='bindScrollView'
 		>
@@ -44,16 +48,19 @@
 
 			<block wx:if='{{"card"==msg.type && "summaryByFam"==msg.bodyContent.command}}'>
 				<template is='msgCardSummary'
-					data='{{...msg,ehrPage:_request.ehrPage,title:_request.style.card.summaryTitle}}'></template>
+					data='{{...msg,ehrPage:_request.ehrPage ,title:_request.style.card.summaryTitle}}'></template>
 			</block>
 
 			<block wx:if='{{"card"==msg.type && "buyDrugInformation"==msg.bodyContent.command}}'>
 				<template is='msgCardMed'
 					data='{{...msg,title:_request.style.card.medTitle,btnStyle:customStyle.mainBtn}}'></template>
 			</block>
-
 			<block wx:if='{{"card"==msg.type && "videoAdv"==msg.bodyContent.command}}'>
 				<template is='msgCardVideoAdv' data='{{...msg,title:_request.style.card.videoAdvTitle}}'></template>
+			</block>
+
+			<block wx:if='{{"card"==msg.type && "bannerAdv"==msg.bodyContent.command}}'>
+				<template is='msgCardBannerAdv' data='{{...msg}}'></template>
 			</block>
 
 			<block wx:if='{{"card"==msg.type && "buyService"==msg.bodyContent.command}}'>
@@ -67,6 +74,7 @@
 			<block wx:if='{{"card"==msg.type && "psycholTips"==msg.bodyContent.command}}'>
 				<template is='msgCardTips' data='{{...msg}}'></template>
 			</block>
+
 
 			<block
 				wx:if='{{"card"==msg.type && ("psycholForm"==msg.bodyContent.command ||"psycholFeedback"==msg.bodyContent.command)}}'>
@@ -100,30 +108,30 @@
 				<template is='netHospitalRx' data='{{...msg}}'></template>
 			</block>
 			<block wx:if='{{"card"==msg.type &&"welcomeTips"==msg.bodyContent.command}}'>
-				<template is='webcomeTips' data='{{...msg}}'></template>
+				<template is='welcomeTips' data='{{...msg,asst:_request.style.asst}}'></template>
 			</block>
-			<block wx:if='{{"card"==msg.type &&("fastchannel"==msg.bodyContent.command ||"nurse_home"==msg.bodyContent.command||"hao"==msg.bodyContent.command)}}'>
+			<block wx:if='{{"card"==msg.type && common.appointmentItem(msg.bodyContent.command)}}'>
 				<template is='appointmentItem' data='{{...msg}}'></template>
 			</block>
-
-			<block wx:if='{{"card"==msg.type && "hao_detail"==msg.bodyContent.command||"fastchannel_detail"==msg.bodyContent.command||"nurse_home_detail"==msg.bodyContent.command}}'>
+			<block wx:if='{{"card"==msg.type && common.appointmentItemDetail(msg.bodyContent.command)}}'>
 				<template is='appointmentItemDetail' data='{{...msg}}'></template>
 			</block>
-			 <!-- <block>
-			 	<template is='equity' data='{{...msg}}'></template>
-			 </block> -->
-			<!-- <block>
-				<template is='msgCardExpert' data='{{...msg}}'></template>
-			</block> -->
+			<block wx:if='{{"card"==msg.type &&"command_appoint_doctor"==msg.bodyContent.command }}'>
+				<template is='appointDoctor' data='{{...msg}}'></template>
+			</block>
+			<block wx:if='{{"card"==msg.type &&"command_health_assessment_report"==msg.bodyContent.command }}'>
+				<template is='healthReport' data='{{...msg}}'></template>
+			</block>
 		</block>
-
+		<view style="height:148rpx;" ></view>
 	</scroll-view>
 	<hh-bottom 
 	id='hhBottom'
 	wx:if="{{_request.bottomToolsVisible}}"
 	request='{{_request}}'
 	manyVideo='{{manyVideo}}'
-  	product='{{product}}'
+	share-card='{{shareCard}}'
+  product='{{product}}'
 	safeAreaHight='{{safeAreaHight}}'
 	memberList='{{memberList}}'
 	bind:sendTextMsg='bindSendTextMsg' 
@@ -131,11 +139,10 @@
 	bind:everyIcon = 'bindEveryIcon'
 	bind:isShowToolBar = 'bindIsShowToolBar'
 	bind:keyboardheightchange='bindkeyboardheightchange'
+	bind:callasst="bindcallasst"
+	bind:contactasst="bindcontactasst"
 	></hh-bottom>
 </view>
-<realName wx:if="{{isShowRealName}}" bind:closeRealName="bindCloseRealName" 
-bind:realNameSuccess="bindRealNameSuccess"
-realNameMsg="{{realNameMsg}}"></realName>
 <hh-Modal isShowModal='{{isShowModal}}' wx:if='{{isShowModal}}' modalData="{{modalMsgData}}"
 bind:myConfirm='_bindMyConfirm' bind:myCancel='_bindMyCancel' data-type='{{modalMsgData.source}}'></hh-Modal>
 
@@ -143,3 +150,30 @@ bind:myConfirm='_bindMyConfirm' bind:myCancel='_bindMyCancel' data-type='{{modal
 	<hh-face sysInfo='{{sysInfo}}' patient='{{patient}}' parent='{{parent}}' bind:closeFace='bindCloseFaceVerify'
 		bind:beginFaceVerify='bindBeginFaceVerify' bind:continue='bindContinue'></hh-face>
 </block>
+
+<view class='auth-box' wx:if='{{isShowAuth}}'>
+	<view class='auth-pannel'>
+		<view class='auth-title'>个人信息授权</view>
+		<view class='auth-content'>
+			<view style='text-indent:50rpx;'>
+				尊敬的用户，在您确认授权后，将跳转至北京和缓医疗科技有限公司合作平台内药品服务平台使用药品配送服务。
+			</view>
+			<view>
+				您对以上服务事项确认授权的内容包括:
+			</view>
+			<view style='margin-top:30rpx;'>
+				1.同意药品服务平台获取您的处方和地址信息以完成药品购买配送服务;
+			</view>
+			<view>
+				2.同意药品服务平台将您购买药品的部分数据传输给北京和缓医疗科技有限公司，包括订单编号、支付状态、订单创建时间、订单支付时间、药品明细信息等，以便北京和缓医疗科技有限公司记录实际购买情况，进行后续与您相关权益的更新及结算之目的使用，提供更好的服务体验。
+			</view>
+			<view style='margin-top:30rpx;'>
+				您同意授权后，即视为您全面知悉并同意上述授权内容，本授权声明即具有法律效力。
+			</view>
+		</view>
+		<view class='auth-btns'>
+			<view class='auth-reject' catchtap="_tapLicense" data-accept="{{false}}">拒绝</view>
+			<view class='auth-confirm' catchtap="_tapLicense" data-accept="{{true}}">同意并继续</view>
+		</view>
+	</view>
+</view>

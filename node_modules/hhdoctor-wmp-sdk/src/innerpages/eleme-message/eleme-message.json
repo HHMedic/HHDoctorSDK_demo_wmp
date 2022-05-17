@@ -1,7 +1,0 @@
-{
-  "navigationBarTitleText": "",
-  "usingComponents": {
-    "hh-Modal": "../../hh-modal/hh-modal",
-    "hhNetwork": "../../hh-network/hh-network"
-  }
-}

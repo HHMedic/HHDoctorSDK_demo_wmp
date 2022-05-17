@@ -4,13 +4,25 @@ Component({
      * 组件的属性列表
      */
     properties: {
-        authList:Object
+        authList:Object,
     },
 
     /**
      * 组件的初始数据
      */
-    data: {},
+    data: {
+        duration: 300,
+        position: 'bottom',
+        round: false,
+        overlay: true,
+        customStyle: 'min-height:520rpx',
+        overlayStyle: '',
+        authArr:[
+            {icons:'https://imgs.hh-medic.com/icon/wmp/auth/auth-camera.png',text:'摄像头：允许后可视频'},
+            {icons:'https://imgs.hh-medic.com/icon/wmp/auth/auth-record.png',text:'语音：允许后可语音沟通'},
+            {icons:'https://imgs.hh-medic.com/icon/wmp/auth/auth-position.png',text:'位置：精准匹配线下服务'}
+        ]
+    },
     lifetimes: {
         attached() {
           self = this;

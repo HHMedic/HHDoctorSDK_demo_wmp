@@ -1,0 +1,56 @@
+.room-modal {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 300rpx;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  background-color: transparent;
+  z-index: 1000;
+}
+
+.room-image {
+  width: 130rpx;
+  height: 130rpx;
+  background-color: transparent;
+  border-radius: 50%;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.room-cancel {
+  margin-top: 28rpx;
+  font-size: 24rpx;
+  color: #F2F2F2;
+}
+
+.tip-wrap {
+  position: fixed;
+  left: 95rpx;
+  bottom: 415rpx;
+  width: 560rpx;
+  background-color: #FFF8ED;
+  color: #E65A16;
+  box-sizing: border-box;
+  padding: 26rpx 21rpx;
+  border-radius: 10rpx;
+  font-size: 28rpx;
+  line-height: 40rpx;
+  text-align: center;
+  z-index: 998;
+}
+
+.expert {
+  position: fixed;
+  right: 15rpx;
+  width: 240rpx;
+  height: 320rpx;
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/expert-avatar.png');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  -moz-background-size: 100% 100%;
+  z-index: 999;
+}

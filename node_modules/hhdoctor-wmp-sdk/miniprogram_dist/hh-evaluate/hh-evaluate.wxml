@@ -1,5 +1,5 @@
 <!--Component/hh-evaluate/hh-evaluate.wxml-->
-<view class='page'  style='background:url({{doctor.photoUrl||photoUrl}}) no-repeat;background-size:cover;background-pisition:top center;'>
+<view class='page'  style='background:url({{doctor.photoUrl||photoUrl}}) no-repeat;background-size:cover;background-position:top center;'>
 
 <view class='contain'>
     <view class='evaluate' >
@@ -58,7 +58,7 @@
         <view class='evaluate-init'>
           <view class='thanks-title'>感谢反馈</view>
           <view class='thanks-text'>很抱歉给您不好的体验，建议您换个医生咨询视频医生将持续优化用户体验</view>
-          <view class='thanks-button' bindtap='bindChangeDoctor'>换个医生问问</view>
+          <!-- <view class='thanks-button' bindtap='bindChangeDoctor'>换个医生问问</view> -->
         </view>
       </block>
 
@@ -94,7 +94,7 @@
         <view class='evaluate-init'>
           <view class='thanks-title'>感谢反馈</view>
           <view class='thanks-text thanks-complain'>我们将尽快处理您的投诉，并给您反馈处理结果。抱歉给您带来不好的体验，您可以换个医生问问。</view>
-          <view class='thanks-button' bindtap='bindChangeDoctor'>换个医生问问</view>
+          <!-- <view class='thanks-button' bindtap='bindChangeDoctor'>换个医生问问</view> -->
         </view>
       </block>
       <view class='complain-link' hidden='{{template==4||template==5||template==6||!enableComplain}}' bindtap='bindComplainLink'>我要投诉</view>

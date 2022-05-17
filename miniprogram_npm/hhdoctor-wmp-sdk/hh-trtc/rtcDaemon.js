@@ -1,21 +1,24 @@
-let netSpeedRemote = [], netSpeedRemoteMin = 20, netSpeedLocal = [], netSpeedLocalMin = 60
+let netSpeedRemote = [], netSpeedRemoteMin = 20, netSpeedLocal = [], netSpeedLocalMin = 60, audioBpsMin = 10
 let restartCamera = false
+let self
 module.exports = Behavior({
   behaviors: [],
   properties: {},
   data: {},
-  attached: function () { },
+  attached: function () {
+    self = this
+  },
   methods: {
     /** 监测本地网络状态变化 */
     _onLocalNetStateUpdate(info) {
-      if (this.data._request.localVideoStatus < 1 || this.data.enterChooseImages || this.data.videoTimeSeconds <= 0) {
+      if (this.data._request.localVideoStatus < 1 || this.data.enterChooseImages || this.data.enterShare || this.data.videoTimeSeconds <= 0) {
         restartCamera = false
         return netSpeedLocal = []
       }
-      if (info.netSpeed <= netSpeedLocalMin) netSpeedLocal.push(info.netSpeed)
-      if (netSpeedLocal.length >= 5) {
+      if (('undefined' != typeof info.netSpeed && info.netSpeed <= netSpeedLocalMin) || ('undefined' != typeof info.audioBitrate && info.audioBitrate <= audioBpsMin)) netSpeedLocal.push(info.netSpeed)
+      if (netSpeedLocal.length >= 3) {
         netSpeedLocal = []
-        console.error('>>> _onLocalNetStateUpdate', this.data._request.localVideoStatus, self.data.enterChooseImages, self.data.videoTimeSeconds)
+        console.error('>>> _onLocalNetStateUpdate', this.data._request.localVideoStatus, self.data.enterChooseImages, self.data.enterShare, self.data.videoTimeSeconds)
         if (!restartCamera) {
           this.trtcComponent.unpublishLocalVideo()
           this.trtcComponent.unpublishLocalAudio()
@@ -24,10 +27,11 @@ module.exports = Behavior({
             this.trtcComponent.publishLocalVideo()
           }, 500)
           restartCamera = true
-          this.requestRtcLog('1', '摄像头出现问题，尝试重启', self.data.orderid)
+          this.requestRtcLog('1', '音视频出现问题，尝试重启', self.data.orderid)
         } else {
-          this.showToast('摄像头出现问题，请挂断后重新呼叫', 'noBack')
-          this.requestRtcLog('1', '摄像头出现问题，请挂断后重新呼叫', self.data.orderid)
+          this.showToast('音视频出现问题，请挂断后重新呼叫', 'noBack')
+          this.requestRtcLog('1', '音视频出现问题，请挂断后重新呼叫', self
+          .data.orderid)
         }
       }
     },

@@ -4,8 +4,11 @@ const hhDoctor = require('../hhDoctor.js');
 const uiUtil = require('../utils/uiUtil')
 const msgUtil = require('../utils/msgUtil.js');
 const apis = require("../utils/api.js");
+const customApis = require("../utils/customApi.js")
 const md5 = require('../utils/md5.min.js');
 const { getOptions } = require('../hhDoctor.js');
+const { naviToMed, navigateToMiniOrderList } = require('../utils/medicUtil')
+const envVersion = __wxConfig.envVersion == 'release' ? 'release' : 'trial';
 let self
 var voicePlaying = false;
 var reloadMsg = false, lastMsgTime, scrollToBottom = true;
@@ -16,7 +19,9 @@ var intervalHandler = {
   resize: null
 }
 var apiUtil;
-let msgPanelHeightCache = 0
+let msgPanelHeightCache = 0, getHisMsgTryCount = 0
+let acceptAuth = false, authHandler = null
+let wxAppId = wx.getAccountInfoSync().miniProgram.appId
 
 Component({
   behaviors: [
@@ -33,6 +38,7 @@ Component({
     detached() {
       pageIsShowing = false;
       hhDoctor.off('chatMessage');
+      authHandler && clearInterval(authHandler)
     }
   },
   pageLifetimes: {
@@ -41,10 +47,19 @@ Component({
       wx.setKeepScreenOn({
         keepScreenOn: true
       })
+      self._layoutResize()
       this._addMonitor();
       this.getLoginUserInfo();
       this.checkNetStatus();
+      if (wx.getStorageSync('needReloadMsg')) {
+        firstShow = true
+        lastMsgTime = null
+        wx.removeStorageSync('needReloadMsg')
+        this._getHistoryMsg(true)
+      }
       if (!firstShow) this._getHistoryMsg(false)
+
+      setTimeout(() => { this._layoutResize() }, 100);
     },
     hide() {
       pageIsShowing = false;
@@ -60,8 +75,9 @@ Component({
     navStyle: 'custom',
     sysInfo: null, //小程序系统信息
     msgPanelTop: 120, //中部消息列表顶部
-    msgPanelHeight: 100, //中部消息列表高度
-    livePanelHeight: 0,
+    msgPanelHeight: 0, //中部消息列表高度
+    livePanelHeight: 0,//直播区域的高度
+    authHeight: 0,
     callBtnTop: 35,
     mainBtnHeight: 64,
     msgList: [], //消息列表数组
@@ -89,13 +105,12 @@ Component({
     userToken: '',
     sdkProductId: '',
     doctorList: [],
-    isShowRealName: false,
-    realNameMsg: null,
-    sourceList: ['ddky', 'renhe', 'eleme', 'yishu', 'xiaoyaoyao']
+    sourceList: ['ddky', '"ddkyB2C"', 'renhe', 'eleme', 'elemeB2C', 'yishu', 'xiaoyaoyao'],
+    isAuth: true,
+    isShowAuth: false,
   },
   methods: {
     _requestComplete() {
-      console.log(this.data._request)
       console.log('初始化参数完成，准备启动IM...');
       apiUtil = require('../utils/apiUtil.js')
       hhDoctor.off('chatMessage');
@@ -113,6 +128,13 @@ Component({
       })
       this.getLoginUserInfo();
       this.getIsSunshineDoctor();
+      getHisMsgTryCount = 0
+      let healthUtil = require('../utils/healthUtil')
+      healthUtil.getWxRunData()
+
+      // setTimeout(() => {
+      //   common.getViewSize('#hhRealName', this).then(res => { console.log('>>> ', res) }).catch(err => console.error('>>> err:', err))
+      // }, 2000);
     },
     // 判断是否为阳光渠道并进入私人医生团队匹配入口
     getIsSunshineDoctor() {
@@ -151,12 +173,14 @@ Component({
         this.setData({
           loadcfg: res.data.loadCfg,
           manyVideo: res.data.loadCfg && res.data.loadCfg.manyVideo ? true : false,
-          product: res.data.user.product
+          shareCard: res.data.loadCfg && 'undefined' != typeof res.data.loadCfg.share_card_config ? parseInt(res.data.loadCfg.share_card_config) : 0,
+          product: res.data.user.product,
+          isAuth: res.data.user && res.data.user.is_auth || false
         })
         this.getIsSunshineDoctor();
+        common.getViewSize('#hhRealName', this).then(res => { res && this.setData({ authHeight: res.height }) }).catch(err => { })
       }).catch(err => { })
     },
-
     _bindMyCancel() {
       this._removeSunshineStore()
       this.setData({ isShowModal: false })
@@ -217,17 +241,21 @@ Component({
       console.log('>>> _getHistoryMsg', this.data._request.userToken)
       if (!this.data._request.userToken) return
       if ('unreg' == this.data._request.userToken) return this._getUnregHistoryMsg();
+      getHisMsgTryCount++
       let asst = hhDoctor.getAsstInfo();
       if (!asst || !asst.uuid)
-        return setTimeout(() => self._getHistoryMsg(isFirst), 500)
+        return setTimeout(() => {
+          if (getHisMsgTryCount <= 10) self._getHistoryMsg(isFirst)
+        }, 500)
       //let lastTime = self.data.msgList.length ? self.data.msgList[self.data.msgList.length - 1].time : ''
-      console.log('>>> 获取历史消息', asst.uuid, isFirst, lastMsgTime)
       if (isFirst) uiUtil.loading('获取消息...', 5000)
       apiUtil.getHistoryMsg(asst.uuid, isFirst, lastMsgTime)
         .then((res) => {
           //self.data.msgList = [];
           self._parseMsgHis(res);
+          if (this.data._request.drugOrderId) this._buyMedicineById()
           firstShow = false
+          uiUtil.hideLoading()
         }).catch(() => {
           firstShow = false
           uiUtil.hideLoading()
@@ -265,15 +293,15 @@ Component({
     /** 解析收到的历史消息 */
     _parseMsgHis(res) {
       if (!res.data || !res.data.length) return;
-      //console.log('获取历史消息结果:', res.data)
+      console.log('获取历史消息结果:', res.data)
       let msgList = msgUtil.parseMsgHistory(res);
       let uuid = parseInt(hhDoctor.getUserId());
       let asst = hhDoctor.getAsstInfo();
       if (!msgList || !msgList.length) return;
-
       for (let i = 0; i < msgList.length; i++) {
         if (!msgList[i].head || !msgList[i].name) {
           let isUser = parseInt(msgList[i].from) == uuid;
+          //console.log(msgList[i], uuid)
           msgList[i].from = isUser ? 'c' : 'd';
           msgList[i].head = isUser ? hhDoctor.getUserPhoto() : asst.photo;
           msgList[i].name = isUser ? '' : asst.name;
@@ -289,7 +317,6 @@ Component({
       }
       var msgId = '';
       var list = this.data.msgList;
-
       if (reload || !lastMsgTime) {
         list = [];
       }
@@ -316,11 +343,14 @@ Component({
           msgId = 'msg' + msgList[i - 1].time;
         }
       }
+      console.log('list', list)
+
       this.setData({ msgList: list },
         () => {
           if (scrollToBottom) this.setData({ lastMsgId: msgId })
           else scrollToBottom = true
           uiUtil.hideLoading()
+          console.log('>>> msgList:', this.data.msgList)
         })
     },
     _precessMsg(msg) {
@@ -337,10 +367,14 @@ Component({
         'buyDrugInformation' == msg.bodyContent.command) {
         //获取药卡的最新状态
         var drugOrderId = msg.bodyContent.drugOrderId;
-        if (drugOrderId && msg.body.isSuccess) {
+        if (drugOrderId && 'undefined' != typeof msg.body.isSuccess && 1 == msg.body.isSuccess) {
           msg.bodyContent.buttonName = '查看订单';
+          msg.bodyContent.buttonClass = 'view-order'
+          //侯三春要求显示  https://hh-medic.feishu.cn/sheets/shtcnD9mZ9iRqExw9JdwdFpQhte?sheet=o4snfJ
+          msg.bodyContent.tips = '如有用药疑问，请呼叫医生'
         }
       }
+
       if ('card' == msg.type &&
         'appointmentExpertSuccess' == msg.bodyContent.command) {
         //格式化预约视频成功消息的预约时间字段
@@ -390,40 +424,28 @@ Component({
       voicePlaying = false;
     },
     bindEveryIcon(e) {
-      switch (e.detail.type) {
+      switch (e.detail.serviceType) {
+        //拍照&相机
         case 'camera':
-        case 'album': self._selectImage(e.detail.type)
+        case 'album': self._selectImage(e.detail.serviceType)
           break;
-        //陪同咨询
-        case 'accompany':
-        //挂号服务
-        case 'registration':
-        //护理服务
-        case 'psychological':
-        //心理咨询
-        case 'offlinenurse':
-        //送药上门
-        case 'sendmedicine':
-          this.selectComponent('.hhcalling')._getCallingList(e.detail.type)
+        case 'share_card':
+          //用户无套餐或套餐过期的情况下，点击【给家人用】
+          if (!this.data.product || 'exp' == this.data.product.productStatusEnum) wx.showToast({ title: '成为会员后才能使用', icon: 'none', duration: 2500 })
+          //拉起订阅消息
+          if ('wx15e414719996d59f' == wxAppId) {
+            wx.requestSubscribeMessage({
+              tmplIds: ['N--vX7p3O7HeJp4FS9Yr7l8fUkKcdX8ZnPEhgO1A8xA'],
+              success: res => hhDoctor.addLog('1', '点击就诊提醒订阅消息成功:' + JSON.stringify(res)),
+              fail: err => hhDoctor.addLog('1', '点击就诊提醒订阅消息错误:' + JSON.stringify(err))
+            })
+          }
           break
-        case 'psycholmeditation':
-          this.confrimPsycholMed()
-          break;
         default:
+          this.selectComponent('.hhcalling')._getCallingList(e)
           break
       }
-    },
-    confrimPsycholMed() {
-      wx.showModal({
-        content: '本服务由北京清心科技有限公司提供',
-        confirmColor: '#0592F5',
-        confirmText: '继续评测'
-      }).then(res => {
-        if (!res.confirm) return
-        apis.requestGetPsycholMed().then(res => {
-          this._openUrl(res.data.forward)
-        }).catch(err => console.error(err))
-      })
+      this.triggerEvent('tapBottomIcon', e.detail)
     },
     /** 选择图片或拍照 */
     _selectImage(type) {
@@ -455,6 +477,7 @@ Component({
     _tapLink(e) {
       console.log('>>> tapLink:', e.currentTarget.dataset.link);
       let link = e.currentTarget.dataset.link
+      if (!link) return
       if (link.toLowerCase().startsWith('http://') || link.toLowerCase().startsWith('https://')) {
         this._openUrl(link)
         return
@@ -488,6 +511,7 @@ Component({
       page += '_=' + new Date().getTime()
       if (page.toLowerCase().indexOf('usertoken=') < 0) page += `&userToken=${this.data.userToken}`
       if (page.toLowerCase().indexOf('sdkProductId=') < 0) page += `&sdkProductId=${this.data.sdkProductId}`
+      if (page.toLowerCase().indexOf('openId=') < 0) page += `&openId=${this.data._request.openId}`
       wx.navigateTo({ url: page })
     },
     /** 跳转到其他小程序 */
@@ -508,6 +532,7 @@ Component({
       link += '_=' + new Date().getTime()
       if (link.toLowerCase().indexOf('usertoken=') < 0) link += `&userToken=${this.data.userToken}`
       if (link.toLowerCase().indexOf('sdkProductId=') < 0) link += `&sdkProductId=${this.data.sdkProductId}`
+      if (link.toLowerCase().indexOf('openId=') < 0) link += `&openId=${this.data._request.openId}`
       link = `${this.data.basePath}innerpages/view/view?url=${encodeURIComponent(link)}`
       wx.navigateTo({ url: link })
     },
@@ -516,6 +541,7 @@ Component({
     _viewSummary(e) {
       let medicRecordId = e.currentTarget.dataset.mrid;
       let patient = e.currentTarget.dataset.patient;
+      hhDoctor.addLog('1', `点击查看咨询总结。medicRecordId：${medicRecordId},patient:${patient}`)
       wx.navigateTo({
         url: `${this.data.basePath}innerpages/ehr-filingdetail/ehr-filingdetail?id=${medicRecordId}&memberUuid=${patient}`
       })
@@ -526,22 +552,24 @@ Component({
         return;
       }
       var style = this.data._request.style;
-      if (style.extendBtns) {
-        this.setData({
-          extendBtns: style.extendBtns
-        })
-      }
-      if (this.data.extendBtns.length > 0) {
-        this.setData({
-          msgPanelHeight: this.data.msgPanelHeight - 40
-        })
-      }
+      console.log(style)
+      // if (style.extendBtns) {
+      //   this.setData({
+      //     extendBtns: style.extendBtns
+      //   })
+      // }
+      // if (this.data.extendBtns.length > 0) {
+      //   this.setData({
+      //     msgPanelHeight: this.data.msgPanelHeight - 40
+      //   })
+      // }
       this._setNavigationBar();
 
       if (style.customStyle && style.customStyle.length > 0) {
         var cStyle = {};
         for (var i = 0; i < style.customStyle.length; i++) {
           var ss = self._getCustomStyle(style.customStyle[i].style);
+          console.log(ss)
           switch (style.customStyle[i].item) {
             case '.main-btn':
               cStyle.mainBtn = ss;
@@ -640,61 +668,116 @@ Component({
       wx.navigateTo({ url: pageUrl, })
     },
 
+    _buyMedicineById() {
+      let id = this.data._request.drugOrderId
+      this.setData({ ['_request.drugOrderId']: '' })
+      let msg = this._getMsgByDrugId(id)
+      let e = {
+        currentTarget: {
+          dataset: {
+            carturl: msg.bodyContent.cartUrl || '',
+            drugId: msg.body.orderid,
+            id: msg.body.id,
+            medicRecordId: msg.body.medicRecordId,
+            patientUuid: msg.body.patientUuid,
+            source: msg.bodyContent.source || '',
+            trans: msg.bodyContent.trans
+          }
+        }
+      }
+      this._buyMedicine(e)
+    },
+    /** 点击药卡下方的链接 */
+    _tapTipsLink(e) {
+      console.log(e)
+      let dataset = e.currentTarget.dataset
+      switch (dataset.tipslink) {
+        case '点此实名认证':
+          this._doRealName({ realPatientUuid: dataset.patientUuid, mode: dataset.mode, informationId: dataset.informationId })
+          break;
+        case '呼叫医生上传':
+          this._doCallDoctor(dataset.patientUuid)
+          break;
+        default:
+          return
+      }
+    },
+    _tapMedicine() {
+      //拉起订阅消息
+      if ('wx15e414719996d59f' == wxAppId) {
+        wx.requestSubscribeMessage({
+          tmplIds: ['RhJ_Y15m-dL6CNqVzm0U1PRbR1ADOAXjxjT1ACWF_Xo', 'eejHAX6psLzA7ktxDYHR79nlnzA1_C6Um7LxXv7_R0Q'],
+          success: res => hhDoctor.addLog('1', '点击药卡订阅消息成功:' + JSON.stringify(res)),
+          fail: err => hhDoctor.addLog('1', '点击药卡订阅消息错误:' + JSON.stringify(err))
+        })
+      }
+    },
     //点击药卡
     _buyMedicine(e) {
       console.log('drugOrderId====', e)
+      //拉起订阅消息
+      if ('wx15e414719996d59f' == wxAppId) {
+        wx.requestSubscribeMessage({
+          tmplIds: ['RhJ_Y15m-dL6CNqVzm0U1PRbR1ADOAXjxjT1ACWF_Xo', 'eejHAX6psLzA7ktxDYHR79nlnzA1_C6Um7LxXv7_R0Q'],
+          success: res => hhDoctor.addLog('1', '点击药卡订阅消息成功:' + JSON.stringify(res)),
+          fail: err => hhDoctor.addLog('1', '点击药卡订阅消息错误:' + JSON.stringify(err))
+        })
+      }
       if (!e.currentTarget.dataset.trans) {
         return;
       }
       let dataset = e.currentTarget.dataset;
+      hhDoctor.addLog('1', '点击药卡:' + JSON.stringify(dataset))
       console.log('dataset', dataset)
-
       //中宏-跳转1药网小程序无需实名
       if (this.data._request.sdkProductId == 10182) {
+        lastMsgTime = null//用于返回信息流更新数据
         let channelName = 'zhbx';//渠道名称 必传 固定值 不能修改
-        let orderId = e.currentTarget.dataset.drugid; //订单ID 必传
+        let orderId = e.currentTarget.dataset.drugId; //订单ID 必传
         let appId = 'wxa090add7f8c97f94';
         let appKey = '756c550269b379b35fc6a5de7912fe99';
         let sign = md5(appKey + channelName + orderId); //签名 必传
         let path = `pages/zhbx/pages/index/index?channelName=${channelName}&orderId=${orderId}&sign=${sign}`;
-        wx.navigateToMiniProgram({
-          appId: appId,
-          path: path,
-          envVersion: 'release'//trial 体验版  release 正式版
-        })
+        navigateToMiniOrderList('yiYao', path)
         return
       }
-      //eleme-mini renhe-mini yishu-mini ddky-h5 heye-mini
-      if (this.data.sourceList.indexOf(dataset.source) != -1) {
-        this._viewMedicIsRxBuy(dataset)
-        return
-      }
-      if (dataset.carturl) {
-        //妙药-跳转妙药提供的H5界面
-        let carturl = dataset.carturl + '&thirdId=' + getApp().globalData.openId
-        this._viewMedicineMiaoHealth(carturl);
-        return
-      }
-      //和缓阿里原始够药
-      this._viewMedicine(dataset.drugid, this.data._request.redirectPage);
+      this._viewMedicIsRxBuy(dataset)
     },
-
-    // 饿了么和叮当快药够药流程合并判定处方非处方处理方式 包括实名认证
-    // 非饿了么不用判定起送价 patientUuid, drugId, informationId, medicRecordId, source
+    /** 显示个人信息授权 */
+    _showLicense() {
+      return new Promise((resolve, reject) => {
+        acceptAuth = false
+        this.setData({ isShowAuth: true })
+        authHandler && clearInterval(authHandler)
+        authHandler = setInterval(() => {
+          if (this.data.isShowAuth) return
+          clearInterval(authHandler)
+          authHandler = null
+          if (acceptAuth) resolve()
+          else reject()
+        }, 100)
+      })
+    },
+    _tapLicense(e) {
+      acceptAuth = e.currentTarget.dataset.accept
+      this.setData({ isShowAuth: false })
+    },
+    //非饿了么不用判定起送价 
     _viewMedicIsRxBuy(data) {
       lastMsgTime = null//用于返回信息流更新数据
       wx.showToast({
         title: '加载中...',
-        icon:'loading',
-        duration:500,
-        mask:true
+        icon: 'loading',
+        duration: 500,
+        mask: true
       })
-      let msg = this._getMsgByDrugId(data.drugid);
+      if (!data.drugId) return uiUtil.toast('找不到购药订单ID')
+      let msg = this._getMsgByDrugId(data.drugId);
       let hasRx = this._checkHasRx(msg)
-      console.log(msg)
       //购买成功，跳转各对接方查看详情
       if (1 == msg.body.isSuccess) {
-        if (data.source == 'eleme') {
+        // 饿了么调饿了么 饿了么直付跳和缓
+        if ((data.source == 'eleme' || data.source == 'elemeB2C') && !data.isEleJumpHh) {
           self._viewOrderListEleme();
           return
         }
@@ -702,59 +785,37 @@ Component({
           self._viewOrderDetailYishu(data.orderId)
           return
         }
-        if(data.source == 'xiaoyaoyao'){
-          self._viewOrderDetailXiaoYaoYao(data,hasRx)
+        if (data.source == 'xiaoyaoyao') {
+          self._viewOrderDetailXiaoYaoYao(data, hasRx)
           return
         }
-        //h5-详情页
-        self._viewMedicine(data.drugid, self.data._request.redirectPage);
+        //h5-详情页 ddky ddkyB2C renhe hehuan ringnex ringnexB2C
+        self._viewMedicine(data.drugId, self.data._request.redirectPage);
         return;
       }
-      //非处方药特定渠道跳转到默认订单确认页
-      if (!hasRx && (data.source == 'renhe' || data.source == 'ddky')) {
-        this._viewMedicine(data.drugid, this.data._request.redirectPage);
-        return
-      }
-      this.getMedicUserDetail(data, hasRx, msg)
-
+      this._showLicense().then(() => {
+        this.getMedicUserDetail(data, hasRx, msg)
+      }).catch(err => { })
     },
     //获取药卡用户详情-跳转到个人信息授权
     getMedicUserDetail(data, hasRx, msg) {
       apis.requestGetRxPatientInfo('', data.patientUuid, hasRx)
         .then(res => {
           if (200 != res.status) return this._showModal('', res && res.message || '请稍后再试')
-          let url = this.getMedicUserDetailParams(data, hasRx, res, msg)
-          if (data.source == 'ddky' || data.source == 'renhe') {
-            let _request = this.data._request
-            let param = this.data._host.patHost + 'drug/order.html?' +
-              'drugOrderId=' + data.drugid +
-              '&sdkProductId=' + _request.sdkProductId +
-              '&userToken=' + _request.userToken +
-              '&openId=' + _request.openId +
-              '&payPage=' + encodeURIComponent(this.data.basePath + 'innerpages/pay/pay') +
-              '&redirectPage=' + encodeURIComponent(_request.redirectPage ? _request.redirectPage : '/pages/newIndex/newIndex') +
-              '&source=wmpSdk' +
-              '&version=' + this.data._sdkVersion +
-              '&_=' + new Date().getTime();
-            let pageUrl = encodeURIComponent(this.data.basePath + 'innerpages/view/view?url=' + encodeURIComponent(param))
-            url += `&pageUrl=${pageUrl}`
+          if ('undefined' != typeof msg.bodyContent.drugCount && msg.bodyContent.drugCount > 1) {
+            let url = this.getMedicUserDetailParams(data, hasRx, res, msg)
+            return wx.navigateTo({ url })
           }
-          //跳转逻辑在eleme-message里
-          wx.navigateTo({
-            url: url,
-            success() {
-              uiUtil.hideLoading()
-            }
-          })
-
+          let options = this.getMedicUserDetailOptions(data, hasRx, res, msg)
+          naviToMed(options)
         })
-        .catch(err => {
-          uiUtil.hideLoading()
-          uiUtil.modal('', err && err.message || '请稍后再试')
-        })
+        .catch(err => uiUtil.modal('', err && err.message || '请稍后再试'))
     },
+    //跳转授权页携带参数
     getMedicUserDetailParams(data, hasRx, res, msg) {
-      return `${this.data.basePath}innerpages/eleme-message/eleme-message?drugCount=${msg.bodyContent.drugCount}`
+      let _request = this.data._request
+      console.log(_request)
+      return `${this.data.basePath}innerpages/medic-realname/medic-realname?drugCount=${msg.bodyContent.drugCount}`
         + `&buttonName=${msg.bodyContent.buttonName}`
         + `&name=${res.data.name}`
         + `&isAuth=${res.data.auth}`
@@ -763,40 +824,56 @@ Component({
         + `&memberUserToken=${res.data.userToken}`
         + `&medicationList=${encodeURIComponent(JSON.stringify(msg.bodyContent.medicationList))}`
         + `&data=${encodeURIComponent(JSON.stringify(data))}`
+        + `&sdkProductId=${_request.sdkProductId}`
+        + `&userToken=${_request.userToken}`
+        + `&openId=${_request.openId}`
+        + `&basePath=${this.data.basePath}`
+        + `&redirectPage=${_request.redirectPage || '/pages/newIndex/newIndex'}`
+    },
+    //跳转授权页携带参数
+    getMedicUserDetailOptions(data, hasRx, res, msg) {
+      let _request = this.data._request
+      console.log('>>> getMedicUserDetailOptions:', _request, msg)
+      return {
+        drugCount: msg.bodyContent.drugCount,
+        buttonName: msg.bodyContent.buttonName,
+        name: res.data.name,
+        isAuth: res.data.auth,
+        phoneNum: res.data.phone,
+        hasRx,
+        memberUserToken: res.data.userToken,
+        medicationList: msg.bodyContent.medicationList,
+        data,
+        sdkProductId: _request.sdkProductId,
+        userToken: _request.userToken,
+        openId: _request.openId,
+        basePath: this.data.basePath,
+        redirectPage: _request.redirectPage || '/pages/newIndex/newIndex'
+      }
     },
     /** 跳转饿了么订单列表 */
     _viewOrderListEleme() {
       wx.hideLoading().then().catch(err => { })
-      wx.navigateToMiniProgram({
-        appId: 'wxece3a9a4c82f58c9',
-        path: '/pages/order/list/order-list',
-        envVersion: 'release',
-        complete() {
-          uiUtil.hideLoading();
-        }
+      let path = '/pages/order/list/order-list'
+      navigateToMiniOrderList('eleme', path).then(() => {
+        uiUtil.hideLoading();
       })
+
     },
     // 跳转壹树的订单详情页
     _viewOrderDetailYishu(orderId) {
       wx.hideLoading().then().catch(err => { })
-      wx.navigateToMiniProgram({
-        appId: 'wx56923640462b4e69',//'wxd4e5d6c3d86f9760',
-        path: `pages/webview/hh/index?orderId=${orderId}`,
-        envVersion: 'trial'
-      })
+      let path = `pages/webview/hh/index?orderId=${orderId}`
+      navigateToMiniOrderList('yiShu', path, envVersion)
     },
     //跳转小药药的订单详情
-    _viewOrderDetailXiaoYaoYao(data,hasRx){
+    _viewOrderDetailXiaoYaoYao(data, hasRx) {
       apis.requestGetRxPatientInfo('', data.patientUuid, hasRx)
-      .then(res => {
-        let path = `pages/channelDocking/channelDocking`
-        path+=`?token=${res.data.userToken}&orderId=${data.drugid}&tel=${res.data.phone}&source=hehuan&status=1`
-        console.log('path-查看订单',path)
-        wx.navigateToMiniProgram({
-              appId: 'wx776afedbfae3a228',//'',
-              path,
-              envVersion: 'release'//trial 体验版  release 正式版
-          })
+        .then(res => {
+          let path = `pages/channelDocking/channelDocking`
+          path += `?token=${res.data.userToken}&orderId=${data.drugId}&tel=${res.data.phone}&source=hehuan&status=1`
+          console.log('path-查看订单', path)
+          navigateToMiniOrderList('xiaoYaoYao', path, envVersion)
         })
     },
 
@@ -809,97 +886,125 @@ Component({
       return rxList && rxList.length > 0
     },
 
-    _tapExtendBtn(e) {
-      if (!e.currentTarget.dataset.btn) {
+    // _tapExtendBtn(e) {
+    //   if (!e.currentTarget.dataset.btn) {
+    //     return;
+    //   }
+    //   var btn = e.currentTarget.dataset.btn;
+    //   switch (btn.type) {
+    //     case 'view':
+    //       this._doViewUrl(btn.url);
+    //       break;
+    //     case 'click':
+    //       this._clickExtendBtn(btn.key);
+    //       break;
+    //     default:
+    //       return;
+    //   }
+    // },
+
+    // _clickExtendBtn(key) {
+    //   wx.showLoading({ title: '请稍候...', })
+    //   var url = this._getHost().wmpHost +
+    //     'im/clickExtendBtn?' + this._getPublicRequestParams() +
+    //     '&extendBtnKey=' + key;
+    //   wx.request({
+    //     url: url,
+    //     data: {},
+    //     method: 'POST',
+    //     success: function (res) {
+    //       uiUtil.hideLoading();
+    //       if (!res || !res.data || 200 != res.data.status) uiUtil.modal('出错了', res && res.data && res.data.message || '网络开小差了，请稍后再试')
+    //     },
+    //     fail: function () {
+    //       uiUtil.hideLoading();
+    //       uiUtil.modal('出错了', '网络开小差了，请稍后再试')
+    //     }
+    //   })
+    // },
+    //卡片待优化整理合并为一个事件
+    //19. fastchannel  重疾绿通 、nurse_home  医护到家 、hao 挂号服务 coopOrderCommon 三方订单(手术 陪诊)
+    //20.hao_detail 挂号详情、fastchannel_detail 重疾绿通详情 、nurse_home_detail 医护上门详情 expert_service coopOrderCommonDetail
+    _bindCardUrl(e) {
+      let data = e.currentTarget.dataset;
+      let { command, realPatientUserToken } = data
+      console.log('bindCardData', data)
+      if (data.isSuccess && data.isSuccess == 1) {
         return;
       }
-      var btn = e.currentTarget.dataset.btn;
-      switch (btn.type) {
-        case 'view':
-          this._doViewUrl(btn.url);
-          break;
-        case 'click':
-          this._clickExtendBtn(btn.key);
-          break;
-        default:
-          return;
+      //fastchannel  重疾绿通 、nurse_home  医护到家 、hao 挂号服务 coopOrderCommon 三方订单(手术 陪诊)
+      if (realPatientUserToken) {
+        wx.showLoading({ mask: true })
+        apis.requestGetRxPatientInfo(realPatientUserToken, '', false).then(res => {
+          uiUtil.hideLoading()
+          if (res.data.auth) {
+            this._isServerDoViewUrl(data)
+            return;
+          }
+          this._doRealName({ realPatientUserToken: res.data.userToken, name: res.data.name })
+        })
+        return
       }
+      this._isServerDoViewUrl(data)
     },
 
-    _clickExtendBtn(key) {
-      wx.showLoading({ title: '请稍候...', })
-      var url = this._getHost().wmpHost +
-        'im/clickExtendBtn?' + this._getPublicRequestParams() +
-        '&extendBtnKey=' + key;
-      wx.request({
-        url: url,
-        data: {},
-        method: 'POST',
-        success: function (res) {
-          uiUtil.hideLoading();
-          if (!res || !res.data || 200 != res.data.status) uiUtil.modal('出错了', res && res.data && res.data.message || '网络开小差了，请稍后再试')
-        },
-        fail: function () {
-          uiUtil.hideLoading();
-          uiUtil.modal('出错了', '网络开小差了，请稍后再试')
-        }
-      })
+    _isServerDoViewUrl(data) {
+      let { realPatientUserToken, isLinkServer, url, title } = data
+      if (isLinkServer) {
+        wx.showLoading({ mask: true })
+        customApis.REQUESTPOSTCUS(getApp().globalData._hhSdkOptions._host.wmpHost, customApis.APIURLS.informationFlow, data.id).then(res => {
+          uiUtil.hideLoading()
+          this._doViewUrl(res.data.forwardUrl)
+        })
+        return
+      }
+      if (realPatientUserToken) {
+        url += `&realPatientUserToken=${realPatientUserToken}&title=${title || ''}`
+      }
+      this._doViewUrl(url)
+
     },
-    _tapViewUrl(e) {
-      if (!e || !e.currentTarget || !e.currentTarget.dataset || !e.currentTarget.dataset.url) return
-      this._doViewUrl(e.currentTarget.dataset.url)
-    },
+    //心理咨询 
+    // _tapViewUrl(e) {
+    //   if (!e || !e.currentTarget || !e.currentTarget.dataset || !e.currentTarget.dataset.url) return
+    //   this._doViewUrl(e.currentTarget.dataset.url)
+    // },
+
 
     //追加公共参数 需实名认证-挂号  重疾通道 护士到家
-    _tapAppointmentViewUrl(e) {
-      console.log(e.currentTarget.dataset)
-      if (!e || !e.currentTarget || !e.currentTarget.dataset || !e.currentTarget.dataset.url) return
-      let dataset = e.currentTarget.dataset;
-      //购买成功 查看订单 跳转订单详情
-      if (dataset.isSuccess && dataset.isSuccess == 1) {
-        return;
-      }
-      apis.requestGetRxPatientInfo(dataset.realPatientUserToken, '', false).then(res => {
-        console.log(res)
-        // 如果已实名认证-直接跳转h5
-        dataset.url += `&realPatientUserToken=${dataset.realPatientUserToken}&title=${dataset.title}`
-        if (res.data.auth) {
-          this._doViewUrl(dataset.url)
-          return;
-        }
-        //实名认证是一个组件
-        this.setData({
-          realNameMsg: {
-            name: res.data.name,
-            phone: res.data.phone,
-            realPatientUserToken: res.data.userToken,
-            informationId: dataset.id,
-            title: dataset.title,
-            url: dataset.url
-          },
-          isShowRealName: true
-        })
-      })
-    },
-    //实名认证成功后
-    bindRealNameSuccess(e) {
-      this.bindCloseRealName()
-      this._doViewUrl(e.detail.url)
-    },
-    //关闭实名认证
-    bindCloseRealName() {
-      this.setData({
-        isShowRealName: false
-      })
-    },
+    // _tapAppointmentViewUrl(e) {
+    //   console.log(e.currentTarget.dataset)
+    //   let data = e.currentTarget.dataset;
+    //   let {command} = data
+    //   //购买成功 查看订单 跳转订单详情
+    //   if (data.isSuccess && data.isSuccess == 1) {
+    //     return;
+    //   }
+    //   apis.requestGetRxPatientInfo(data.realPatientUserToken, '', false).then(res => {
+    //     // 如果已实名认证-直接跳转h5
+    //     data.url += `&realPatientUserToken=${data.realPatientUserToken}&title=${data.title}`
+    //     if (res.data.auth) {
+    //       this._doViewUrl(data.url)
+    //       return;
+    //     }
+    //     this._doRealName({ realPatientUserToken: res.data.userToken, name: res.data.name })
+    //     console.error('尚未实名认证')
+    //   })
+    // },
     //不追加公共参数-护理报告-挂号详情 绿通详情 护士上门详情
-    _viewOriginUrl(e) {
-      if (!e || !e.currentTarget || !e.currentTarget.dataset || !e.currentTarget.dataset.url) return
-      var pageUrl = this.data.basePath + 'innerpages/view/view?url=' + encodeURIComponent(e.currentTarget.dataset.url);
-      wx.navigateTo({
-        url: pageUrl
-      })
-    },
+    // _viewOriginUrl(e) {
+    //   let data = e.currentTarget.dataset
+    //   //重疾二诊须实名认证用此模板
+    //   if (data.command == 'expert_service') {
+    //     this._tapAppointmentViewUrl(e)
+    //     return
+    //   }
+    //   var pageUrl = this.data.basePath + 'innerpages/view/view?url=' + encodeURIComponent(data.url);
+    //   wx.navigateTo({
+    //     url: pageUrl
+    //   })
+    // },
+
     //药卡活动推送卡片
     _viewDrugCardImage(e) {
       let command = e.currentTarget.dataset.command;
@@ -921,6 +1026,14 @@ Component({
       this._doViewUrl(rxUrl);
     },
     _tapViewDoctorInfo(e) {
+      //拉起订阅消息
+      if ('wx15e414719996d59f' == wxAppId) {
+        wx.requestSubscribeMessage({
+          tmplIds: ['BnqBFfGzKJNeWnRRSzA9LHmv6O1QqH0JoOrwyEveK4A'],
+          success: res => hhDoctor.addLog('1', '点击专家卡片订阅消息成功:' + JSON.stringify(res)),
+          fail: err => hhDoctor.addLog('1', '点击专家卡片订阅消息错误:' + JSON.stringify(err))
+        })
+      }
       let pageUrl = `${this.data.basePath}innerpages/doctorInfo/doctorInfo?doctorId=${e.currentTarget.dataset.doctorId}`;
       wx.navigateTo({
         url: pageUrl
@@ -930,32 +1043,27 @@ Component({
     bindSendTextMsg(e) {
       let from = parseInt(hhDoctor.getUserId());
       let asst = hhDoctor.getAsstInfo();
+      uiUtil.loading('发送中...')
       msgUtil.sendText(from, asst.uuid, e.detail, self.data._request.appointedOrderId)
         .then(res => {
-          console.log('>>> sendTextMsg:', res)
+          console.log('>>> sendTextMsg:', res, e)
           if (res && res.data && res.data.success) {
             console.log('文本消息发送成功')
-            let _msg = {
-              type: 'text',
-              from: 'c',
-              text: e.detail,
-              head: hhDoctor.getUserPhoto(),
-              name: '',
-              time: new Date().getTime()
-            }
-            this._addToMsgList([_msg])
-            if (res.data.responseData) {
-              this._parseMsgHis({ data: [res.data.responseData] })
-            }
+            setTimeout(() => { this._getHistoryMsg(false) }, 1000)
           }
         })
-        .catch(err => { console.error('发送消息失败', err) })
+        .catch(err => {
+          uiUtil.hideLoading()
+          uiUtil.toast('消息发送失败')
+          console.error('发送消息失败', err)
+        })
     },
     /** 发送语音消息 */
     bindSendAudio(e) {
       let from = parseInt(hhDoctor.getUserId());
       let asst = hhDoctor.getAsstInfo();
       let fileType = 'audio'
+      uiUtil.loading('发送中...')
       msgUtil.sendFile(from, asst.uuid, fileType, e.detail.tempFilePath, e.detail.duration, self.data._request.appointedOrderId)
         .then(res => {
           if (res && res.data && res.data.success) {
@@ -971,6 +1079,7 @@ Component({
       let from = parseInt(hhDoctor.getUserId());
       let asst = hhDoctor.getAsstInfo();
       let fileType = 'image'
+      uiUtil.loading('发送中...')
       msgUtil.sendFile(from, asst.uuid, fileType, images[index], null, self.data._request.appointedOrderId)
         .then(res => {
           if (res && res.data && res.data.success) {
@@ -987,7 +1096,6 @@ Component({
     },
     /** 弹出键盘时重设中部信息流区域高度 */
     bindkeyboardheightchange(e) {
-      console.log('>>> bindkeyboardheightchange', e, msgPanelHeightCache)
       if (!msgPanelHeightCache) msgPanelHeightCache = this.data.msgPanelHeight
       if (!e.detail.height) {
         this.setData({ msgPanelHeight: msgPanelHeightCache })
@@ -1006,6 +1114,76 @@ Component({
       lastMsgTime = null
       scrollToBottom = false
       this._viewUrl(url);
+    },
+    /** 点此实名 */
+    //type == drug 信息流药卡进入要显示呼叫视频医生按钮以及相关提示
+    _doRealName(data) {
+      let userToken = data['realPatientUserToken'] || this.data.memberList[0].userToken
+      let memberName = data['name'] || this.data.memberList[0].name
+      let realPatientUuid = data['realPatientUuid'] || null
+      let informationId = data['informationId'] || ''
+      if (!realPatientUuid) return wx.navigateTo({ url: `${this.data.basePath}innerpages/realName/realName?userToken=${userToken}&memberName=${memberName}&mode=${data['mode'] || ''}` })
+      apis.requestGetBaseUserInfo(realPatientUuid).then(res => {
+        if (res.data.isAuth) return uiUtil.toast('实名认证成功，请呼叫医生重新开药')
+        wx.navigateTo({ url: `${this.data.basePath}innerpages/realName/realName?userToken=${res.data.userToken}&memberName=${res.data.name}&mode=${data['mode'] || ''}&realPatientUuid=${realPatientUuid}&informationId=${informationId}` })
+      }).catch(err => uiUtil.error(err, '实名服务异常，请稍后再试'))
+    },
+    /** 点击药卡中的呼叫医生 */
+    _doCallDoctor(uuid) {
+      let url = this.data._request.callPage + '?' + this._getPublicRequestParams() + '&dept=600002' + '&realPatientUuid=' + uuid + '&realPatientUserToken=undefined&localVideoStatus=' + this.data.loadcfg.localVideoStatus
+      wx.navigateTo({ url })
+    },
+    /** 点击预约视频咨询中的等待专家按钮，提前进房等待专家 */
+    _waitForDoctor(e) {
+      let orderId = e.currentTarget.dataset.orderId, doctorId = e.currentTarget.dataset.doctorId
+      hhDoctor.waitForDoctor(doctorId, orderId)
+    },
+    _viewHealthReport(e) {
+      let url = e.currentTarget.dataset.url
+      if (!url) return
+      this._doViewUrl(url);
+    },
+
+    bindcallasst(e) {
+      this.triggerEvent('callasst', e.detail)
+    },
+    bindcontactasst(e) {
+      this.triggerEvent('contactasst', {})
+    },
+    showSummaryActionsheet(e) {
+      console.log('>>> showSummaryActionsheet', e)
+      let id = e.currentTarget.dataset.id, patient = e.currentTarget.dataset.patient
+      wx.showActionSheet({
+        itemList: ['删除']
+      }).then(res => {
+        switch (res.tapIndex) {
+          case 0:
+            //删除病历
+            wx.showModal({
+              title: '',
+              content: '确定删除消息，删除后不可恢复',
+              confirmText: '删除'
+            }).then(res => {
+              if (res.cancel) return
+              //删除
+              uiUtil.loading('删除中...')
+              customApis.REQUESTPOSTCUS(getApp().globalData._hhSdkOptions._host.wmpHost, customApis.APIURLS.delInformationFlow,
+                id, patient, this.data.sdkProductId).then(res => {
+                  this.data.msgList
+                  for (let i = 0; i < this.data.msgList.length; i++) {
+                    if (this.data.msgList[i] && this.data.msgList[i].id && id == this.data.msgList[i].id) {
+                      this.data.msgList.splice(i--, 1);
+                      break
+                    }
+                  }
+                  this.setData({ msgList: this.data.msgList })
+                  uiUtil.hideLoading()
+                })
+            }).catch(err => { })
+            break;
+          default: return
+        }
+      }).catch(err => { })
     }
   }
 })

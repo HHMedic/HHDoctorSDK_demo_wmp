@@ -1,4 +1,6 @@
 {
   "component": true,
-  "usingComponents": {}
+  "usingComponents": {
+    "realname-data": "../../realname-data/realname-data"
+  }
 }

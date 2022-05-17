@@ -33,10 +33,9 @@ function resizeIm(instance) {
     navStyle: styleName,
     callBtnTop: bTop,
     msgPanelTop: mHeight,
-    msgPanelHeight: layout.systemInfo.windowHeight - mHeight - safeArea - 60,
+    msgPanelHeight: layout.systemInfo.windowHeight - mHeight - safeArea - 40,
     safeAreaHight: safeArea,
   })
-
   //隐藏底部输入框和工具栏
   if (!self.data._request.bottomToolsVisible) {
     self.setData({ msgPanelHeight: self.data.msgPanelHeight + 60 })
@@ -50,9 +49,10 @@ function resizeMy(instance) {
 function getSafeAreaHeight(info) {
   let safeArea = 0
   if (!info) info = wx.getSystemInfoSync()
-  if (info.model.toLowerCase().indexOf('iphone x') >= 0) safeArea = 34
-  else if (info.safeArea)
-    safeArea = info.screenHeight - info.safeArea.bottom
+  // if (info.model.toLowerCase().indexOf('iphone x') >= 0) safeArea = 34
+  // else if (info.safeArea)
+  //   safeArea = info.screenHeight - info.safeArea.bottom
+  safeArea = info.safeArea.bottom - info.safeArea.height + info.safeArea.top
   return safeArea
 }
 

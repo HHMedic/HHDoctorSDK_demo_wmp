@@ -37,9 +37,10 @@ Page({
   onShow: function () {
     this.setData({ isConnect: getApp().globalData.isConnect })
     console.log(url);
-
+    wx.hideHomeButton()
   },
   getReLoad(options){
+
     if (options.url) {
       url = decodeURIComponent(options.url);
       console.log('url', url)
@@ -51,6 +52,10 @@ Page({
         delta: 1
       })
     }
+  },
+  bindLoad(e){
+    this.data.currWebUrl = e.detail.src
+    console.log(e.detail.src)
   },
 
   /**

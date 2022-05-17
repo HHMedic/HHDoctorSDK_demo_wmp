@@ -10,6 +10,7 @@ module.exports = Behavior({
       type: Object,
       value: {},
       observer(newVal, oldVal, changedPath) {
+        console.log(this)
         this.paramRequestChange(newVal, oldVal, changedPath);
       }
     },
@@ -42,6 +43,9 @@ module.exports = Behavior({
       serviceType: 'asst',
       callBtnVisible: true,
       bottomToolsVisible: true,
+      bottomExtToolsVisible: false,
+      bottomRightsVisible: true,
+      inputPlaceHolder: '联系医助',
       //hh-ehr属性
       viewModule: 'memberList',
       addMember: true,
@@ -51,6 +55,7 @@ module.exports = Behavior({
       appointedOrderId: '',
       //hh-call属性
       dept: '',
+      caller: '',
       logoImage: 'https://imgs.hh-medic.com/icon/wmp/logo-default.png',
       waittingText: '预计接通时间',
       cameraTimeoutSeconds: 6,
@@ -64,6 +69,10 @@ module.exports = Behavior({
       enableComplain: true,
       enableInputEvaluate: false,
       localVideoStatus: 2,   //视频右上角本地视频的状态。-1:永远关闭,0:默认关闭，用户可开启,1:默认开启，用户可关闭,2:永远开启
+      joinRoom: 0,
+      inviteInVideo: 0,    //视频中显示邀请家人图标。0：隐藏；1：显示
+      orderId:'',
+      doctorId:'',
       //hh-personal属性
       personalModule: 'personal',
       //hh-addresslist属性
@@ -93,8 +102,10 @@ module.exports = Behavior({
       },
       regPage: '',
       enableLiveShare: false,
+      equityTitle: '会员权益',
       //其他属性
-      hospitalId: null
+      hospitalId: null,
+      ext: ''
     },
     _requestCheck: false
   },
@@ -105,6 +116,7 @@ module.exports = Behavior({
   },
   methods: {
     paramRequestChange(newVal, oldVal, changedPath) {
+      console.log('paramRequestChange', newVal)
       if (!newVal) return
       this.setData({ _request: Object.assign(this.data._request, newVal), _host: this._getHost() })
       if (!this.data._request.userToken && this.data._request.uuid && this.data._request.token) {

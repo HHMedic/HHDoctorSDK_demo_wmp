@@ -1,10 +1,12 @@
 const hhDoctor = require('../hhDoctor.js');
 const apis = require("../utils/api.js");
+const customApis = require('../utils/customApi.js')
 var calling = false;
 let that;
 let apiUtil;
 let liveListInterval = null;
-let infoTip = '检测到信息不全，需补充姓名、年龄、电话等信息后，'
+let infoTip = '检测到信息不全，需补充姓名、年龄、电话等信息后，可使用该服务'
+let callType = ""
 Component({
   behaviors: [
     require('../behaviors/hhStarter'),
@@ -17,9 +19,18 @@ Component({
     navStyle: String,
     customStyle: Object,
     disConnected: Boolean,
-    sysInfo: Object,
     manyVideo: Boolean,
     product: Object,
+    isAuth: Boolean,
+    loadcfg: {
+      type: Object,
+      value: {},
+      observer(val) {
+        if (!val) return
+        let localVideoStatus = 'undefined' != typeof val.localVideoStatus ? val.localVideoStatus : 2
+        this.setData({ localVideoStatus })
+      }
+    },
     demoStatusInit: {
       type: Number,
       value: -1,
@@ -33,6 +44,7 @@ Component({
   data: {
     _name: 'hh-calling',
     memberCallTop: -1200,
+    sysInfo: {},
     isAgreeExplain: true,//呼叫协议,
     callBtnsVisible: false,
     animationMemberData: null,
@@ -43,7 +55,7 @@ Component({
     patient: null,
     parent: null,
     demoStatus: -1,
-    modalMsgData: { source: 'member', content: infoTip + '才可呼叫医生', confirmText: '立即补充' },//disclaimer member 目前只有补充成员信息和免责声明用到该组件
+    modalMsgData: { source: 'member', content: infoTip, confirmText: '立即补充' },//disclaimer member 目前只有补充成员信息和免责声明用到该组件
     deleteCount: 0,//删除成员的个数 
     isShowModal: false,//补全信息的弹窗开关
     sceneNum: '',
@@ -58,12 +70,14 @@ Component({
     isShowAuthTip: false,
     callingVisible: false,
     title: '',
-    test: null
-
+    test: null,
+    localVideoStatus: 1,
   },
   lifetimes: {
     attached() {
       that = this;
+      this.setData({ sysInfo: wx.getSystemInfoSync() })
+      console.log('系统信息', this.data.sysInfo, this.data.msgPanelTop)
     },
     detached() {
       that._clearIntervalHandler(liveListInterval);
@@ -80,6 +94,7 @@ Component({
   },
   methods: {
     _requestComplete() {
+      console.log('calling-request', this.data._request)
       that._getLiveListCycle();
       apiUtil = require('../utils/apiUtil.js');
       that._checkSceneNum();
@@ -105,10 +120,7 @@ Component({
         url: pageUrl
       })
     },
-    // 获取家庭成员
-    getAddMemberPage() {
-      return `${this.data.basePath}innerpages/ehr-addmember/ehr-addmember?isInvite=${this.data.isInvite}`
-    },
+
     getMember() {
       this.setData({
         sceneNum: wx.getLaunchOptionsSync().scene
@@ -142,16 +154,18 @@ Component({
                 })
               })
           }
+          //与@wangyuanyuan讨论后确定将启动后检查信息不全功能暂时去掉
           //首次是否弹出信息不全提示
-          let integrityCheck = getApp().globalData.loginUser && getApp().globalData.loginUser.loadcfg
-            && 'undefined' != typeof getApp().globalData.loginUser.loadcfg.integrityCheck && getApp().globalData.loginUser.loadcfg.integrityCheck || true;
-          if (!this.checkMemberMessage(patient.name, patient.sex, patient.birthday, patient.needUpdateInfo) && integrityCheck) {
+          /*let loginUser = getApp().globalData.loginUser
+          let integrityCheck = true
+          if (loginUser && loginUser.loadcfg && 'undefined' != typeof loginUser.loadcfg.integrityCheck) integrityCheck = loginUser.loadcfg.integrityCheck
+          if (!this.checkMemberMessage(patient.name, patient.sex, patient.birthday, patient.needUpdateInfo, patient.uuid) && integrityCheck) {
             this.setData({
-              modalMsgData: { source: 'member', content: infoTip + '才可呼叫医生', confirmText: '立即补充' },
+              modalMsgData: { source: 'member', content: infoTip, confirmText: '立即补充' },
               isShowModal: true,
               memberUuid: this.data.memberList[0].uuid
             })
-          }
+          }*/
         } else {
           wx.showToast({
             title: res.data.message,
@@ -161,9 +175,61 @@ Component({
         }
       }).catch(err => { wx.hideLoading() })
     },
-    /** 点击呼叫医生 */
+    _changeLocalVideoStatus() {
+      this.setData({ localVideoStatus: 1 - this.data.localVideoStatus })
+    },
+    _jumpAsseUrl(dataset, iconEventData) {
+      calling = false;
+      that._hideBtn()
+      that._callingVisible(false)
+      let item = dataset.item
+      let forwardUrl = iconEventData.forwardUrl
+      let pageUrl = forwardUrl + `${forwardUrl.indexOf('?') > 0 ? '&' : '?'}` +
+        `comeFrom=default` +
+        `&userToken=${this.data.memberList[0].userToken}` +
+        `&sdkProductId=${item.sdk_product_id}` +
+        `&openId=${that.data._request.openId}` +
+        `&realPatientUserToken=${item.userToken}` +
+        `&wxAppId=${getApp().globalData.wxAppId}` +
+        `&type=${iconEventData.serviceType}` + this._getRightsJumpParams(item)
+      if (iconEventData.rule && typeof iconEventData.rule.isNeedCheck != 'undefined') {
+        pageUrl += `&isNeedCheck=${iconEventData.rule.isNeedCheck}`
+      }
+      console.log()
+      console.log('page', pageUrl)
+      wx.navigateTo({
+        url: `${this.data.basePath}innerpages/view/view?url=${encodeURIComponent(pageUrl)}`,
+      })
+    },
+    _getRightsJumpParams(item) {
+      let serviceType = this.data.iconEventData.serviceType
+      // 新华保险四个评估的type是以asse结尾
+      if (serviceType.match(/asse$/g)) {
+        return `&sex=${item.sex}&birthday=${item.birthdayStr}&name=${item.name}&uuid=${item.uuid}`
+      }
+      return ''
+    },
+
+    /** 单人套餐呼叫时，以主账号身份直接呼叫 */
+    _callDoctorAsPrimaryAccount() {
+      let dataset = {
+        call: 'call',
+        dept: '600002',
+        isAccount: false,
+        item: this.data.patient,
+        name: this.data.patient.name,
+        needUpdateInfo: this.data.patient.needUpdateInfo,
+        birthday: this.data.patient.birthday,
+        sex: this.data.patient.sex,
+        uuid: this.data.patient.uuid
+      }
+      let e = { currentTarget: { dataset } }
+      this._callDoctor(e)
+    },
+
+    /** 点击选择成员项呼叫医生 唤起成员列表 */
     _callDoctor(e) {
-      // this._hideBtn();
+      console.log(e)
       if (!this.data._request.callPage || !this.data._request.callBtnVisible) {
         return;
       }
@@ -171,13 +237,39 @@ Component({
         return;
       }
       calling = true;
+      callType = this.properties.loadcfg && this.properties.loadcfg.defaultCallType || ''
+      let dataset = e.currentTarget.dataset
+      console.log('选择成员的dataset', dataset)
+      //如果是底部权益列表选择的成员
+      if (!dataset.call) {
+        let iconEventData = this.data.iconEventData || {}
+        let rule = iconEventData.rule || {}
+        let isCall = typeof (rule.isCall) != 'undefined' ? rule.isCall : false
+        let forwardUrl = iconEventData.forwardUrl
+        callType = iconEventData.serviceType
+        //点击评估权益调起成员list->H5 产品说后期发展成呼叫视频医生 暂在此执行
+        if (forwardUrl && !isCall && iconEventData.serviceType != 'drug') {
+          // 需要实名&&当前成员未实名
+          if (rule.isNeedAuth && !dataset.item.is_auth) {
+            calling = false;
+            that._callingVisible(false)
+            wx.navigateTo({ url: `${this.data.basePath}innerpages/realName/realName?userToken=${dataset.item.userToken}&memberName=${dataset.name}` })
+            return
+          }
+          if (!that._checkMessage(dataset.name, dataset.sex, dataset.birthday, dataset.needUpdateInfo, dataset.uuid)) return
+          // || iconEventData.serviceType == 'medical_shop'
+          if (iconEventData.serviceType == 'drug_shop') {
+            that.getJumpToMiniGH(iconEventData.serviceType)
+            return
+          }
+          this._jumpAsseUrl(dataset, iconEventData)
+          return
+        }
+      }
       wx.showLoading({
         title: '连接中...',
       })
-      let uuid = e.currentTarget.dataset.uuid;
-      let isAccount = e.currentTarget.dataset.isaccount;
       var callTimeout = 0;
-
       var callInterval = setInterval(function () {
         if (callTimeout >= 5000) {
           //超时，显示提示信息
@@ -203,78 +295,71 @@ Component({
           //检查是否是黑名单
           that._checkBlackList()
             .then(() => {
-              //用户是否同意视频医生协议
-              if (!that.data.isAgreeExplain) {
-                wx.showModal({
-                  title: '提示',
-                  content: '同意《服务说明》后可发起咨询',
-                  showCancel: false,
-                  confirmColor: '#0592F5',
-                  confirmText: '我知道了',
-                  success() {
-                    calling = false;
-                  }
-                })
-                return;
-              }
               //检查主账号信息是否完整
-              if (!that.checkMemberMessage(that.data.memberList[0].name, that.data.memberList[0].sex, that.data.memberList[0].birthday, that.data.memberList[0].needUpdateInfo)) {
-                that.setData({
-                  modalMsgData: { source: 'member', content: infoTip + '才可呼叫医生', confirmText: '立即补充' },
-                  isShowModal: true,
-                  memberUuid: that.data.memberList[0].uuid
-                })
-                calling = false;
-                return;
-              }
+              // let patient = that.data.memberList[0]
+              // if(!that._checkMessage(patient.name,patient.sex,patient.birthday,patient.needUpdateInfo))return
+              //检查成员信息是否补全 ———— 如果是多人视频则同时展示独立子账号入口 必须填写
+              // console.log(that._checkMessage(dataset.name, dataset.sex, dataset.birthday,dataset.needUpdateInfo,dataset.uuid),dataset)
 
-              //检查信息是否补全  test
-              if (!that.checkMemberMessage(e.currentTarget.dataset.name, e.currentTarget.dataset.sex, e.currentTarget.dataset.birthday)) {
-                that.setData({
-                  modalMsgData: { source: 'member', content: infoTip + '才可呼叫医生', confirmText: '立即补充' },
-                  isShowModal: true,
-                  memberUuid: e.currentTarget.dataset.uuid
-                })
-                calling = false;
-                return;
-              }
+              if (!that._checkMessage(dataset.name, dataset.sex, dataset.birthday, dataset.needUpdateInfo, dataset.uuid)) return
               //节流
               if (that._getThrottle()) return;
               //正式呼叫 如果是选择成员 就传成员id 否则就传自己的 以供评价使用
               //let pageUrl = that.data._request.callPage + '?' + that._getPublicRequestParams() + '&dept=' + e.currentTarget.dataset.dept + '&uuid=' + uuid;
-              let pageUrl = that.data._request.callPage + '?' + that._getPublicRequestParams() + '&dept=' + e.currentTarget.dataset.dept + '&realPatientUuid=' + uuid;
+              let pageUrl = that.data._request.callPage + '?' + that._getPublicRequestParams() + '&dept=' + dataset.dept + '&realPatientUuid=' + dataset.uuid + '&realPatientUserToken=undefined&localVideoStatus=' + that.data.localVideoStatus;
+              //底部权益弹出 -  根据rightList-serviceType
+              if (callType) pageUrl += ('&callType=' + callType)
+              pageUrl += ('&ext=' + that.data._request.ext || '')
               if (that.data.isInvite == 1) {
-                console.log(e)
-                if (!isAccount) {
+                if (!dataset.isAccount) {
+                  console.log('成员未开通', dataset)
                   //成员未开通独立登录功能
                   that.setData({
-                    modalMsgData: { source: 'invite', content: ' 您需要将该成员编辑成独立登录， 再发起邀请', confirmText: '去编辑', uuid },
+                    modalMsgData: { source: 'member', content: ' 您需要将该成员编辑成独立登录， 再发起邀请', confirmText: '去编辑', uuid: dataset.uuid },
                     isShowModal: true,
-                    memberUuid: e.currentTarget.dataset.uuid
+                    memberUuid: dataset.uuid
                   })
                   calling = false;
                   that._callingVisible(false)
-                  return;
+                  return
                 }
                 pageUrl += '&orderType=many_video&isInvite=' + that.data.isInvite
-                console.log('pageurl', pageUrl)
               }
-              // if (that.data._request.sdkProductId == 10182) {
-              //   that.setData({
-              //     isEnterFace: true,
-              //     callPageUrl: pageUrl
-              //   })
-              //   calling = false;
-              //   return;
-              // }
+
+              console.log('pageurl', pageUrl)
+              // support_face_oauth 人脸识别 中宏 人保 单人套餐
+              // const needFaceSdkId = [10182, 10327]
+              // if (needFaceSdkId.indexOf(that.data._request.sdkProductId) != -1) {
+              if (that.data._request.loadcfg['support_face_oauth']) {
+                that._hideBtn()
+                calling = false;
+                //刷脸之前需实名认证
+                if (!that.data.isAuth) {
+                  //去实名
+                  that.triggerEvent('doRealName')
+                  return
+                }
+                if (dataset.item.cardType != 1 && dataset.item.cardType != 8) {
+                  wx.navigateTo({
+                    url: pageUrl
+                  })
+                  return
+                }
+                //证件类型为不为身份证或户口本
+                that.setData({
+                  isEnterFace: true,
+                  callPageUrl: pageUrl
+                })
+                return
+              }
               wx.navigateTo({
                 url: pageUrl
               })
               calling = false;
               that._hideBtn();
-            }).catch(() => {
+            }).catch(err => {
               //进入演示模式
-              that._callDemo(e.currentTarget.dataset.dept, 5, uuid);
+              that._callDemo(dataset.dept, 5, dataset.uuid);
               calling = false;
             })
 
@@ -282,6 +367,108 @@ Component({
         }
         callTimeout += 100;
       }, 100)
+    },
+    _checkMessage(name, sex, birthday, needUpdateInfo, uuid) {
+      console.log('>>> _checkMessage', name, sex, birthday, needUpdateInfo, uuid)
+      //检查账号信息是否完整
+      if (!that.checkMemberMessage(name, sex, birthday, needUpdateInfo, uuid || that.data.memberList[0].uuid)) {
+        that.setData({
+          modalMsgData: { source: 'member', content: infoTip, confirmText: '立即补充' },
+          isShowModal: true,
+          memberUuid: uuid || that.data.memberList[0].uuid
+        })
+        calling = false;
+        return false
+      }
+      return true
+    },
+    //外部调用显示呼叫列表 set展示信息
+    _getCallingList(e) {
+      console.log('外部调用传入信息', e.detail)
+      this.setData({ forwardUrl: e.detail.forwardUrl || '', iconEventData: e.detail || '' })
+      let product = that.data.product || {}
+      if (!product) {
+        that.setData({
+          isShowModal: true,
+          modalMsgData: { source: 'single', content: '您需要开通会员才能享受该服务', ishidecancel: true, confirmText: '我知道了' }
+        })
+        return
+      }
+
+      if (product.productStatusEnum == 'unpay' || product.productStatusEnum == 'exp') {
+        that.setData({
+          isShowModal: true,
+          modalMsgData: { source: 'single', content: '您需要开通会员才能享受该服务', ishidecancel: true, confirmText: '我知道了' }
+        })
+        return
+      }
+      if (product.productStatusEnum == 'unbegin') {
+        that.setData({
+          isShowModal: true,
+          modalMsgData: { source: 'single', content: '您的套餐还未到生效时间', ishidecancel: true, confirmText: '我知道了' }
+        })
+        return
+      }
+      switch (e.detail.serviceType) {
+        //陪同咨询
+        case 'many_video':
+          that.setData({
+            isInvite: 1,
+            title: e.detail.title
+          })
+          if (product.productStatusEnum == 'per' && product.userCnt == 0) {
+            that.setData({
+              isShowModal: true,
+              modalMsgData: { source: 'single', content: '您的会员是单人套餐，需要开通多人套餐才可使用该功能', ishidecancel: true, confirmText: '我知道了' }
+            })
+            return
+          }
+          if (that.data.userCnt == 0 && that.data.memberList.length < 2) {
+            that.setData({
+              isShowModal: true,
+              modalMsgData: { source: 'single', content: '您的会员是单人套餐，需要开通多人套餐才可使用该功能', ishidecancel: true, confirmText: '我知道了' }
+            })
+            return
+          }
+          //检查主账号信息是否完整
+          let patient = that.data.memberList[0]
+          if (!that._checkMessage(patient.name, patient.sex, patient.birthday, patient.needUpdateInfo)) return
+          if (that.data.memberList.length < 2) {
+            that.setData({
+              modalMsgData: { source: 'many_video', content: '您需要添加成员并允许该成员独立登录， 再发起邀请', confirmText: '去添加' },
+              isShowModal: true,
+            })
+            return;
+          }
+          break;
+        //return
+        default:
+          that.setData({
+            title: e.detail.title,
+            isInvite: 0
+          })
+          break;
+      }
+
+      //成员不共享权益 直接进行跳转不唤起成员列表@侯
+      let iconEventData = this.data.iconEventData || {}
+      if (iconEventData.rule && iconEventData.rule.isChooseMember == false) {
+        let user = this.data.memberList[0]
+        let dataset = {
+          name: user.name,
+          birthday: user.birthday,
+          dept: '600002',
+          isAccount: user.isAccount,
+          uuid: user.uuid,
+          needUpdateInfo: user.needUpdateInfo,
+          sex: user.sex,
+          item: user
+        }
+        let data = { currentTarget: { dataset } }
+        this._callDoctor(data)
+        return
+      }
+      this._callingVisible(true)
     },
     _getThrottle() {
       let timestamp = Date.parse(new Date());
@@ -337,12 +524,22 @@ Component({
 
           if (isEveryAuth) {
             that._callingVisible(false)
-            that._showHideBtn();
+            //如果是单人卡或体验成员，直接呼叫
+            console.log('>>> memberList:', that.data.product, that.data.memberList)
+            if (that.directCall()) that._callDoctorAsPrimaryAccount()
+            else that._showHideBtn();
           }
         }
       })
     },
-
+    /**是否直接呼叫 */
+    directCall() {
+      //单人套餐卡
+      if (that.data.product && 0 == that.data.product.userCnt) return true
+      //独立子账号
+      if (that.data.product && 1 == that.data.memberList.length && that.data.memberList[0].isAccount) return true;
+      return false
+    },
     //检查是否全部授权
     getIsAuthAll(item) {
       return item == true
@@ -376,7 +573,7 @@ Component({
       })
       // 选择成员列表弹出动画
       this.data.memberCallTop = this.data.msgPanelTop;
-      var topPx = visible ? this.data.memberCallTop : -(this.data.memberList.length * 98 + 178);
+      var topPx = visible ? this.data.memberCallTop - 2 : -(this.data.memberList.length * 98 + 178);
       animation.top(topPx).step();
       this.setData({
         callBtnsVisible: visible,
@@ -410,7 +607,7 @@ Component({
       })
     },
     //检查成员信息是否补全
-    checkMemberMessage(name, sex, birthday, needUpdateInfo) {
+    checkMemberMessage(name, sex, birthday, needUpdateInfo, memberUuid) {
       if (needUpdateInfo) return false
       let obj = {}
       obj['birthday'] = birthday || '';
@@ -423,25 +620,14 @@ Component({
         }
       }
       //检查主账号手机号是否为空。如果可约专家、手机号为空，则需补充信息
-      let _product = hhDoctor.getProduct()
-      if (_product && _product.canOrderExpert && !this.data.patient.phone_num)
-        return false
+      if (this.data.patient.uuid == memberUuid) {
+        let _product = hhDoctor.getProduct()
+        if (_product && _product.canOrderExpert && !this.data.patient) return false
+      }
       return true;
     },
     // 进入演示模式
     _callDemo() {
-      if (!that.data.isAgreeExplain) {
-        wx.showModal({
-          title: '提示',
-          content: '同意《服务说明》后可进入演示模式',
-          showCancel: false,
-          confirmColor: '#0592F5',
-          confirmText: '我知道了',
-          success() { }
-
-        });
-        return;
-      }
       var pageUrl = that.data._request.demoPage + '?' + that._getPublicRequestParams() + '&dept=' + that.data.dept + '&openType=4' + '&uuid=' + that.data.patient.uuid;
       wx.navigateTo({
         url: pageUrl
@@ -492,15 +678,59 @@ Component({
         }
       }
     },
+    getJumpToMiniGH(serviceType) {
+      wx.showLoading({
+        mask: true
+      })
+      customApis.REQUESTPOSTCUS(that._getHost().wmpHost, customApis.APIURLS.getJumpGHParam, serviceType).then(res => {
+        wx.hideLoading()
+        if (res.status == 200) {
+          calling = false;
+          that._callingVisible(false)
+          let sdkProductId = that.data._request.sdkProductId
+          if (this.data._request.profileName == 'test') {
+            // 测试环境
+            let path = {
+              'drug_shop': `/pages/portal/portal?id=7&jumpType=server_url&needLocation=true&source=hehuan&sdkProductId=${sdkProductId}&`,
+              'medical_shop': `/pages/portal/portal?source=hehuan&needLocation=true&jumpUrl=https%3A%2F%2Fhmp-test.hh-medic.com%2Fphysical%2Fphysical-gh%2Findex.html&sdkProductId=${sdkProductId}&`
+            }
+            this._navMiniGH(path[serviceType] + res.data, 'trial')
+          } else {
+            //生产环境
+            let path = {
+              'drug_shop': `/pages/portal/portal?id=7&jumpType=server_url&needLocation=true&source=hehuan&sdkProductId=${sdkProductId}&`,
+              'medical_shop': `/pages/portal/portal?source=hehuan&needLocation=true&jumpUrl=https%3A%2F%2Fhmp.hh-medic.com%2Fphysical%2Fphysical-gh%2Findex.html&sdkProductId=${sdkProductId}&`
+            }
+            this._navMiniGH(path[serviceType] + res.data, 'release')
+          }
+        }
+      }).catch(err => {
+        wx.hideLoading()
+        calling = false;
+        that._callingVisible(false)
+      })
+    },
+    _navMiniGH(path, env) {
+      console.log('光和path', path)
+      wx.navigateToMiniProgram({
+        appId: 'wxe344feac39166c1f',
+        path,
+        envVersion: env// 'release',//'trial'
+      })
+    },
+
     //添加家庭成员
-    bindAddFimily: function () {
-      console.log('this.data.userCnt', this.data.userCnt)
+    bindAddFimily(e) {
+      callType = ''
+      if (!e || !e.currentTarget.dataset.call) {
+        callType = this.data.iconEventData.serviceType
+      }
       //检查自己信息是否补全
-      if (!that.checkMemberMessage(that.data.memberList[0].name, that.data.memberList[0].sex, that.data.memberList[0].birthday, that.data.memberList[0].needUpdateInfo)) {
+      if (!that.checkMemberMessage(that.data.memberList[0].name, that.data.memberList[0].sex, that.data.memberList[0].birthday, that.data.memberList[0].needUpdateInfo, that.data.memberList[0].uuid)) {
         that.setData({
           modalMsgData: {
             source: 'member',
-            content: infoTip + '才可添加成员',
+            content: infoTip,
             confirmText: '立即补充'
           },
           isShowModal: true,
@@ -509,64 +739,61 @@ Component({
         calling = false;
         return;
       }
-      if (!that.data.isAgreeExplain) {
-        wx.showModal({
-          title: '提示',
-          content: '同意《服务说明》后可添加成员',
-          showCancel: false,
-          confirmColor: '#0592F5',
-          confirmText: '我知道了',
-          success() {
-            calling = false;
-          }
-        });
-        return;
-      }
-
       if (this.data.userCnt == -1) {
-        this.navigateAddMember();
+        this.navAddMemberPage(2)
         return;
       }
-      let userNum = this.data.userCnt - (this.data.memberList.length - 1) - this.data.deleteCount
-      let modalCon = this.data.deleteCount > 0 ? `还可添加${userNum}成员（删除已添加成员后仍占用名额，已删除${this.data.deleteCount}成员），确定添加吗？` : `还可添加${userNum}成员（删除已添加成员后仍占用名额），确定添加吗？`
-      this.setData({
-        isShowModal: true,
-        modalMsgData: { source: 'addmember', content: modalCon, confirmText: '确定添加' }
-      })
+      wx.showLoading({ title: '加载中...' })
+      hhDoctor.getUserInfo(true)
+        .then(() => {
+          wx.hideLoading()
+          this.setData({ userCnt: hhDoctor.getProduct() ? hhDoctor.getProduct().userCnt : 0 })
+          if (0 == this.data.userCnt) return wx.showToast({ title: '无法添加新成员', icon: 'none' })
+          let userNum = this.data.userCnt - (this.data.memberList.length - 1) - this.data.deleteCount
+          let modalCon = this.data.deleteCount > 0 ? `还可添加${userNum}成员（删除已添加成员后仍占用名额，已删除${this.data.deleteCount}成员），确定添加吗？` : `还可添加${userNum}成员（删除已添加成员后仍占用名额），确定添加吗？`
+          this.setData({
+            isShowModal: true,
+            modalMsgData: { source: 'addmember', content: modalCon, confirmText: '确定添加' }
+          })
+        }).catch(err => {
+          wx.hideLoading()
+          return wx.showToast({ title: err && err.message || '服务器错误，请稍后再试', icon: 'none' })
+        })
     },
-    //跳转添加成员 
-    navigateAddMember() {
-      wx.navigateTo({
-        url: `${this.getAddMemberPage()}&type=2`
-      })
+
+    //跳转编辑成员信息页（添加成员+补全信息）
+    navAddMemberPage(type, memberUuid, isHideCallBtn) {
+      let pageUrl = `${this.data.basePath}innerpages/ehr-addmember/ehr-addmember?isInvite=${this.data.isInvite}`
+      if (type) { pageUrl += `&type=${type}` }
+      if (memberUuid) { pageUrl += `&memberUuid=${memberUuid}` }
+      //callType 底部权益入口进入则都会有callType 均隐藏呼叫视频医生按钮
+      if (callType) { isHideCallBtn = true }
+      if (isHideCallBtn) { pageUrl += `&isHideCallBtn=${isHideCallBtn}` }
+      that._callingVisible(false)
+      this._showBtn(false);
+      wx.navigateTo({ url: pageUrl })
     },
     //弹窗确定
     _bindMyConfirm(e) {
+      console.log(e)
       that.setData({
         isShowModal: false
       })
       switch (e.currentTarget.dataset.type) {
-        // 补全信息
+        // 补全信息 & 邀请成员视频其 成员不是独立登录
         case 'member':
-          wx.navigateTo({
-            url: `${that.getAddMemberPage()}&type=4&memberUuid=${this.data.memberUuid}`
-          })
+          that.navAddMemberPage(4, this.data.memberUuid)
           break;
-        case 'addmember': that.navigateAddMember();
+        case 'addmember': that.navAddMemberPage(2)
           break;
         //免责声明
         case 'disclaimer':
-          that._viewMedixcine(that.data.modalMsgData.params.drugid, this.data.modalMsgData.params.redirectPage)
-          break;
-        //邀请成员视频其成员编辑独立登录
-        case 'invite':
-          wx.navigateTo({
-            url: `${that.getAddMemberPage()}&type=4&memberUuid=${this.data.memberUuid}`
-          });
+          that._viewMedixcine(that.data.modalMsgData.params.drugId, this.data.modalMsgData.params.redirectPage)
           break;
         //点击陪同咨询没有成员去添加
-        case 'accompany': that.bindAddFimily()
+        case 'many_video': that.bindAddFimily()
           break;
+
       }
     },
     //进入直播
@@ -673,144 +900,50 @@ Component({
       hhDoctor.addLog('1', '人脸验证parent-' + JSON.stringify(self.data.parent), '');
       wx.startFacialRecognitionVerify({
         name: e.detail.username,
-        idCardNumber: e.detail.cardid,
+        idCardNumber: e.detail.idCard,
         checkAliveType: 2,
         success(res) {
           hhDoctor.addLog('1', '人脸验证success-' + JSON.stringify(res), '');
           console.log('success', res)
+          that.setData({
+            isEnterFace: false
+          })
           wx.navigateTo({
             url: self.data.callPageUrl
           })
         },
         fail(err) {
           console.log('fail', err)
+          console.log(self.data)
           hhDoctor.addLog('1', '人脸验证fail-' + JSON.stringify(err), '');
           //如果是被投保人刷脸失败 => 显示让投保人协助认证
           //如果是投保人协助认证刷脸失败 =>显示为被投保人自己刷脸 err.errCode==90100
-          if (self.data.parent && self.data.parent.uuid != self.data.patient.uuid) {
-            let content = (e.detail.username == self.data.parent.name) ? '可让被保人' + self.getStarName(self.data.patient.name) + '刷脸认证' : '可让投保人' + self.getStarName(self.data.parent.name) + '刷脸帮助认证';
-            wx.showModal({
-              content: '若刷脸认证失败，' + content,
-              confirmText: '我知道了',
-              confirmColor: '#0592f5',
-              cancelColor: '#666',
-              showCancel: false,
-              success() {
-
-              }
-            })
-          }
-        },
-        complete() {
-          self.setData({
-            isEnterFace: false
+          let patient = self.data.patient;
+          let helpName = self.data.parent ? self.data.parent.realName : patient.userExtra.guardianName ? patient.userExtra.guardianName : ''
+          let content = (helpName && e.detail.username == self.data.patient.realName) ? '，可让关系人 ' + self.getStarName(helpName) + ' 刷脸帮助认证' : '';
+          wx.showModal({
+            content: '人脸识别未通过' + content,
+            confirmText: '我知道了',
+            confirmColor: '#0592f5',
+            cancelColor: '#666',
+            showCancel: false
           })
-
         }
-
       })
     },
     getStarName(str) {
-      return '*' + str.substring(1, str.length)
+      let len = str.length
+      let newStr = ''
+      for (let i = 0; i < len - 1; i++) {
+        newStr += '*'
+      }
+      return newStr + str.substring(len - 1, len)
     },
     //关闭人脸认证界面
     bindCloseFaceVerify() {
       this.setData({ isEnterFace: false })
     },
-    //外部调用打开呼叫列表
-    _getCallingList(e) {
-      console.log(e, that)
-      switch (e) {
-        //陪同咨询
-        case 'accompany':
-          that.setData({
-            isInvite: 1,
-            title: '请选择一名成员发起视频'
-          })
-          if (!that.data.product) {
-            that.setData({
-              isShowModal: true,
-              modalMsgData: { source: 'single', content: '您需要开通会员才能享受该服务', ishidecancel: true, confirmText: '我知道了' }
-            })
-            return
-          }
 
-          if (that.data.product.productStatusEnum == 'unpay' || that.data.product.productStatusEnum == 'exp') {
-            that.setData({
-              isShowModal: true,
-              modalMsgData: { source: 'single', content: '您需要开通会员才能享受该服务', ishidecancel: true, confirmText: '我知道了' }
-            })
-            return
-          }
-          if (that.data.product.productStatusEnum == 'unbegin') {
-            that.setData({
-              isShowModal: true,
-              modalMsgData: { source: 'single', content: '您的套餐还未到生效时间', ishidecancel: true, confirmText: '我知道了' }
-            })
-            return
-          }
-          if (that.data.product.productStatusEnum == 'per' && that.data.product.userCnt == 0) {
-            that.setData({
-              isShowModal: true,
-              modalMsgData: { source: 'single', content: '您的会员是单人套餐，需要开通多人套餐才可使用该功能', ishidecancel: true, confirmText: '我知道了' }
-            })
-            return
-          }
-          if (that.data.userCnt == 0 && that.data.memberList.length < 2) {
-            that.setData({
-              isShowModal: true,
-              modalMsgData: { source: 'single', content: '您的会员是单人套餐，需要开通多人套餐才可使用该功能', ishidecancel: true, confirmText: '我知道了' }
-            })
-            return
-          }
-          //检查主账号信息是否完整
-          if (!that.checkMemberMessage(that.data.memberList[0].name, that.data.memberList[0].sex, that.data.memberList[0].birthday, that.data.memberList[0].needUpdateInfo)) {
-            that.setData({
-              modalMsgData: { source: 'member', content: infoTip + '才可呼叫医生', confirmText: '立即补充' },
-              isShowModal: true,
-              memberUuid: that.data.memberList[0].uuid
-            })
-            return;
-          }
-          if (that.data.memberList.length < 2) {
-            that.setData({
-              modalMsgData: { source: 'accompany', content: ' 您需要添加成员并允许该成员独立登录， 再发起邀请', confirmText: '去添加' },
-              isShowModal: true,
-            })
-            return;
-          }
-          break;
-        //挂号服务
-        case 'registration':
-          that.setData({
-            title: '请选择给谁挂号',
-            isInvite: 0
-          })
-          break;
-        //心理咨询
-        case 'psychological':
-          that.setData({
-            title: '请选择给谁咨询',
-            isInvite: 0
-          })
-          break;
-        //护理服务
-        case 'offlinenurse':
-          that.setData({
-            title: '请选择给谁服务',
-            isInvite: 0
-          })
-          break;
-        //送药上门
-        case 'sendmedicine':
-          that.setData({
-            title: '请选择给谁购药',
-            isInvite: 0
-          })
-          break;
-      }
-      this._callingVisible(true)
-    },
     //关闭底部呼叫列表
     bindCallingVisible() {
       this._callingVisible(false);

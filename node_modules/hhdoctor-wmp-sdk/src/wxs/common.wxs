@@ -1,4 +1,6 @@
-var phoneDesensitization = function(phone) {
+// const { includes } = require("../behaviors/hhCommon");
+
+var phoneDesensitization = function (phone) {
   if (!phone || !phone.trim() || phone.trim().length <= 3) {
     return phone;
   }
@@ -9,7 +11,7 @@ var phoneDesensitization = function(phone) {
   return phone;
 };
 
-var getChars = function(number, char) {
+var getChars = function (number, char) {
   if (!number || parseInt(number) <= 0) {
     return '';
   }
@@ -20,7 +22,7 @@ var getChars = function(number, char) {
   return str;
 };
 
-var getPeriod = function(product) {
+var getPeriod = function (product) {
   if ('number' == product.batchType) {
     if (1 == product.batchNum) {
       return '次';
@@ -39,7 +41,7 @@ var getPeriod = function(product) {
   return product.validateMonth + '月';
 }
 
-var getPeriod2 = function(batchType, batchNum, validateMonth) {
+var getPeriod2 = function (batchType, batchNum, validateMonth,validateDay) {
   if ('number' == batchType) {
     if (1 == batchNum) {
       return '次';
@@ -55,97 +57,125 @@ var getPeriod2 = function(batchType, batchNum, validateMonth) {
   if (12 == validateMonth) {
     return '年';
   }*/
-  return validateMonth + '月';
+  return validateMonth?validateMonth+'月':validateDay?validateDay+'天':''
 }
 
 var getTextUrl = function (text) {
-    var reg = getRegExp('(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-|%)+)', 'g')
-    var result = reg.exec(text)
-    if (result) {
-        var arr = text.split(result[0])
-        arr.splice(1, 0, '点此前往');
-        var url = result[0];
-        if (url.indexOf('?') == -1) {
-            url += '?'
-        } else {
-            url += '&'
-        }
-        return { textArr: arr, url: url }
+  var reg = getRegExp('(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-|%)+)', 'g')
+  var result = reg.exec(text)
+  if (result) {
+    var arr = text.split(result[0])
+    arr.splice(1, 0, '点此前往');
+    var url = result[0];
+    if (url.indexOf('?') == -1) {
+      url += '?'
+    } else {
+      url += '&'
     }
+    return { textArr: arr, url: url }
+  }
 }
 var getCheckUrl = function (text) {
-    var reg = getRegExp('(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-|%)+)', 'g')
-    var result = reg.exec(text)
-    if (result) {
-        return true
-    } else {
-        return false
-    }
+  var reg = getRegExp('(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-|%)+)', 'g')
+  var result = reg.exec(text)
+  if (result) {
+    return true
+  } else {
+    return false
+  }
 }
 var encode = function (url) {
-    var codeUrl = encodeURIComponent(url);
-    return codeUrl
+  var codeUrl = encodeURIComponent(url);
+  return codeUrl
 }
 
 function getYearMonthDay(value) {
-    var time = getDate(value);
-    var year = time.getFullYear();
-    var month = time.getMonth() + 1;
-    var date = time.getDate();
-    month = month < 10 ? "0" + month : month;
-    date = date < 10 ? "0" + date : date;
-    return year + "年" + month + "月" + date + "日";
-} 
-function formatTimeText(value) {
-    var time = getDate(value);
-    // var reg = /[\u4e00-\u9fa5]/g;
-    var reg = getRegExp('[\u4e00-\u9fa5]', 'g');
-    var text = time.toLocaleString().match(reg).join('');
-    var day = time.getDay();
-    var hour = time.getHours();
-    var m = time.getMinutes();
-    hour = hour < 10 ? "0" + hour : hour;
-    m = m < 10 ? "0" + m : m;
-    return '星期' + getWeek(day) + ' ' + text + ' ' + hour + ":" + m;
+  var time = getDate(value);
+  var year = time.getFullYear();
+  var month = time.getMonth() + 1;
+  var date = time.getDate();
+  month = month < 10 ? "0" + month : month;
+  date = date < 10 ? "0" + date : date;
+  return year + "年" + month + "月" + date + "日";
 }
-function getHourMSecond(value){
-    var time = getDate(value);
-    var h = time.getHours();
-    var m = time.getMinutes();
-    var s = time.getSeconds();
-    h = h < 10 ? "0" + h : h;
-    m = m < 10 ? "0" + m : m;
-    s = s < 10 ? "0" + s : s;
-    return h + ':' + m + ":" + s;
+function formatTimeText(value) {
+  var time = getDate(value);
+  // var reg = /[\u4e00-\u9fa5]/g;
+  var reg = getRegExp('[\u4e00-\u9fa5]', 'g');
+  var text = time.toLocaleString().match(reg).join('');
+  var day = time.getDay();
+  var hour = time.getHours();
+  var m = time.getMinutes();
+  hour = hour < 10 ? "0" + hour : hour;
+  m = m < 10 ? "0" + m : m;
+  return '星期' + getWeek(day) + ' ' + text + ' ' + hour + ":" + m;
+}
+function getHourMSecond(value) {
+  var time = getDate(value);
+  var h = time.getHours();
+  var m = time.getMinutes();
+  var s = time.getSeconds();
+  h = h < 10 ? "0" + h : h;
+  m = m < 10 ? "0" + m : m;
+  s = s < 10 ? "0" + s : s;
+  return h + ':' + m + ":" + s;
 
 }
 function getWeek(day) {
-    switch (day) {
-        case 0: return '日'; break
-        case 1: return '一'; break
-        case 2: return '二'; break
-        case 3: return '三'; break
-        case 4: return '四'; break
-        case 5: return '五'; break
-        case 6: return '六'; break
-    }
-}
-
-function getReplace(content){
-    return content.replace('http://image.hh-medic.com', 'https://imgs.hh-medic.com')
-}
-
-function formatFaceName(str){
-  return '*'+str.substring(1,str.length);
-}
-function formatFaceCardId(str){
-  var star='';
-  for(var i=0;i<str.length-4;i++){
-    star+="*"
+  switch (day) {
+    case 0: return '日'; break
+    case 1: return '一'; break
+    case 2: return '二'; break
+    case 3: return '三'; break
+    case 4: return '四'; break
+    case 5: return '五'; break
+    case 6: return '六'; break
   }
-return str.substring(0,2) + star+str.substring((str.length-2),str.length);
 }
 
+function getReplace(content) {
+  return content.replace('http://image.hh-medic.com', 'https://imgs.hh-medic.com')
+}
+
+function formatFaceName(str) {
+  return '*' + str.substring(1, str.length);
+}
+function formatFaceCardId(str) {
+  var star = '';
+  for (var i = 0; i < str.length - 4; i++) {
+    star += "*"
+  }
+  return str.substring(0, 2) + star + str.substring((str.length - 2), str.length);
+}
+
+function formatDoctorWorkTime(start, end) {
+  console.log(start, end)
+  var i = start.indexOf(' '), j = end.indexOf(' ');
+  if (i > 0 && j > 0) {
+    var x = start.lastIndexOf(':'), y = end.lastIndexOf(':')
+    var d = start.substring(0, i), t1 = start.substring(i + 1,x), t2 = end.substring(j + 1,y);
+    return d + '    ' + t1 + '~' + t2
+  }
+  return start + '-' + end;
+}
+function appointmentItem(command){
+  var appoints = ["fastchannel","nurse_home","hao", "hao_accompany","hospitalization_accompany","coopOrderCommon"]
+  return appoints.indexOf(command)>-1
+}
+function appointmentItemDetail(command){
+  var appointDetails = ["hao_detail","fastchannel_detail","nurse_home_detail","expert_service" , "coopOrderCommonDetail","hao_accompany_detail","hospitalization_accompany_detail"]
+  return appointDetails.indexOf(command)>-1
+}
+function filingsFilterName(source,doctorData){
+  if(source=='self'){
+    return '自建档案'
+  }
+  if(source == 'expert' || source == 'famDoctor'){
+    return doctorData.dept+' | '+ doctorData.name
+  }
+  // source=='assess' 新加的营养评估+后期的评估都叫自我评估  @王震
+  return '自我评估'
+}
 
 //module.exports.phoneDesensitization = phoneDesensitization;
 module.exports = {
@@ -160,7 +190,11 @@ module.exports = {
   encode: encode,
   getHourMSecond: getHourMSecond,
   getReplace: getReplace,
-  formatFaceName:formatFaceName,
-  formatFaceCardId:formatFaceCardId
+  formatFaceName: formatFaceName,
+  formatFaceCardId: formatFaceCardId,
+  formatDoctorWorkTime: formatDoctorWorkTime,
+  appointmentItem:appointmentItem,
+  appointmentItemDetail:appointmentItemDetail,
+  filingsFilterName:filingsFilterName
 
 }

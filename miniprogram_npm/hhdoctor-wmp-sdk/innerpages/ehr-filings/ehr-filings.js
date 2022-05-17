@@ -51,7 +51,7 @@ Page({
             }
         })
         this.getEhrList(this.data.memberUuid, this.data.memberUserToken)
-
+        wx.hideHomeButton()
     },
 
     /**

@@ -25,6 +25,9 @@ Page({
         console.log(options)
         this.requestGetDetail();
     },
+    onShow(){
+        wx.hideHomeButton()
+    },
     // 点击病例资料
     bindFilingImg: function (e) {
         let current = e.currentTarget.dataset.imgs[0];

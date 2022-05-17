@@ -5,7 +5,7 @@
       <view wx:for="{{streamList}}" wx:key="streamID" wx:if="{{item.src && (item.hasVideo || item.hasAudio)}}"
         class="view-container player-container {{item.isVisible?'':'none'}}"
         style="position: absolute;left:{{item.xAxis}};top:{{item.yAxis}};width:{{item.width}};height:{{item.height}};z-index:{{item.zIndex}};">
-        <live-player class="player" id="{{item.streamID}}" data-userid="{{item.userID}}"
+        <live-player class="player" id="{{item.streamID}}" data-userid="{{item.userID}}" picture-in-picture-mode="push"
           data-streamid="{{item.streamID}}" data-streamtype="{{item.streamType}}" src="{{item.src}}"
           mode="{{item.mode}}" autoplay="{{item.autoplay}}" mute-audio="{{item.muteAudio}}"
           mute-video="{{item.muteVideo}}" orientation="{{item.orientation}}" object-fit="{{item.objectFit}}"
@@ -18,8 +18,8 @@
       </view>
     </view>
     <view class="view-container pusher-container {{pusher.isVisible?'':'none'}}"
-      style="left:{{pusher.xAxis}};top:{{menuButton.bottom+5}}px;width:{{pusher.width}};height:{{pusher.height}};z-index:{{pusher.zIndex}};">
-      <live-pusher class="pusher" url="{{pusher.url}}" mode="{{pusher.mode}}" autopush="{{pusher.autopush}}"
+      style="left:{{pusher.xAxis}};top:{{pusher.yAxis||menuButton.bottom+5}}px;width:{{pusher.width}};height:{{pusher.height}};z-index:{{pusher.zIndex}};">
+        <live-pusher class="pusher" url="{{pusher.url}}" mode="{{pusher.mode}}" autopush="{{pusher.autopush}}"
         enable-camera="{{pusher.enableCamera}}" enable-mic="{{pusher.enableMic}}" muted="{{!pusher.enableMic}}"
         enable-agc="{{pusher.enableAgc}}" enable-ans="{{pusher.enableAns}}"
         enable-ear-monitor="{{pusher.enableEarMonitor}}" auto-focus="{{pusher.enableAutoFocus}}"
@@ -34,18 +34,15 @@
         binderror="_pusherErrorHandler" bindbgmstart="_pusherBGMStartHandler"
         bindbgmprogress="_pusherBGMProgressHandler" bindbgmcomplete="_pusherBGMCompleteHandler"
         bindaudiovolumenotify="_pusherAudioVolumeNotify" />
-      <!-- <view class="loading" wx:if="{{streamList.length === 0}}">
-        <view class="loading-text">连接中...</view>
-      </view> -->
-      <view class="pusher-controller" wx:if="{{streamList.length > 0 && localVideoStatus > -1 && localVideoStatus < 2}}"
+      <view class="pusher-controller {{localVideoStatus==0?'close-camera':''}}" wx:if="{{streamList.length >= 0 && localVideoStatus > -1 && localVideoStatus < 2}}"
         bindtap="_tapVideoControl">
-        <view class="{{localVideoStatus==1?'close-video':'open-video'}}"></view>
-        <view>{{localVideoStatus==1?'关闭':'打开'}}画面</view>
+        <cover-image class="pusher-controller-icon" src="{{localVideoStatus==1?'https://imgs.hh-medic.com/icon/wmp/icon-close-video2.png':'https://imgs.hh-medic.com/icon/wmp/icon-open-video2.png'}}"></cover-image>
+        <cover-view class="pusher-controller-text">{{localVideoStatus==1?'关闭':'打开'}}摄像头</cover-view>
       </view>
-      <view class="pusher-controller vertical" wx:if="{{streamList.length > 0 && localVideoStatus == -1}}">
-        <view class="close-video icon-vertical"></view>
-        <view>摄像头已关闭</view>
-      </view>
+      <cover-view class="pusher-controller vertical" wx:if="{{streamList.length >= 0 && localVideoStatus == -1}}">
+        <cover-image class="pusher-controller-icon icon-vertical" src="https://imgs.hh-medic.com/icon/wmp/icon-close-video2.png"></cover-image>
+        <cover-view>摄像头已关闭</cover-view>
+      </cover-view>
     </view>
     <view class='patient-view-wrap play-box-bg' style="top:{{menuButton.bottom + 170}}px;" wx:if="{{patientStatus}}">
       <view class='player-inner'>

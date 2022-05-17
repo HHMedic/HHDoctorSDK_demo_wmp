@@ -19,8 +19,8 @@
   </detail-item> -->
 
     <!--2.指导意见-->
-  <detail-item caption="{{config.summary?config.summary.title:'指导意见'}}" wx:if='{{medicRecord.medicRecordSummaryData.summary && config.summary.visible}}'>
-    <view class='detail-line'>{{medicRecord.medicRecordSummaryData.summary}}</view>
+  <detail-item caption="{{config.summary?config.summary.title:'指导意见'}}" wx:if='{{medicRecord.medicRecordSummaryData.summary && config.summary.visible && (medicRecord.source == "famDoctor"||medicRecord.source == "expert")}}'>
+    <text class='detail-line'>{{medicRecord.medicRecordSummaryData.summary}}</text>
     <!-- <view class='detail-suggest'>休息建议：{{medicRecord.medicRecordSummaryData.restSuggest||'----'}} </view> -->
     <view class='detail-tip-wrap'>
         <view class='detail-tip-content'>
@@ -41,23 +41,23 @@
   </detail-item>
 
   <!-- 4.主诉 -->
-  <detail-item caption="{{config.mainSuit?config.mainSuit.title:'主诉'}}" wx:if='{{medicRecord.medicRecordSummaryData!=null && medicRecord.medicRecordSummaryData.mainSuit && medicRecord.source != "self"&&config.mainSuit.visible}}'>
+  <detail-item caption="{{config.mainSuit?config.mainSuit.title:'主诉'}}" wx:if='{{medicRecord.medicRecordSummaryData!=null && medicRecord.medicRecordSummaryData.mainSuit && (medicRecord.source == "self" || config.mainSuit.visible)}}'>
     <view class='detail-line'>{{medicRecord.medicRecordSummaryData.mainSuit}}</view>
   </detail-item>
 
   <!--5.现病史(全科医生) or 病情小结(专家回复)-->
    <detail-item 
-   wx:if='{{medicRecord.medicRecordSummaryData!=null && medicRecord.medicRecordSummaryData.diseaseDescn && config.diseaseDescn.visible}}'
+   wx:if='{{medicRecord.medicRecordSummaryData!=null && medicRecord.medicRecordSummaryData.diseaseDescn && (medicRecord.source == "self"||config.diseaseDescn.visible)}}'
    caption="{{(medicRecord.source=='famDoctor'|| medicRecord.source == 'self')?config.diseaseDescn.titleDoctor:config.diseaseDescn.titleExpert}}"
    >
-    <view class='detail-line'>
+    <text class='detail-line'>
         {{medicRecord.medicRecordSummaryData.diseaseDescn}}
-    </view>
+    </text>
    </detail-item>
 
      <!--6.资料部分-->
    <detail-item caption='病历资料' 
-   wx:if='{{medicRecord.medicRecordExamineData!=null && medicRecord.medicRecordExamineData.checkPics.length || medicRecord.medicRecordExamineData.medicRecordPics.length || medicRecord.medicRecordExamineData.dicomPics.length || medicRecord.medicRecordExamineData.dicoms.length || medicRecord.medicRecordExamineData.pathologies.length}}'>
+   wx:if='{{medicRecord.medicRecordExamineData!=null && medicRecord.medicRecordExamineData.checkPics.length || medicRecord.medicRecordExamineData.medicRecordPics.length || medicRecord.medicRecordExamineData.dicomPics.length || medicRecord.medicRecordExamineData.dicoms.length || medicRecord.medicRecordExamineData.pathologies.length||medicRecord.medicRecordExamineData.fileDataList.length}}'>
       <scroll-view class='filing-scroll' scroll-x>
         <list-images name='病例'  
 
@@ -84,6 +84,11 @@
             imgUrls='{{medicRecord.medicRecordExamineData.pathologies}}' 
             wx:if='{{medicRecord.medicRecordExamineData.pathologies.length}}' >
         </list-images> 
+        <list-images name="体检报告"
+            base-path="../../"
+            imgUrls="{{medicRecord.medicRecordExamineData.fileDataList}}"
+            wx:if="{{medicRecord.medicRecordExamineData.fileDataList.length}}"
+            ></list-images>
       </scroll-view>
   </detail-item>
 

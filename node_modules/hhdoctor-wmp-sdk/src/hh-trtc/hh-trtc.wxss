@@ -112,9 +112,9 @@
 
 .hide-tip-wrap {
   position: fixed;
-  z-index: 10000;
+  z-index: 998;
   left: 0rpx;
-  bottom: 429rpx;
+  bottom: 35vh;
   width: 100%;
   height: 60rpx;
   text-align: center;
@@ -127,5 +127,5 @@
   box-sizing: border-box;
   padding: 18rpx;
   border-radius: 10rpx;
-  background-color: rgba(0, 0, 0, .3);
+  background-color: rgba(0, 0, 0, .4);
 }

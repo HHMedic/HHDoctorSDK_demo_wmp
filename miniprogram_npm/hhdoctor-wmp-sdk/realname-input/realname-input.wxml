@@ -1,0 +1,22 @@
+<!--components/realname-input/realname-input.wxml-->
+<view class="bind-field arrow" wx:if="{{type=='picker'}}">
+    <view class="field-label">证件类型</view>
+    <picker  range="{{credential}}" range-key="name" value="{{idx}}">
+        <view class="input-picker">{{credential[idx]['name']}}</view>
+    </picker>
+</view>
+<view class="bind-field" wx:elif="{{type=='readonly'}}">
+    <view class="field-label">{{label}}</view>
+    <view class="field-readonly">{{textValue}}</view>
+</view>
+<view class="bind-field" wx:else>
+    <view class="field-label">{{label}}</view>
+    <input class='input-font' type='{{type}}' value="{{value}}"  
+        maxlength="{{maxlength}}" 
+        placeholder='{{placeholder}}'
+        bindinput='bindInput'
+        bindblur='bindBlur' 
+        ></input>
+    <view class='input-close' catchtap='bindInputClose' wx:if="{{value}}" data-item="name"></view>
+</view>
+

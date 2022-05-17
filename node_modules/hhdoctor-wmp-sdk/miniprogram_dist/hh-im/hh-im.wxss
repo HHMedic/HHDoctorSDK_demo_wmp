@@ -59,7 +59,7 @@ video {
   justify-content: center;
   box-sizing: border-box;
   padding: 15px;
-  border: solid 1px #0592f5;
+  border: solid 1px var(--hh-main-color, #0592f5);
 }
 
 .btn-call-img {
@@ -70,7 +70,7 @@ video {
 
 .btn-call-text {
   font-size: 17px;
-  color: #0592f5;
+  color: var(--hh-main-color, #0592f5);
 }
 
 .call-btn-sept {
@@ -78,14 +78,14 @@ video {
 }
 
 .msg-panel-scroll {
-  position: fixed;
+  /* position: fixed; */
   left: 0px;
   /* top: 109px; */
   top: 120px;
   width: 100%;
   background-color: #f0f0f0;
   box-sizing: border-box;
-  padding: 0 10px 20px 10px;
+  padding: 0 10px 0px 10px;
 }
 
 
@@ -130,7 +130,7 @@ video {
   display: flex;
   margin-top: 20px;
   box-sizing: border-box;
-  padding-right: 45px;
+  padding-right: 40px;
 }
 
 .msg-row.timestamp {
@@ -151,7 +151,7 @@ video {
 .msg-row.user {
   flex-direction: row-reverse;
   padding-right: 0px;
-  padding-left: 45px;
+  padding-left: 40px;
 }
 
 .msg-img {
@@ -190,18 +190,34 @@ video {
   padding-top: 8px;
 }
 
+.msg-notrans-tips {
+  width: 100%;
+  font-size: 26rpx;
+  line-height: 46rpx;
+  color: #969696;
+}
+
 .msg-disclaimer {
   margin-top: 24rpx;
-  font-size: 28rpx;
+  font-size: 26rpx;
   font-weight: 400;
   color: rgba(150, 150, 150, 1);
   line-height: 36rpx;
-  display: flex;
-  justify-content: center;
+  /* display: flex; */
+  /* justify-content: center; */
 }
 
 .msg-disclaimer.warn {
   color: #F62525;
+}
+
+.msg-disclaimer.warn.center {
+  text-align: center;
+}
+
+.msg-disclaimer-link {
+  color: var(--hh-main-color, #0592f5);
+  text-decoration: underline;
 }
 
 .msg-content-main.user {
@@ -212,7 +228,7 @@ video {
 .msg {
   background-color: #fff;
   box-sizing: border-box;
-  padding: 15px 15px 15px 10px;
+  padding: 15px 10px 10px 10px;
   border-radius: 5px;
   position: relative;
 }
@@ -257,7 +273,7 @@ video {
 }
 
 .text-link {
-  color: #0592f5;
+  color: var(--hh-main-color, #0592f5);
 }
 
 .text-link::after .text-link::before {
@@ -270,7 +286,9 @@ video {
 }
 
 .msg.image {
-  max-width: 100px;
+  /* max-width: 100px; */
+  width: 330rpx;
+  max-height: 400rpx;
   border-radius: 5px;
   overflow: hidden;
   padding: 0px;
@@ -382,6 +400,11 @@ video {
 .msg-card-body.image,
 .msg-card-body.expert {
   padding: 0px;
+  position: relative;
+}
+
+.msg-card-body image {
+  display: block;
 }
 
 .msg-card-body.summary {
@@ -392,6 +415,21 @@ video {
   padding-bottom: 5px;
   display: flex;
   flex-direction: column;
+}
+
+.msg-card-mask {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, .2);
+  min-height: 60rpx;
+  font-size: 26rpx;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 5rpx 10rpx;
+  color: #fff;
 }
 
 .summary-row {
@@ -472,14 +510,16 @@ video {
   color: #999;
   font-size: 12px;
 }
-.show-more-right{
+
+.show-more-right {
   color: #999;
   font-size: 12px;
-  width:98%;
-  display:flex;
+  width: 98%;
+  display: flex;
   justify-content: space-between;
 }
-.show-more-right:after{
+
+.show-more-right:after {
   content: '更多权益';
 }
 
@@ -508,18 +548,28 @@ video {
   background-position: center;
   width: 6px;
   height: 9px;
-  margin-left:5rpx;
+  margin-left: 5rpx;
 }
 
 .show-more-btn {
   width: 100%;
   height: 35px;
   border-radius: 5px;
-  background-color: #0592f5;
+  background-color: var(--hh-main-color, #0592f5);
   color: #fff;
   text-align: center;
   line-height: 35px;
   font-size: 14px;
+}
+
+.show-more-btn.btn-b2c {
+  background-color: #FC8E20;
+}
+
+.show-more-btn.view-order {
+  background-color: #fff;
+  color: var(--hh-main-color, #0592f5);
+  border: 1px solid var(--hh-main-color, #0592f5);
 }
 
 .disabled.disabled {
@@ -542,10 +592,21 @@ video {
   font-weight: bold;
   line-height: 23px;
   color: #323232;
+  align-items: center;
 }
 
 .medicine-name {
   flex-grow: 1;
+}
+
+
+.medicine-rx {
+  width: 76rpx;
+  height: 30rpx;
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/icon-rx.png');
+  background-position: center;
+  background-size: cover;
+  margin-right: 10rpx;
 }
 
 .medicine-count {
@@ -653,7 +714,116 @@ video {
   color: #333;
 }
 
+.expert-time-title {
+  margin-top: 20rpx;
+}
+
+.expert-time {
+  color: #333;
+}
+
+.font-bold {
+  font-weight: bold;
+}
+
 .msg-drug-image {
   width: 515rpx;
   display: block;
+}
+
+.real-name-wrap {
+  position: fixed;
+  left: 0;
+  top: 300rpx;
+  width: 100%;
+  height: 80rpx;
+  background-color: #FFF8ED;
+  z-index: 5;
+  font-size: 28rpx;
+  color: #E65A16;
+  line-height: 80rpx;
+  text-align: center;
+}
+
+.real-name-btn {
+  color: var(--hh-main-color, #0592f5);
+  margin-left: 14rpx;
+  text-decoration: underline;
+}
+
+.auth-box {
+  position: fixed;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  left: 0;
+  background: rgba(0, 0, 0, .5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+}
+
+.auth-pannel {
+  background: #fff;
+  width: 590rpx;
+  border-radius: 15rpx;
+  text-align: center;
+}
+
+.auth-title {
+  margin-top: 74rpx;
+  font-size: 34rpx;
+  color: #323232;
+}
+
+.auth-content {
+  margin: 41rpx 0 61rpx 0;
+  font-size: 26rpx;
+  color: #8d8d8d;
+  padding: 0 38rpx;
+  text-align: justify;
+  line-height: 47rpx;
+}
+
+.auth-btns {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid #e6e6e6;
+
+}
+
+.auth-reject,
+.auth-confirm {
+  width: 50%;
+  text-align: center;
+  height: 100rpx;
+  line-height: 100rpx;
+  font-size: 30rpx;
+}
+
+.auth-reject {
+  color: #646464;
+  border-right: 1px solid #e6e6e6;
+}
+
+.auth-confirm {
+  color: #0093fd;
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom)
+}
+
+.msg-card-mark {
+  width: 100rpx;
+  height: 30rpx;
+  background: #2786F2;
+  border-radius: 8rpx;
+  color: #fff;
+  padding: 3rpx 10rpx;
+  font-size: 22rpx;
+  vertical-align: middle;
+  font-family: PingFangSC-Regular;
+  font-weight: 400;
 }

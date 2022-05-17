@@ -3,7 +3,8 @@ const apis = require('./utils/api.js')
 const TIM = require("./trtc-room/libs/tim-wx.js");
 const cStyle = require('./utils/consoleStyle')
 const SDKAppID = 1400073238;
-const SdkVersion = '3.1.0'
+const SdkVersion = '6.5.0'
+wx.setStorageSync('SdkVersion', SdkVersion)
 
 let sysInfo
 var app;
@@ -25,6 +26,7 @@ var _options = {
   photo: null,
   openId: null,
   callPage: null,
+  isAccount: false,
   personalPage: null,
   addressPage: null,
   payPage: null,
@@ -33,7 +35,8 @@ var _options = {
 }
 var _callbacks = {
   receiveMsg: null,
-  chatMsg: null
+  chatMsg: null,
+  memberCall: null
 }
 var _asst = {}
 let _logList = []
@@ -66,6 +69,7 @@ function login(options) {
       SDKAppID
     });
     _options = Object.assign(_options, options);
+    if (!_options.basePath) _options.basePath = '/miniprogram_npm/hhdoctor-wmp-sdk/'
     let sdkOptions = {
       _host: hostUtil.getHost(_options.profileName, _options.subDomain),
       _sdkProductId: _options.sdkProductId,
@@ -76,7 +80,7 @@ function login(options) {
       _callPage: _options.callPage
     };
     _logUrl = ''
-    getApp().globalData._hhSdkOptions = sdkOptions;
+    getApp().globalData._hhSdkOptions = Object.assign(getApp().globalData._hhSdkOptions || {}, sdkOptions)
     getUserInfo().then(() => {
       initTIM().then((res) => {
         addLog(1, 'login tim [' + (_options.userId || '') + '] success:' + (res && JSON.stringify(res) || ''), '');
@@ -85,38 +89,73 @@ function login(options) {
         addLog(1, 'login tim [' + (_options.userId || '') + '] fail:' + (err && JSON.stringify(err) || ''), '');
         reject('登录失败');
       })
-    }).catch(() => {
+    }).catch(err => {
       addLog(1, 'getuserSig:获取用户SIG失败', '');
-      wx.reLaunch({ url: '/pages/index/err', })
-      reject('登录失败');
+      //wx.reLaunch({ url: '/pages/index/err', })
+      let msg = err && err.data && err.data.message || '登录失败'
+      if ('用户不存在' == msg) {
+        logout(true).then(() => {
+          wx.showModal({
+            title: '',
+            content: '用户不存在，可能已被注销，请重新登录',
+            showCancel: false,
+            confirmText: '我知道了'
+          }).then(() => reject(msg))
+        }).catch(err => reject(msg))
+      }
+      /*let wxAppId = wx.getAccountInfoSync().miniProgram.appId
+      if ('wx15e414719996d59f' == wxAppId)
+        wx.reLaunch({ url: '/pages/error/error?msg=' + msg })*/
     })
   })
 }
 
 /** 退出 */
-function logout() {
+function logout(clearCode) {
   return new Promise((resolve, reject) => {
     if (!tim) {
       return resolve();
     }
     destroyTim()
-    _options = {
-      profileName: 'test',
-      subDomain: '',
-      sdkProductId: null,
-      userToken: null,
-      userId: null,
-      userSig: null,
-      photo: null,
-      openId: null,
-      callPage: null,
-      isUserCancelInvite: false
+    if (clearCode) {
+      //wx.removeStorageSync('_hh_show_license_popup')
+      clearWxAcode()
+        .then(res => {
+          reset()
+          resolve(res)
+        }).catch(err => reject(err))
+    } else {
+      reset()
+      resolve()
     }
-    _asst = {}
-    resolve();
   })
 }
 
+function reset() {
+  _options = {
+    profileName: 'test',
+    subDomain: '',
+    sdkProductId: null,
+    userToken: null,
+    userId: null,
+    userSig: null,
+    photo: null,
+    openId: null,
+    callPage: null,
+    isUserCancelInvite: false
+  }
+  _asst = {}
+}
+
+function clearWxAcode() {
+  let url = hostUtil.getHost(_options.profileName, _options.subDomain).wmpHost;
+  url += 'wmp/logoutWmp' +
+    '?sdkProductId=' + _options.sdkProductId +
+    '&userToken=' + _options.userToken +
+    '&openId=' + _options.openId +
+    '&hhDoctorSdkVersion=' + wx.getStorageSync('SdkVersion')
+  return doRequest(url)
+}
 function destroyTim() {
   tim.off(TIM.EVENT.ERROR, onTimError);
   tim.off(TIM.EVENT.SDK_READY, onTimReady);
@@ -140,16 +179,16 @@ function sendCustomMessage(uuid, toUser, command, orderId) {
 
 /** 注册事件回调 */
 function on(event, callback) {
+  if (!callback) return
   switch (event) {
     case 'messageReceived':
-      if (callback) {
-        _callbacks.receiveMsg = callback;
-      }
+      _callbacks.receiveMsg = callback;
       break;
     case 'chatMessage':
-      if (callback) {
-        _callbacks.chatMsg = callback;
-      }
+      _callbacks.chatMsg = callback;
+      break;
+    case 'memberCall':
+      _callbacks.memberCall = callback;
       break;
     default:
       return
@@ -165,6 +204,9 @@ function off(event) {
     case 'chatMessage':
       _callbacks.chatMsg = null;
       break;
+    case 'memberCall':
+      _callbacks.memberCall = null;
+      break;
     default:
       return
   }
@@ -178,6 +220,12 @@ function getOptions() {
 function getUserId() {
   return _options.userId;
 }
+function getUserName() {
+  return _options.userName || ''
+}
+function getIsAccount() {
+  return _options.isAccount || false
+}
 
 /** 获取userId */
 function getUserSig() {
@@ -189,7 +237,7 @@ function getUserPhoto() {
 }
 /** 获取用户套餐产品 */
 function getProduct() {
-  return _options.product;
+  return _options && _options.product || null
 }
 
 /** 获取助理信息 */
@@ -270,23 +318,26 @@ function getTim() {
   return null;
 }
 
-function getUserInfo() {
+function getUserInfo(refresh) {
   return new Promise((resolve, reject) => {
-    if (_options && _options.userSig && _options.userId && _asst && _asst.uuid) return resolve()
+    if (_options && _options.userSig && _options.userId && _asst && _asst.uuid && !refresh) return resolve()
     let url = hostUtil.getHost(_options.profileName, _options.subDomain).wmpHost;
     url += 'wmp/getUserSig' +
       '?sdkProductId=' + _options.sdkProductId +
-      '&userToken=' + _options.userToken
+      '&userToken=' + _options.userToken +
+      '&hhDoctorSdkVersion=' + wx.getStorageSync('SdkVersion')
     doRequest(url).then(res => {
       _options.userSig = res.userSig;
       _options.userId = res.userId + '';
+      _options.userName = res.userName || ''
       _options.photo = res.photoUrl;
       _options.product = res.product;
+      _options.isAccount = res.isAccount;
       _asst = { uuid: res.asstUuid, name: res.asstName, photo: res.asstPhotos }
       resolve()
     }).catch(err => {
       toastError(err)
-      reject()
+      reject(err)
     })
   })
 }
@@ -348,11 +399,11 @@ function isCallWithCancel(dataList) {
 
 function onTimError(e) {
   addLog('1', 'timError:' + JSON.stringify(e))
-  wx.showToast({
-    title: '内部通信错误\r\n请尽快重启微信',
-    icon: 'none',
-    duration: 2500
-  })
+  // wx.showToast({
+  //   title: '内部通信错误\r\n请尽快重启微信',
+  //   icon: 'none',
+  //   duration: 2500
+  // })
   timReconnect()
 }
 function timReconnect() {
@@ -406,6 +457,34 @@ function parseMsg(data) {
     case 'conference_end':
       console.log('>>> 结束白板，groupId:', msg.groupId)
       break
+    case 'user_certification':
+      console.log('>>> 触发用户实名认证')
+      break
+    case 'enter_camera':
+      console.log('>>> 进入摄像头或相册')
+      break;
+    case 'exit_camera':
+      console.log('>>> 退出摄像头或相册')
+      break;
+    case 'logout':
+      //强制用户退出登录
+      wx.showModal({
+        title: '',
+        content: '当前账号已被注销。\n如需使用请重新登录',
+        showCancel: false,
+        confirmText: '我知道了'
+      }).then(() => {
+        logout(true).then(() => {
+          let wxAppId = wx.getAccountInfoSync().miniProgram.appId
+          if ('wx15e414719996d59f' == wxAppId) {
+            getApp().globalData.loginUser = null
+            wx.reLaunch({ url: '/pages/newIndex/newIndex' })
+          }
+        }).catch(() => { })
+      })
+      break;
+    case 'command_notifycaller':
+      return _callbacks.memberCall && _callbacks.memberCall(msg)
     default:
       break;
   }
@@ -436,7 +515,6 @@ function doCallInviteUser(msg, caller) {
         '&dept=' + msg.orderId +
         '&doctor=' + JSON.stringify(res.doctor) +
         '&order=' + JSON.stringify(res.order) +
-        '&orderid=' + res.order.orderid +
         '&isInvite=' + 1
       if (_options.isUserCancelInvite) {
         wx.showToast({
@@ -476,15 +554,14 @@ function doCallUser(msg, caller) {
         '&dept=' + msg.orderId +
         '&doctor=' + encodeURIComponent(JSON.stringify(res.doctor)) +
         '&order=' + encodeURIComponent(JSON.stringify(res.order)) +
-        '&orderid=' + res.order.orderid +
-        '&isInvite=' + 0
+        '&isInvite=0' +
+        '&inviteInVideo=0' +
+        '&caller=' + (caller || '')
       console.log('pageUrl' + pageUrl)
       wx.navigateTo({
         url: pageUrl
       })
-    }).catch(() => {
-
-    });
+    }).catch(() => { });
 }
 
 function isBusy() {
@@ -508,7 +585,8 @@ function getDoctorInfo(msg) {
     url += 'wmp/getCalledInfoByOrderId' +
       '?sdkProductId=' + _options.sdkProductId +
       '&userToken=' + _options.userToken +
-      '&caller=' + msg.uuid +
+      '&caller=' + (msg.uuid || '') +
+      '&doctorId=' + (msg.doctorId || '') +
       '&orderId=' + msg.orderId
     doRequest(url)
       .then(res => resolve(res))
@@ -519,7 +597,7 @@ function getDoctorInfo(msg) {
   })
 }
 
-function navigateTo(options) {
+function navigateTo(options, doRedirect) {
   if (!options || !options.page) return
   if ('personalPage' != options.page && !_options.userToken) return
   let url = ''
@@ -546,6 +624,9 @@ function navigateTo(options) {
       url = getApp().globalData._hhSdkOptions._host.patHost + 'drug/addr-list.html?' + getPublicParams(1, 1)
       url = _options.basePath + 'innerpages/view/view?url=' + encodeURIComponent(url)
       break
+    case 'addMember':
+      url = _options.basePath + 'innerpages/ehr-addmember/ehr-addmember'
+      break
     case 'ehrMemberList':
       url = _options.basePath + 'innerpages/ehr-family/ehr-family'
       break
@@ -559,7 +640,10 @@ function navigateTo(options) {
     default:
       break
   }
-  if (url) wx.navigateTo({ url })
+  if (url) {
+    if (doRedirect) wx.redirectTo({ url })
+    else wx.navigateTo({ url })
+  }
 }
 
 /** 生成新的sessionId和日志编号 */
@@ -607,6 +691,26 @@ function getMessageList(params) {
   tim.getMessageList({ conversationID: 'C2C17385747', count: 15 })
     .then(res => { console.log(JSON.stringify(res)) }).catch()
 }
+function waitForDoctor(doctorId, orderId) {
+  if (!_options.callPage) return console.error('未初始化hhDoctor组件，或初始化hhDoctor组件时未赋值callPage参数。请参考：https://github.com/HHMedic/HHDoctorSDK_demo_wmp#1-hhdoctor%E7%BB%84%E4%BB%B6')
+  if (!doctorId || !orderId) return console.error('doctorId和orderId参数不能为空')
+  let msg = {
+    doctorId, orderId
+  }
+  getDoctorInfo(msg)
+    .then((res) => {
+      let url = _options.callPage + '?' +
+        getPublicParams() +
+        '&dept=' + orderId +
+        '&doctor=' + encodeURIComponent(JSON.stringify(res.doctor)) +
+        '&order=' + encodeURIComponent(JSON.stringify(res.order)) +
+        '&isInvite=0' +
+        '&joinRoom=1'
+      console.log('url' + url)
+      wx.navigateTo({ url })
+    }).catch(() => { });
+}
+
 
 app = getApp();
 module.exports = {
@@ -623,11 +727,16 @@ module.exports = {
   getAsstInfo,
   setAsstInfo,
   getUserInfo,
+  getIsAccount,
   sendMessage,
   supportCall,
+  getUserName,
   getUserPhoto,
+  getDoctorInfo,
+  waitForDoctor,
   getMessageList,
   refreshSession,
   getPublicParams,
-  isUserCancelInvite
+  isUserCancelInvite,
+  SdkVersion,
 }

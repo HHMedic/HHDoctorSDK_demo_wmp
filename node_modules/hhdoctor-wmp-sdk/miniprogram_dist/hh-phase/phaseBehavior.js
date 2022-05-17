@@ -30,13 +30,15 @@ module.exports = Behavior({
       certificate: 'https://imgs.hh-medic.com/icon/wmp/trtc/certificate.png',
       hangup: 'https://imgs.hh-medic.com/icon/wmp/trtc/hangup.png',
       accept: 'https://imgs.hh-medic.com/icon/wmp/trtc/accept.png',
-      camera: 'https://imgs.hh-medic.com/icon/wmp/trtc/camera.png',
-      switch_camera: 'https://imgs.hh-medic.com/icon/wmp/trtc/switch_camera.png',
-      arrow_up: 'https://imgs.hh-medic.com/icon/wmp/trtc/arrow_up.png',
-      arrow_down: 'https://imgs.hh-medic.com/icon/wmp/trtc/arrow_down.png',
+      camera: 'https://imgs.hh-medic.com/icon/wmp/trtc/camera2.png',
+      switch_camera: 'https://imgs.hh-medic.com/icon/wmp/trtc/switch_camera3.png',
+      arrow_up: 'https://imgs.hh-medic.com/icon/wmp/trtc/arrow_up3.png',
+      arrow_down: 'https://imgs.hh-medic.com/icon/wmp/trtc/arrow_down2.png',
       warning: 'https://imgs.hh-medic.com/icon/wmp/trtc/warning.png',
       hangup_disabled: 'https://imgs.hh-medic.com/icon/wmp/trtc/hangup_disabled.png',
-      change_doctor: 'https://imgs.hh-medic.com/icon/wmp/trtc/change_doctor.png'
+      change_doctor: 'https://imgs.hh-medic.com/icon/wmp/trtc/change_doctor.png',
+      invite: 'https://imgs.hh-medic.com/icon/wmp/trtc/invite3.png',
+      call_other: 'https://imgs.hh-medic.com/icon/wmp/trtc/call-other.png'
     }
 
   },

@@ -3,7 +3,7 @@ var recording = false;
 var recordStardPosition = null;
 const rm = wx.getRecorderManager();
 const hhDoctor = require('../hhDoctor.js');
-
+const tools = require('../utils/tools.js')
 let that;
 Component({
   /**
@@ -15,14 +15,23 @@ Component({
   ],
   properties: {
     safeAreaHight: Number,
-    memberList: Object,
+    memberList: Array,
     manyVideo: Boolean,
-    product: {
-      type: Object,
-      observer() {
-        this.getRightsAndConfig()
-      }
+    shareCard: {
+      type: Number,
+      value: 0
     },
+    product: {
+      type: Object
+    },
+  },
+  observers: {
+    'product': function (val) {
+      this.getRights(val)
+    },
+    'memberList': function (val) {
+      if (this.properties.memberList && this.properties.memberList.length) this.getRights(this.data.product)
+    }
   },
   lifetimes: {
     attached() {
@@ -34,6 +43,7 @@ Component({
   pageLifetimes: {
     show() {
       this._checkRecordAuth()
+      this.bindBlurText()
     },
     hide() {
 
@@ -64,19 +74,6 @@ Component({
     manyVideo: false,
     rights: {},
     kbHeight: 0, //键盘默认高度 
-    tools: [
-      [
-        { name: '照片', icon: 'album' },
-        { name: '相机', icon: 'camera' },
-        { name: '挂号服务', icon: 'registration' },
-        { name: '心理咨询', icon: 'psychological' },
-        { name: '护理服务', icon: 'offlinenurse' },
-        { name: '陪同咨询', icon: 'accompany' },
-        // {name:'预约专家',icon:'appointment'},
-        { name: '送药上门', icon: 'sendmedicine' },
-        { name: '心理测评', icon: 'sendmedicine' }
-      ]
-    ]
   },
 
   /**
@@ -84,32 +81,58 @@ Component({
    */
   methods: {
     _requestComplete() {
-      this.getRightsAndConfig();
+      this.getRights(this.data.product);
     },
-    getRightsAndConfig() {
-      this.setData({
-        manyVideo: this.data.manyVideo || false,
-        product: this.data.product || '',
-      })
-      if (this.data.product && this.data.product.productRightsList) {
-        let rights = this.data.product.productRightsList;
-        rights.map((item, index) => {
-          // if(item.serviceType&&item.serviceType!='common'&&item.checkExpire){
-          //   rightsArr.push(item)
-          // }
-          if (item.serviceType && item.serviceType != 'common' && !item.checkExpire) {
-            that.data.rights[item.serviceType] = true
+    getRights(product) {
+      //console.log('>>> member:', this.data.memberList)
+      console.log('>>> product:', this.data.product)
+      let newRights = {}
+      newRights['album'] = tools['album']
+      newRights['camera'] = tools['camera']
+      //给家人用（分享卡片）
+      if (this.properties.shareCard && this.data.memberList.length && !this.data.memberList[0].pid) newRights['share_card'] = tools['share_card']
+      if (product && product.productRightsList && this.data.memberList.length && 'temp' != this.data.memberList[0].kind && this.data._request.bottomRightsVisible) {
+        product.productRightsList.map((item, index) => {
+          if (item.serviceType && item.serviceType != 'common' && item.serviceType != 'expert' && item.productRightStatus == "normal" && item.icon2 && (item.productRightsRule ? item.productRightsRule.isShowUser !== false : true)) {
+            if (item.rule && typeof item.rule == 'string') {
+              item.rule = JSON.parse(item.rule)
+            }
+            newRights[item.serviceType] = item
           }
         })
-        that.setData({
-          rights: that.data.rights
-        })
+      }
+      if (this.data.memberList.length && !this.data.memberList[0].isAccount && this.data.manyVideo) {
+        newRights['many_video'] = tools['many_video']
       }
 
+      this.setData({ rights: this.getRightsData(newRights) })
+    },
+
+    getRightsData(rights) {
+      let rightsData = []
+      let count = -1
+      let rightList = this.getArrSort(rights)
+      rightList.map((item, index) => {
+        index % 8 == 0 && count++
+        if (typeof rightsData[count] == 'undefined') {
+          rightsData[count] = []
+        }
+        rightsData[count].push(item)
+      })
+      return rightsData
+    },
+    getArrSort(arr) {
+      let newArr = [arr['camera'], arr['album']]
+      if (arr['many_video']) {
+        newArr.push(arr['many_video'])
+        delete arr['many_video']
+      }
+      delete arr['camera']
+      delete arr['album']
+      return newArr.concat(Object.values(arr))
     },
     bindEveryIcon(e) {
-      let type = e.currentTarget.dataset.type
-      this.triggerEvent('everyIcon', { type })
+      this.triggerEvent('everyIcon', e.currentTarget.dataset)
     },
 
     //点击右侧加号
@@ -287,7 +310,11 @@ Component({
         duration: res.duration
       })
     },
-
-
+    _callAsst(e) {
+      that.triggerEvent('callasst', { localVideoStatus: e.currentTarget.dataset.lvs })
+    },
+    _contactAsst(e) {
+      that.triggerEvent('contactasst', {})
+    }
   }
 })

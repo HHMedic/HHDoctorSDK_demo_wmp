@@ -1,8 +1,8 @@
 /* components/user-equity/user-equity.wxss */
 .page{
     background:#fff;
-    padding:10rpx 0 15rpx 0;
-    margin-bottom:30rpx;
+    padding:10rpx 0 25rpx 0;
+    margin-bottom:20rpx;
 }
 .equity-title{
     text-align: center;
@@ -30,19 +30,20 @@
     align-items: flex-start;
     flex-wrap: wrap;
     padding:0 10rpx;
-    height:400rpx;
+    min-height:400rpx;
     box-sizing: border-box;
 }
 .equity-item{
-    width:140rpx;
-    height:140rpx;
-    font-size: 28rpx;
-    margin:30rpx 20rpx;
+    width:160rpx;
+    /* height:140rpx; */
+    font-size: 24rpx;
+    margin:20rpx 10rpx;
     display:flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     color:#41455b;
+    text-align: center;
 }
 .filter{
     filter: grayscale(100%);
@@ -57,11 +58,11 @@
 .equity-text{
     display:block;
     width:100%;
-    overflow:hidden;
+    /* overflow:hidden;
     text-align: center;
-    text-overflow:ellipsis;
-    white-space: nowrap;
-    word-break: break-all;
+    text-overflow:ellipsis; */
+    /* white-space: nowrap;
+    word-break: break-all; */
 }
 
 

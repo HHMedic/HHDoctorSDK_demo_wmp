@@ -45,7 +45,7 @@ Page({
                 }
             }
         })
-
+        wx.hideHomeButton()
     },
 
     /**
@@ -74,6 +74,7 @@ Page({
     onShareAppMessage: function () { },
 
     onLogout(e) {
+        console.log(e)
         var pageUrl = '/pages/reg/reg?a=1';
         if (e && e.detail && e.detail.regParam) {
             pageUrl += ('&q=' + encodeURIComponent(e.detail.regParam));
@@ -83,8 +84,9 @@ Page({
                 pageUrl += ('&' + key + '=' + encodeURIComponent(e.detail.extParam[key]));
             }
         }
-        wx.reLaunch({
-            url: pageUrl
-        })
+        wx.reLaunch({ url: pageUrl })
+    },
+    onLogoutFail() {
+        wx.reLaunch({ url: 'pages/index/index' })
     }
 })

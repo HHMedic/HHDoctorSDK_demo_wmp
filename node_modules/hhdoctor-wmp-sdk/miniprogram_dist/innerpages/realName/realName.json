@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "realname-data": "../../realname-data/realname-data"
+  },
+  "navigationBarTitleText": "实名认证"
+}

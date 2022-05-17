@@ -1,3 +1,7 @@
+button::after {
+  border: none;
+}
+
 .input-panel {
   position: fixed;
   left: 0px;
@@ -8,6 +12,54 @@
   border-top: solid 1px #e4e4e4;
   box-sizing: border-box;
   z-index: 2;
+}
+
+.tools-wrap {
+  width: 100%;
+  height: 100rpx;
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  padding: 0 28rpx;
+}
+
+.tools-btn {
+  /* width: 180rpx; */
+  height: 60rpx;
+  box-sizing: border-box;
+  padding: 0 22rpx 0 57rpx;
+  font-size: 26rpx;
+  line-height: 60rpx;
+  color: #5A5A5A;
+  border: 1px solid #D2D2D2;
+  border-radius: 30rpx;
+  margin-right: 30rpx;
+  position: relative;
+}
+
+.tools-btn::before {
+  content: '';
+  position: absolute;
+  left: 22rpx;
+  top: 15rpx;
+  width: 30rpx;
+  height: 30rpx;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.tools-btn.yuyin::before {
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/taikang/yyhj.png');
+}
+
+.tools-btn.shipin::before {
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/taikang/sphj.png');
+}
+
+.tools-btn.qr::before {
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/taikang/icon-qr.png');
 }
 
 .input-ext-panel {
@@ -26,6 +78,7 @@
   background-color: #f6f6f6;
 }
 
+.bottom-icon-img {}
 
 .input-btn-box {
   width: 28px;
@@ -277,7 +330,6 @@
   align-items: flex-start;
   width: 100%;
   height: 100%;
-  padding-left: 48rpx;
   height: 360rpx;
 }
 
@@ -286,19 +338,49 @@
   font-size: 24rpx;
   font-weight: 400;
   text-align: center;
-  margin: 12rpx 46rpx 0 0;
+  width: 25%;
+  margin-top: 12rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 
 }
 
-.bottom-icon::before {
+.bottom-icon-image {
+  width: 128rpx;
+  height: 128rpx;
+  background: #fff;
+  border-radius: 15rpx;
+  margin-bottom: 10rpx;
+}
+
+.bottom-icon image {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.bottom-icon button {
+  width: 100%;
+  height: 100%;
+  display: block;
+  padding: 0;
+  border: none;
+  background-position: center;
+  background-size: cover;
+  background-color: #ffffff;
+}
+
+/* .bottom-icon::before {
   content: '';
   display: block;
   width: 128rpx;
   height: 128rpx;
   margin-bottom: 14rpx;
   background-size: cover;
-  background-repeat: no-repeat;
-}
+  background-repeat: no-repeat; 
+} */
 
 
 /* 授权部分 */
@@ -375,4 +457,8 @@
 .icon-sendmedicine::before,
 .icon-moretrtc:before {
   background-image: url('https://imgs.hh-medic.com/icon/wmp/bottom/icon-sendmedicine.png');
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom)
 }

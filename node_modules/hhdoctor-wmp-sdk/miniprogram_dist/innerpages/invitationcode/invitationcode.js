@@ -1,7 +1,7 @@
 //const hostUtil = require('../utils/hostUtil.js');
 var that;
+let apiUtil
 const hhDoctor = require('../../hhDoctor.js');
-
 
 Page({
   /**
@@ -21,79 +21,6 @@ Page({
     },
     isConnect: true
   },
-  /**
-   * 页面事件
-   */
-  handleFocus(e) {
-    console.log(e)
-    that.setData({
-      values: e.detail.text
-    })
-    that.active()
-  },
-
-  active(clipboard) {
-    that.setData({ errMsg: '' })
-    if (that.data.values.length === 6) {
-      let url = getApp().globalData._hhSdkOptions._host.wmpHost + 'wmp/activationCode' +
-        '?code=' + that.data.values +
-        '&userToken=' + that.data.request.userToken +
-        '&sdkProductId=' + that.data.request.sdkProductId
-      wx.showLoading({
-        title: '激活中，请稍候...',
-      })
-
-      wx.request({
-        url: url,
-        data: {},
-        method: 'POST',
-        success: function (res) {
-          wx.hideLoading();
-          if (res && res.data && 200 == res.data.status) {
-            if (clipboard) wx.setClipboardData({ data: '' })
-            wx.showModal({
-              title: '提示',
-              content: res.data.message ? res.data.message : '激活成功',
-              showCancel: false,
-              success: function () {
-                hhDoctor.getUserInfo().then(res => {
-                  wx.navigateBack({
-                    delta: 1
-                  });
-                });
-              }
-            })
-          } else {
-            that.setData({
-              flag: true,
-              errMsg: res && res.data && res.data.message ? res.data.message : '系统异常，请稍后再试'
-            })
-
-          }
-        }
-      })
-    } else {
-      that.setData({
-        flag: false
-      })
-    }
-  },
-
-  getHost() {
-    return hostUtil.getHost(this.data.request.profileName, this.data.request.subDomain)
-  },
-
-  handleTap() {
-    var that = this;
-    that.setData({
-      isFocus: true,
-    })
-  },
-  formSubmit(e) {
-    //console.log(e.detail.value.code);
-    //console.log(getApp(), "pppp")
-  },
-
   onLoad: function (options) {
     that = this;
     if (!options || !options.sdkProductId || !options.userToken) {
@@ -115,9 +42,75 @@ Page({
     }
   },
   onShow: function () {
-    this.setData({ isConnect: getApp().globalData.isConnect })
+    //sysInfo.screenHeight - sysInfo.safeArea.bottom
+    let sysInfo = wx.getSystemInfoSync()
+    this.setData({ isConnect: getApp().globalData.isConnect, bottom: sysInfo.screenHeight - sysInfo.safeArea.bottom })
     this.checkClipboard()
   },
+  /**
+   * 页面事件
+   */
+  handleFocus(e) {
+    console.log(e)
+    that.setData({
+      values: e.detail.text
+    })
+    that.active()
+  },
+
+  active(clipboard) {
+    that.setData({ errMsg: '' })
+    if (that.data.values.length === 6) {
+      if (!this.checkLoginStatus()) return
+      wx.showLoading({
+        title: '激活中...',
+      })
+      if (!apiUtil) apiUtil = require('../../utils/apiUtil')
+      apiUtil.activeCode(that.data.values).then(res => {
+        wx.hideLoading()
+        console.log('>>> active', res);
+        if (clipboard) wx.setClipboardData({ data: '' })
+        wx.showModal({
+          title: '提示',
+          content: res.message || '激活成功',
+          showCancel: false,
+          success: () => hhDoctor.getUserInfo().then(res => wx.navigateBack({ delta: 1 }))
+        })
+      }).catch(err => {
+        wx.hideLoading()
+        console.error('>>> active', err);
+        that.setData({
+          flag: true,
+          errMsg: err && err.message || '系统异常，请稍后再试'
+        })
+      })
+    } else {
+      that.setData({
+        flag: false
+      })
+    }
+  },
+  checkLoginStatus() {
+    let app = getApp()
+    if (app.globalData._hhSdkOptions && app.globalData._hhSdkOptions._sdkProductId && app.globalData._hhSdkOptions._userToken) return true
+    wx.showModal({
+      title: '',
+      content: '您的登录状态可能已过期，请尝试重新打开小程序',
+      confirmText: '我知道了',
+      showCancel: false
+    })
+    return false
+  },
+
+  handleTap() {
+    var that = this;
+    that.setData({
+      isFocus: true,
+    })
+  },
+  formSubmit(e) {
+  },
+
   checkClipboard() {
     wx.getClipboardData({
       success(res) {

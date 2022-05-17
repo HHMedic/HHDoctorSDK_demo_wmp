@@ -15,13 +15,10 @@ module.exports = Behavior({
         '&redirectPage=' + encodeURIComponent(redirectPage ? redirectPage : '/pages/newIndex/newIndex')
       this._viewUrl(url)
     },
-
-    _viewMedicineMiaoHealth(cartUrl) {
-      wx.hideLoading().then().catch(err => { })
-      var pageUrl = this.data.basePath + 'innerpages/view/view?url=' + encodeURIComponent(cartUrl)
-      wx.navigateTo({ url: pageUrl })
+    _viewBanerAdv(e){
+      let url = e.currentTarget.dataset.url
+      this._viewUrl(url);
     },
-
     _viewMedicineOrderList(redirectPage) {
       if (this._isUnReg(true)) return;
       getApp().globalData._hhSdkOptions.redirectPage = redirectPage;
@@ -29,11 +26,16 @@ module.exports = Behavior({
       this._viewUrl(url);
     },
     //查看更多权益
-    _viewMoreRightList() {
+    _viewMoreRightList(e) {
       let host = this.data._host.secHost;
       let url = host + 'hhmy/quanyi/quanyi.html?' +
         'UserToken=' + this.data._request.userToken
       this._viewUrl(url)
+      //卡片式权益
+      // let index = 0
+      // if (e) index = e.currentTarget.dataset.index
+      // let url = '/pages/right/right?index=' + index
+      // wx.navigateTo({ url })
     },
     _viewAddressList() {
       if (this._isUnReg(true)) return;
@@ -48,8 +50,8 @@ module.exports = Behavior({
         url: pageUrl,
       })
     },
-    _viewBeanList() {
-      let url = this.data._host.patHost + 'drug/account.html'
+    _viewBeanList(e) {
+      let url = this.data._host.patHost + 'drug/account.html?drugMoneyType=' + e.currentTarget.dataset.drugMoneyType
       this._viewUrl(url)
     },
 
@@ -70,9 +72,9 @@ module.exports = Behavior({
       let url = this.data._request.payPage + '?' + this._getPublicRequestParams() + '&name=购买套餐&price=9999&pid=' + productId;
       wx.navigateTo({ url })
     },
-    _viewActiveCode(e) {
+    _viewActiveCode(msg) {
       if (this._isUnReg(true)) return;
-      let msg = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.msg || ''
+      //let msg = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.msg || ''
       let param = 'sdkProductId=' + this.data._request.sdkProductId +
         '&userToken=' + this.data._request.userToken +
         '&openId=' + this.data._request.openId +

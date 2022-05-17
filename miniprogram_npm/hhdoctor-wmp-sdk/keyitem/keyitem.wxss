@@ -5,7 +5,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  border-radius: 2px;
+  border-radius: 4rpx;
   background-color: #fff;
 }
 

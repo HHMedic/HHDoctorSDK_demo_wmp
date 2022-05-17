@@ -1,7 +1,9 @@
 <!--components/hh-bottom/hh-bottom.wxml-->
-
-<view class='input-panel' >
-    <view class='input-tools' >
+<view class='input-panel'>
+    <view class="tools-wrap" wx:if="{{_request.bottomExtToolsVisible}}">
+        <view class="tools-btn qr" catchtap="_contactAsst">添加健康管家好友</view>
+    </view>
+    <view class='input-tools'>
         <!-- 左侧切换输入模式按纽 -->
         <view class='input-btn-box' catchtap='_changeInputType'>
             <view class='input-btn {{inputTypeClass}}'></view>
@@ -9,25 +11,10 @@
         <!-- 中部输入区域 -->
         <view class='input-text'>
             <block wx:if='{{inputTextVisible}}'>
-                <input class='textarea' type='text' 
-                    confirm-type='send' 
-                    cursor-spacing='20'
-                    bindinput='_inputText'
-                    bindfocus='bindFocusText' 
-                    bindblur='bindBlurText'
-                    placeholder="{{isInputTextFocus?'请输入非健康问题':'联系医助'}}"
-                    style='text-align:{{!isInputTextFocus&&!inputText?"center":"left"}};'
-                    placeholder-style="color:#969696;" 
-                    bindconfirm='_sendTextMsg' 
-                    value='{{inputText}}'
-                    confirm-hold='{{true}}' 
-                    adjust-position='{{false}}' 
-                    bindkeyboardheightchange='bindkeyboardheightchange'
-                    ></input>
+                <input class='textarea' type='text' confirm-type='send' cursor-spacing='20' bindinput='_inputText' bindfocus='bindFocusText' bindblur='bindBlurText' placeholder="{{isInputTextFocus?'':_request.inputPlaceHolder}}" style='text-align:{{!isInputTextFocus&&!inputText?"center":"left"}};' placeholder-style="color:#969696;" bindconfirm='_sendTextMsg' value='{{inputText}}' confirm-hold='{{true}}' adjust-position='{{false}}' bindkeyboardheightchange='bindkeyboardheightchange'></input>
             </block>
             <block wx:if='{{!inputTextVisible}}'>
-                <view class='input-record' catchtouchstart='_startRecord' catchtouchend='_stopRecord'
-                    catchtouchmove='_cancelRecord'>{{recordBtnTip}}</view>
+                <view class='input-record' catchtouchstart='_startRecord' catchtouchend='_stopRecord' catchtouchmove='_cancelRecord'>{{recordBtnTip}}</view>
             </block>
         </view>
         <!-- 右侧加号按纽 -->
@@ -35,26 +22,26 @@
             <view class='input-btn plus'></view>
         </view>
     </view>
-    <!-- 工具栏 wx:if='{{!patient.isAccount&&memberList.length>1&&manyVideo}}' -->
-    <view  class='tool-bar' wx:if='{{isShowToolBar}}' catchtap='_showHideUtils'>
-        <swiper indicator-dots="{{tools.length>1?true:false}}" autoplay="{{autoplay}}" class='swiper-view'>
-            <block wx:for="{{tools}}" wx:key="*this">
+    <!-- 工具栏  -->
+    <view class='tool-bar' wx:if='{{isShowToolBar}}' catchtap='_showHideUtils'>
+        <swiper indicator-dots="{{rights.length>1?true:false}}" autoplay="{{autoplay}}" class='swiper-view'>
+            <block wx:for="{{rights}}" wx:key="*this" wx:for-item="itemPages">
                 <swiper-item class='swiper-item'>
-                    <view class='bottom-page' >
-                        <view class='bottom-icon icon-album'  bindtap='bindEveryIcon' data-type='album' data-title='照片'>照片</view>
-                        <view class='bottom-icon icon-camera'  bindtap='bindEveryIcon' data-type='camera' data-title='相机'>相机</view>
-                        <view class='bottom-icon icon-registration'  bindtap='bindEveryIcon' data-type='registration' data-title='挂号服务' wx:if='{{rights.hao}}'>挂号服务</view>
-                        <view class='bottom-icon icon-psychological'  bindtap='bindEveryIcon' data-type='psychological' data-title='心理咨询' wx:if='{{rights.psychol}}'>心理咨询</view>
-                        <view class='bottom-icon icon-offlinenurse'  bindtap='bindEveryIcon' data-type='offlinenurse' data-title='护理服务' wx:if='{{rights.nurse}}'>护理服务</view>
-                        <view class='bottom-icon icon-accompany'  bindtap='bindEveryIcon' data-type='accompany' data-title='陪同咨询' wx:if='{{manyVideo&&!memberList[0].isAccount}}'>陪同咨询</view>
-                        <view class='bottom-icon icon-sendmedicine'  bindtap='bindEveryIcon' data-type='sendmedicine' data-title='送药上门' wx:if='{{rights.drug}}'>送药上门</view>
-                        <view class='bottom-icon icon-psychol-meditation'  bindtap='bindEveryIcon' data-type='psycholmeditation' data-title='心理测评' wx:if='{{rights.psychol_meditation}}'>心理测评</view>
+                    <view class='bottom-page'>
+                        <view class='bottom-icon' bindtap='bindEveryIcon' data-service-type="{{item.serviceType}}" data-forward-url="{{item.forwardUrl}}" data-title="{{item.title}}" data-rule="{{item.rule}}" wx:for="{{itemPages}}" wx:key="*this">
+                            <view class="bottom-icon-image">
+                                <image src="{{item.icon2}}" class="bottom-icon-img" wx:if="{{'share_card'!=item.serviceType}}"></image>
+                                <button open-type="{{product&&'exp'!=product.productStatusEnum?'share':''}}" style="background-image: url({{item.icon2}});" class="bottom-icon-img" wx:if="{{'share_card'==item.serviceType}}"></button>
+                            </view>
+                            <text>{{item.title}}</text>
+                        </view>
                     </view>
                 </swiper-item>
             </block>
         </swiper>
     </view>
-    <view style='height:{{kbHeight||safeAreaHight}}px'></view>
+    <view style="height:{{kbHeight}}px"></view>
+    <view class="safe-bottom" wx:if="{{kbHeight==0}}"></view>
 </view>
 <!-- 录音提示遮罩层 -->
 <view class='record-mask {{recordMaskVisible}}'>

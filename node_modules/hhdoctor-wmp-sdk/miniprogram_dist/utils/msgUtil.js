@@ -28,8 +28,18 @@ function isAccessCardCommand(command) {
     accessCardCommand['hao'] = 1                        //挂号表单
     accessCardCommand['fastchannel_detail'] = 1         //重疾通道
     accessCardCommand['nurse_home_detail'] = 1          //医护到家
+    accessCardCommand['expert_service'] = 1             //重疾二诊
     accessCardCommand['hao_detail'] = 1                 //挂号表单
-
+    accessCardCommand['command_appoint_doctor'] = 1     //推荐医生
+    accessCardCommand['coopOrderCommon'] = 1            //三方订单 （检查手术和陪诊）
+    accessCardCommand['coopOrderCommonDetail'] = 1      //三方订单通用详情（检查 手术 陪诊）工具栏填写后自动发送
+    accessCardCommand['hao_accompany'] = 1              //挂号陪诊预约
+    accessCardCommand['hao_accompany_detail'] = 1       //挂号陪诊详情
+    accessCardCommand['hospitalization_accompany'] = 1  //住院陪诊预约
+    accessCardCommand['hospitalization_accompany_detail'] = 1 //住院陪诊详情
+    accessCardCommand['command_health_assessment_report'] = 1 //健康评估报告
+    accessCardCommand['bannerAdv'] = 1 //banner卡片
+    accessCardCommand['videoAdv'] = 0 //不展示此类卡片
   }
   return accessCardCommand[command] && 1 == accessCardCommand[command]
 }
@@ -82,6 +92,7 @@ function parseMsgHistory(msgHis, uuid) {
         var content = JSON.parse(msg.body.content);
         content = processDrugCard(msg.body, content)
         if (!isAccessCardCommand(content.command)) break
+        if (isEmptyWelcomeTips(content)) break
         msgs.push({
           id: msg.msgid,
           type: 'card',
@@ -91,8 +102,10 @@ function parseMsgHistory(msgHis, uuid) {
           patient: msg.body.patientUuid,
           time: msg.sendtime,
           body: msg.body,
-          bodyContent: content
+          bodyContent: content,
+          textArr: content.command == 'welcomeTips' ? findLinkFromText(content.tips,content.typeText) : []
         });
+
         //}
         break;
       default:
@@ -101,8 +114,11 @@ function parseMsgHistory(msgHis, uuid) {
   }
   return msgs;
 }
-
-//获取音频类消息的实际音频文件地址
+/** 是否是空的欢迎消息，需要跳过 */
+function isEmptyWelcomeTips(content) {
+  return content.command == 'welcomeTips' && !content.tips
+}
+/** 获取音频类消息的实际音频文件地址 */
 function getAudioMsgUrl(ext, from, msgId, url) {
   if ('amr' == ext) {
     url = 'https://imgfamily.hh-medic.com/family/' + from + '/audio/' + msgId + '.aac';
@@ -110,14 +126,14 @@ function getAudioMsgUrl(ext, from, msgId, url) {
   return url;
 }
 
-//处理药卡
+/** 处理药卡 */
 function processDrugCard(body, content) {
   content = checkElemeDrugIsExpired(body, content)
   content = checkSystemTips(body, content)
   return content
 }
 
-//检查饿了么药卡是否已过期
+/** 检查饿了么药卡是否已过期 */
 function checkElemeDrugIsExpired(body, content) {
   if ('buyDrugInformation' != body.command || 'eleme' != content.source) return content;
   switch (body.isSuccess) {
@@ -130,24 +146,34 @@ function checkElemeDrugIsExpired(body, content) {
       content.buttonName = '查看详情';
       break;
     default:
-      let ts = new Date().getTime() - body.createTime
+      /*let ts = new Date().getTime() - body.createTime
       if (ts > 86400000) {
         //超过24小时
         content.trans = false
         content.tips = '该药品订单已超24小时，请呼叫医生重新获取药卡'
         // content.tipsClass = 'warn'
-      }
+      }*/
       break;
   }
   return content
 }
-
+/** 检查并处理药卡中的systemTips */
 function checkSystemTips(body, content) {
   if ('buyDrugInformation' != body.command || (!body.systemTips && !content.systemTips)) return content;
   content.trans = false
+  content.infoTips=content.tips||''
   content.tips = body.systemTips || content.systemTips
+  content.tipsLink = getContentTipLink(content)
   content.tipsClass = content.tips == '该药品订单已超24小时，请呼叫医生重新获取药卡' ? '' : 'warn'
   return content
+}
+/** 根据是否有处方药、实名状态和复诊证明状态返回链接 */
+function getContentTipLink(content) {
+  //需求文档:https://cz32rdhphg.feishu.cn/docs/doccnYfmtPHghTdApYAc4AhuUoh  
+  //需求表格:https://cz32rdhphg.feishu.cn/file/boxcnGrRbbJJiIVOkrj8ZixZLFg
+  if (!content.isAuth) return '点此实名认证'
+  if ('undefined' != typeof content.isUploadExamination && !content.isUploadExamination) return '呼叫医生上传'
+  return ''
 }
 
 function generateId() {

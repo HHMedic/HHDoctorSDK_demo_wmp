@@ -24,7 +24,7 @@ Page({
         showAccount: "",
         pageUrl: "/pages/room/room",
         endDate: "",
-        type: 1,//1 不传则是默认值 正常添加档案成员 2 添加成员并呼叫界面 3 编辑成员(档案库进入) 4 补全信息-（默认为补全并呼叫界面-多人视频不显示呼叫按钮-档案库进入补全则isFilling传入不显示呼叫按钮）
+        type: 1,//1 不传则是默认值 正常添加档案成员 2 添加成员并呼叫界面 3 编辑成员(档案库进入) 4 补全信息-（默认为补全并呼叫界面-多人视频不显示呼叫按钮-档案库进入补全则isHideCallBtn传入不显示呼叫按钮）
         isInvite: 0,//默认单人视频 多人视频则不显示呼叫保存并呼叫按钮 结合type一起判断
     },
 
@@ -38,7 +38,7 @@ Page({
             type: options.type && parseInt(options.type) || 1,
             memberUuid: options.memberUuid || 0,
             callPage: hhDoctor.getOptions().callPage,
-            isFilling: options.isFilling || false,
+            isHideCallBtn:options.isHideCallBtn || false,
             endDate: dateUtil.format(new Date(), 'yyyy-MM-dd')
         })
         console.log(this.data)
@@ -47,9 +47,7 @@ Page({
     },
     // 获取成员配置信息
     getMemberList() {
-        wx.showLoading({
-            mask: true
-        })
+        wx.showLoading({ mask: true })
         apis.requestGetMember().then(res => {
             wx.hideLoading();
             if (res.status == 200) {
@@ -72,9 +70,7 @@ Page({
                         }
                     })
                     this.data.relationList.map((i, index) => {
-                        if (i.name == currMember.relation) {
-                            this.data.relationIdx = index
-                        }
+                        if (i.name == currMember.relation) this.data.relationIdx = index
                     })
                     if (currMember && '请完善信息以发起呼叫' == currMember.name) currMember.name = ''
                     this.setData({
@@ -88,7 +84,6 @@ Page({
                     this.getPhoneNum()
                 }
             }
-
         })
 
     },
@@ -116,86 +111,26 @@ Page({
         if (this.data.relationIdx > -1) {
             member['relation'] = this.data.relationList[this.data.relationIdx]['name']
         }
-        console.log(member)
-        if (!member.name) {
-            wx.showToast({
-                title: '请输入成员姓名',
-                icon: 'none'
-            })
-            return;
-        }
+        if (!member.name) return wx.showToast({ title: '请输入成员姓名', icon: 'none' })
         if ('请完善信息以发起呼叫' == member.name) {
             this.setData({ inputVal: '' })
-            wx.showToast({
-                title: '请输入成员姓名',
-                icon: 'none'
-            })
-            return;
+            return wx.showToast({ title: '请输入成员姓名', icon: 'none' })
         }
-        if (!member.relation && this.data.relationIdx > -1) {
-            wx.showToast({
-                title: '请选择与成员关系',
-                icon: 'none'
-            })
-            return;
-        }
-        if (!member.gender) {
-            wx.showToast({
-                title: '请选择性别',
-                icon: 'none'
-            })
-            return;
-        }
-        if (!member.birthday) {
-            wx.showToast({
-                title: '请选择出生年月',
-                icon: 'none'
-            })
-            return;
-        }
-
-        if (this.data.memberUuid == this.data.patient.uuid && !member.phoneNum) {
-            wx.showToast({
-                title: '请输入电话号码',
-                icon: 'none'
-            })
-            return;
-        }
-        if (this.data.memberUuid == this.data.patient.uuid && !isMobilePhone(member.phoneNum)) {
-            wx.showToast({
-                title: '请输入正确的电话号码',
-                icon: 'none'
-            })
-            return;
-        }
-
-        if (this.data.isLoginChecked) {
+        if (!member.relation && this.data.relationIdx > -1) return wx.showToast({ title: '请选择与成员关系', icon: 'none' })
+        if (!member.gender) return wx.showToast({ title: '请选择性别', icon: 'none' })
+        if (!member.birthday) return wx.showToast({ title: '请选择出生年月', icon: 'none' })
+        if (this.data.memberUuid == this.data.patient.uuid && !member.phoneNum) return wx.showToast({ title: '请输入电话号码', icon: 'none' })
+        if (this.data.memberUuid == this.data.patient.uuid && !isMobilePhone(member.phoneNum)) return wx.showToast({ title: '请输入正确的电话号码', icon: 'none' })
+        if (this.data.isLoginChecked && this.data.showAccount && (this.data.memberUuid || this.data.memberUuid != this.data.patient.uuid || true)) {
             let loginname = this.data.loginname;
-            if (!loginname) {
-                wx.showToast({
-                    title: '请输入独立登录手机号',
-                    icon: 'none'
-                })
-                return;
-            } else if (loginname && !this.checkPhoneNum(loginname)) {
-                wx.showToast({
-                    title: '请检查手机号是否正确',
-                    icon: 'none'
-                })
-                return;
-            }
-            member['loginname'] = loginname;
+            console.log('>>> loginname:', loginname)
+            if (!loginname) return wx.showToast({ title: '请输入独立登录手机号', icon: 'none' })
+            else if (loginname && !this.checkPhoneNum(loginname)) return wx.showToast({ title: '请检查手机号是否正确', icon: 'none' })
         }
+        member['loginname'] = this.data.loginname || ''
         //补全信息不是自己的时候 不显示独立子账号
         if (!this.data.isLoginChecked && this.data.isInvite == 1) {
-            if (this.data.memberUuid != this.data.patient.uuid) {
-                wx.showToast({
-                    title: '请设置独立子帐号',
-                    icon: 'none'
-                })
-                return;
-            }
-
+            if (this.data.memberUuid != this.data.patient.uuid) return wx.showToast({ title: '请设置独立子帐号', icon: 'none' })
         }
         switch (parseInt(this.data.type)) {
             case 1:
@@ -210,8 +145,13 @@ Page({
                 break;
         }
     },
-
+    //仅用于补全用户信息
     requestCompleteMember(member) {
+        //判定有手机号-走该api 否则无法开通独自子账号
+        if (this.data.isLoginChecked && this.data.loginname && this.data.showAccount && (this.data.memberUuid || this.data.memberUuid != this.data.patient.uuid || true)) {
+            this.requestUpdateMember(member)
+            return
+        }
         wx.showLoading({ mask: true })
         let self = this;
         let memberUuid = this.data.memberUuid;
@@ -239,27 +179,15 @@ Page({
             if (res.status == 200) {
                 if (this.data.saveType == 'save') {
                     // 如果已开通独立子账号
-                    if (this.data.currMember && this.data.currMember.isAccount) {
-                        wx.navigateBack();
-                        return
-                    }
+                    if (this.data.currMember && this.data.currMember.isAccount) return wx.navigateBack()
                     res.data && res.data.isAccount ? wx.redirectTo({ url: '../ehr-accounttip/ehr-accounttip' }) : wx.navigateBack()
                     if (this.data.memberUuid == this.data.patient.uuid) wx.navigateBack()
                 } else {
                     //跳转呼叫页  需修改  
                     var pageUrl = this.data.callPage + '?' + hhDoctor.getPublicParams() + '&dept=600002' + '&realPatientUuid=' + this.data.memberUuid;
-                    wx.redirectTo({
-                        url: pageUrl
-                    })
+                    wx.redirectTo({ url: pageUrl })
                 }
-            } else {
-                wx.showToast({
-                    title: res.message,
-                    icon: 'none',
-                    duration: 1000
-                })
-            }
-
+            } else wx.showToast({ title: res.message, icon: 'none', duration: 1000 })
         }).catch(err => {
             wx.hideLoading();
             getApp().getCheckNetWork();
@@ -275,19 +203,11 @@ Page({
                     res.data.isAccount ? wx.redirectTo({ url: '../ehr-accounttip/ehr-accounttip' }) : wx.navigateBack()
                 } else {
                     //跳转呼叫页  需修改  
-                    var pageUrl = this.data.callPage + '?' + hhDoctor.getPublicParams() + '&dept=600002' + '&realPatientUuid=' + res.data.uuid;
-                    wx.redirectTo({
-                        url: pageUrl
-                    })
+                    var pageUrl = this.data.callPage + '?' + hhDoctor.getPublicParams() + '&dept=600002' + '&realPatientUserToken=' + res.data.userToken;
+                    console.log('>>> pageUrl',pageUrl)
+                    wx.redirectTo({ url: pageUrl })
                 }
-
-            } else {
-                wx.showToast({
-                    title: res.message,
-                    icon: 'none',
-                    duration: 1000
-                })
-            }
+            } else wx.showToast({ title: res.message, icon: 'none', duration: 1000 })
         }).catch(err => {
             wx.hideLoading();
             getApp().getCheckNetWork();
@@ -303,9 +223,7 @@ Page({
         day = day < 10 ? '0' + day : day;
         return year + '-' + month + '-' + day
     },
-
     bindInput: function (e) {
-
         this.setData({ inputVal: e.detail.value })
     },
     bindBlur: function (e) {
@@ -313,7 +231,7 @@ Page({
         this.setData({ inputVal: val })
     },
     inputPhoneNum(e) {
-        this.setData({ realPatientPhone: e.detail.value })
+        this.setData({ realPatientPhone: e.detail.value.trim() })
     },
     bindPickerRelation: function (e) {
         console.log(e)
@@ -329,27 +247,19 @@ Page({
     },
     bindLoginInput: function (e) {
         let val = e.detail.value.replace(/\s+/g, '');
-        this.setData({
-            loginname: val
-        })
+        this.setData({ loginname: val })
     },
     bindLoginBlur: function (e) {
         let val = e.detail.value.replace(/\s+/g, '');
-        this.setData({
-            loginname: val
-        })
-
+        this.setData({ loginname: val })
     },
     // 接收是否允许成员独立登录
     bindIsLoginChecked: function (e) {
         this.setData({ isLoginChecked: e.detail.value })
     },
     checkPhoneNum: function (phone) {
-        if (phone && phone.length == 11) {
-            return /^1\d{10}$/.test(phone)
-        } else {
-            return /^\d{6,10}$/.test(phone)
-        }
+        if (phone && phone.length == 11) return /^1\d{10}$/.test(phone)
+        else return /^\d{6,10}$/.test(phone)
     },
     bindDisabledModal: function (e) {
         let type = e.currentTarget.dataset.type;

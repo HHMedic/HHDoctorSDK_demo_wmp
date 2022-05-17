@@ -9,7 +9,7 @@
       <image class='right-icon' src='{{detail.logo}}'></image>
       <view class='right-item'>
         <view class='item-title'> {{detail.name}}
-          <text class='link' wx:if='{{detail.drugFreeUrlName}}' catchtap='_view' data-url='{{detail.drugFreeUrl}}'>{{detail.drugFreeUrlName}}</text>
+          <!-- <text class='link' wx:if='{{detail.drugFreeUrlName}}' catchtap='_view' data-url='{{detail.drugFreeUrl}}'>{{detail.drugFreeUrlName}}</text> -->
         </view>
         <view class='item-text'>{{detail.content}} </view>
       </view>

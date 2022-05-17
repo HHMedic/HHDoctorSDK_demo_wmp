@@ -27,6 +27,7 @@ var urls = {
   saveAddress: wmpHost + 'address/saveAddress',
   getDoctorInfo: wmpHost + 'wmp/getDoctorInfo?doctorId={0}',
   sendImMessage: wmpHost + 'trtc/sendImMessage',
+  activeCode: wmpHost + 'wmp/activationCode?code={0}',
   uploadFile: wmpHost + 'im/upload',
   getStyle: wmpHost + 'wmp/style?productId={0}&appId={1}&page={2}',
   //---
@@ -34,6 +35,10 @@ var urls = {
   checkRegToken: wmpHost + 'wmp/checkRegToken?sdkProductId={0}&token={1}&imei={2}',
   getCountryCodes: wmpHost + 'wmp/getCountryCodes',
   verifyCheckCode: wmpHost + 'bz/verifyCheckCode?phone={0}&code={1}&&countryCode={2}&sdkProductId={3}',
+  addHealthData: wmpHost + 'proxy/familyhealth/api/healthData/add',
+  addHealthReport: wmpHost + 'trtc/uploadDataByUserToken?sdkProductId={0}&userToken={1}&peDate={2}&type={3}&title={4}',
+  parseShareCode: wmpHost + 'share/parseShareCode?mpAppId={0}&shareCode={1}',
+  setManyVideo: wmpHost + 'proxy/familyapp/order/setManyVideo?orderId={0}',
 }
 var requestHeader = {};
 
@@ -73,6 +78,8 @@ function addPubVars(url) {
   url = addParam(url, 'sdkProductId', app.globalData._hhSdkOptions._sdkProductId);
   url = addParam(url, 'userToken', app.globalData._hhSdkOptions._userToken);
   url = addParam(url, 'openId', app.globalData._hhSdkOptions._openId);
+  url = addParam(url, 'hhDoctorSdkVersion', wx.getStorageSync('SdkVersion'));
+
   if (app.globalData.wxAppId) {
     url = addParam(url, 'wxAppId', app.globalData.wxAppId)
     if ('wx15e414719996d59f' == app.globalData.wxAppId && app.globalData.wmpVersion)
@@ -222,9 +229,25 @@ function getDoctorInfo(doctorId) {
   let url = urls.getDoctorInfo.format(doctorId);
   return doRequest(url, '', {});
 }
+function activeCode(code) {
+  let url = urls.activeCode.format(code);
+  return doRequest(url, '', {});
+}
+function addHealthData(data) {
+  let url = urls.addHealthData.format();
+  return doRequest(url, '', data);
+}
+function addHealthReport(sdkProductId, userToken, peDate, urlList, type, title) {
+  let url = urls.addHealthReport.format(sdkProductId, userToken, peDate, type, encodeURIComponent(title));
+  return doRequest(url, '', urlList);
+}
 function sendImMessage(msgRequest) {
   let url = urls.sendImMessage
   return doRequest(url, '', msgRequest);
+}
+function parseShareCode(mpAppId, shareCode) {
+  let url = urls.parseShareCode.format(mpAppId, shareCode)
+  return doRequest(url, '', {});
 }
 function uploadFile(filePath, fileType) {
   let app = getApp()
@@ -252,11 +275,16 @@ function getStyle(sdkProductId, wxAppId, page) {
   let url = urls.getStyle.format(sdkProductId, wxAppId, page);
   return doRequest(url, '', {});
 }
+function setManyVideo(orderId) {
+  let url = urls.setManyVideo.format(orderId)
+  return doRequest(url, '', {});
+}
 
 module.exports = {
   regUser,
   getStyle,
   leaveLive,
+  activeCode,
   updateUser,
   reportTrace,
   addComment,
@@ -274,10 +302,14 @@ module.exports = {
   getUserPhone,
   seckillApply,
   getVideoList,
+  setManyVideo,
+  addHealthData,
   sendImMessage,
   getDoctorInfo,
   getHistoryMsg,
+  parseShareCode,
   getAddressList,
+  addHealthReport,
   getUnregHistoryMsg,
   getLoginUserByPhone
 }

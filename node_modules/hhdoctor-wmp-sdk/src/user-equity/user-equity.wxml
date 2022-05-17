@@ -1,7 +1,7 @@
 <view class='page'>
- <view class='equity-title'>会员权益</view>
+ <view class='equity-title'>{{_request.equityTitle}}</view>
  <view class='equity-box'>
-    <view class='equity-item {{item.checkExpire?"filter":""}}' wx:for="{{productRightsList}}" wx:key='index' bindtap='_viewMoreRightList'>
+    <view class='equity-item {{item.checkExpire?"filter":""}}' wx:for="{{productRightsList}}" wx:key='index' bindtap='_viewMoreRightList' data-index="{{index}}">
        <image src='{{item.icon}}' class='equity-icon'></image>
        <text class='equity-text'>{{item.title}}</text>
     </view>

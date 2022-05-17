@@ -1,0 +1,84 @@
+<!--components/innerpages/eleme-message/eleme-message.wxml-->
+<view class='page-purchase' wx:if='{{status==0}}'>
+    <view class='purchase-icon'>当前药品未到起送价格，您可以</view>
+    <view class='purchase-text'>去药店购买</view>
+    <view class='purchase-or'>或</view>
+    <view class='purchase-btn' bindtap='bindUpdateDrugCount'>购买{{drugCount}}份该药品，{{buttonName}}</view>
+    <view class='purchase-statement'>起送价由配送药店自己确定，与本平台无关</view>
+</view>
+<view class='page' wx:if='{{status == 1 || status == 2 }}'>
+    <block wx:if="{{status==1}}">
+        <view class='msg-tip'>据规定：互联网诊疗需进行实名认证并提供首诊信息{{isGuardian?'，7周岁以下儿童购买非处方药需填写监护人信息':''}}</view>
+        <view class='msg-list msg-nickname'>{{nickname}}</view>
+         <realname-data hasRx="{{hasRx}}" id="realname"></realname-data>
+    </block>
+    <view class="group">
+        <view class="realname-title">线下已确诊疾病</view>
+        <view class="illness-list">
+            <view class="illness-item" wx:for="{{diagnosis}}" catchtap="bindDiagnosis" data-index="{{index}}"> <view class="{{item.isCheck?'illness-checked':'illness-check'}}"></view>   <view class="illness-text">{{item.text}}</view></view>
+        </view>
+    </view>
+    <view class="group">
+        <view class="realname-title">如有线下就诊病例，请在此上传</view>
+        <view class="realname-photo"> 
+            <view class="photo-icon"  wx:if="{{!chooseImg}}">
+                <image src="https://imgs.hh-medic.com/icon/wmp/realname/upload-icon.png" catchtap="bindPhoto" class="photo-icon-url"></image>
+                点击拍照
+            </view>           
+            <view class="photo-choose" wx:else>
+                <image src="{{chooseImg}}" class="photo-choose-url" ></image>
+                <view class="photo-close" catchtap="bindDelPhoto"></view>
+            </view>
+            <view class="photo-is-upload" catchtap="bindIsUpPhoto"><view class="{{isPhoto?'upload-checked':'upload-check'}}"></view> 暂不便上传</view>
+
+        </view>
+    </view>
+    <view class="msg-btn-block">
+        <button class='msg-btn' bindtap='bindSubmit'>确定</button>
+    </view>
+</view>
+
+
+<!-- 处方 和 授权-->
+<view class='page-recipe' wx:if='{{status == 3 }}'>
+    <view class='recipe-icon'>正在生成处方并授权</view>
+    <view class='load-wrap' >
+        <view class='load-circle'>
+            <view class='circle' wx:for='{{3}}' wx:key='index'></view>
+      </view>
+    </view>
+    <view class='auth-box' wx:if='{{isShowAuth}}'>
+        <view class='auth-pannel'>
+            <view class='auth-title'>个人信息授权</view>
+            <view class='auth-content'>
+                <view style='text-indent:50rpx;'>
+                    尊敬的用户，在您确认授权后，将跳转至北京和缓医疗科技有限公司合作平台内药品服务平台使用药品配送服务。
+                </view>
+                <view>
+                    您对以上服务事项确认授权的内容包括:
+                </view>
+                <view style='margin-top:30rpx;'>
+                    1.同意药品服务平台获取您的处方和地址信息以完成药品购买配送服务;
+                </view>
+                <veiw>
+                    2.同意药品服务平台将您购买药品的部分数据传输给北京和缓医疗科技有限公司，包括订单编号、支付状态、订单创建时间、订单支付时间、药品明细信息等，以便北京和缓医疗科技有限公司记录实际购买情况，进行后续与您相关权益的更新及结算之目的使用，提供更好的服务体验。 
+                </veiw>
+                <view style='margin-top:30rpx;'>
+                    您同意授权后，即视为您全面知悉并同意上述授权内容，本授权声明即具有法律效力。
+                </view>
+            </view>
+            <view class='auth-btns' >
+                <view class='auth-reject' bindtap='bindBackIndex'>拒绝</view>
+                <view class='auth-confirm' bindtap='bindAuthAgree'>同意并继续</view>
+            </view>
+        </view>
+    </view>
+</view>
+
+<!-- 支付失败 -->
+<view class='page-fail' wx:if='{{status == 4}}'>
+    <view class='fail-icon'>购药失败，请到药店或医院购买</view>
+    <button class='back-index' bindtap='bindBackIndex'>返回首页</button>
+</view>
+<view class='page-fail' wx:if='{{status==5}}'></view>
+<hhNetwork wx:if='{{!isConnect}}'></hhNetwork>

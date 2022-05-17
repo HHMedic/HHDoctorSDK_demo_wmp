@@ -3,6 +3,7 @@
   background:#f2f2f2;
   min-height:100vh;
   border-top:1px solid #eee;
+  padding-bottom:40rpx;
 }
 .detail-line{
   font-size:28rpx;
@@ -11,6 +12,7 @@
   color:rgba(51,51,51,1);
   padding:30rpx 27rpx 50rpx 27rpx;
   line-height:42rpx;
+  display:block;
   
 }
 .detail-suggest {

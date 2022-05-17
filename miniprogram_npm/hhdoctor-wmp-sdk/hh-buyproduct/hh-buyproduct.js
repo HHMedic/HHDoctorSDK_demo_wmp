@@ -86,7 +86,7 @@ Component({
             //成功
             that.setData({
               productList: res.data.data,
-              productComment: ['7×24小时视频看医生', '知名专家会诊咨询']
+              productComment: ['7×24小时视频看医生', '知名专家会诊咨询']
             })
             if (that.data.productList &&
               1 == that.data.productList.length) {

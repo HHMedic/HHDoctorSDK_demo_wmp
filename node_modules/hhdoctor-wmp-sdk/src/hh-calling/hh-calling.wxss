@@ -3,32 +3,47 @@
   left: 0px;
   top: 0px;
   width: 100%;
-  height: 128px;
+  /* height: 128px; */
   display: flex;
   flex-direction: column;
   justify-content: center;
   box-sizing: border-box;
   z-index: 9;
+  background: #fff;
+  /* padding-top:constant(safe-area-inset-top);
+  padding-top:env(safe-area-inset-top); */
 }
 
 .topbtn-panel {
   width: 100%;
-  height: 64px;
-  /* background-color: rgba(255, 255, 255, 1); */
+  height: 44px;
   background-color: rgba(0, 0, 0, 0);
-  z-index: 9;
-  box-sizing: border-box;
-  /* border-bottom: solid 0.5px #ebebeb; */
-  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
 }
 
 .top-btns {
   box-sizing: border-box;
-  width: 120px;
-  position: absolute;
-  z-index: 10;
-  padding-left: 9px;
+  width: 100px;
+  margin-left: 20rpx;
+}
 
+.topbtn-title {
+  width: 380rpx;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 180rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  font-weight: 400;
+  font-family: pingFangSC-Medium;
+  font-size: 36rpx;
+  color: #353535;
 }
 
 .top-btns-inner {
@@ -64,20 +79,7 @@
   background-size: cover;
 }
 
-.topbtn-title {
-  position: absolute;
-  top: 30px;
-  width: 370rpx;
-  right: 190rpx;
-  height: 24px;
-  line-height: 24px;
-  text-align: center;
-  font-size: 20px;
-  font-weight: bold;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
+
 
 .topbtn-navitoapp {
   background-color: transparent;
@@ -117,7 +119,7 @@
 }
 
 .btn-main {
-  background-color: #0592f5;
+  background-color: var(--hh-main-color, #0592f5);
   height: 100%;
   width: 710rpx;
   margin: auto;
@@ -277,19 +279,7 @@
 
 }
 
-/* {
-    height: 98rpx;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-top: 1px solid #E6E6E6;
-    color:#0592F5;
-    background: #fff;
-    box-sizing: border-box;
-    line-height:98rpx;
-  } */
-.member-button::before,
-.calling-button:before {
+.member-button::before {
   content: '';
   display: block;
   width: 28rpx;
@@ -299,11 +289,8 @@
   background-size: cover;
 }
 
-.member-button::after,
-.calling-button:after {
-  content: '添加成员';
+.member-button {
   color: #969696;
-
 }
 
 /* //演示模式 */
@@ -378,15 +365,6 @@
   display: inline;
 }
 
-.member-demo {
-  padding: 0 5rpx 30rpx 5rpx;
-  color: #969696;
-  text-decoration: underline;
-  font-size: 26rpx;
-  width: 100%;
-  text-align: left;
-}
-
 .member-cancal {
   height: 100rpx;
   color: #1187ff;
@@ -409,7 +387,7 @@
   font-family: PingFang SC;
   text-align: center;
   width: 750rpx;
-  z-index: 8;
+  z-index: 9;
   box-sizing: border-box;
   background: #fff;
   bottom: 0;
@@ -417,12 +395,22 @@
 }
 
 .calling-cancel {
-  height: 88rpx;
-  line-height: 88rpx;
-  padding-bottom: 17rpx;
+  height: 100rpx;
+  line-height: 100rpx;
   font-size: 32rpx;
   border-top: 20rpx solid #f6f6f6;
   color: #323232;
+  position: relative;
+  padding-bottom: env(safe-area-inset-bottom)
+}
+
+.calling-cancel cover-view {
+  width: 100%;
+  text-align: center;
+  line-height: 100rpx;
+  height: 100px;
+  position: fixed;
+  z-index: 1000
 }
 
 .calling-item,
@@ -431,12 +419,22 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: 1px solid #e6e6e6;
   color: #323232;
 }
 
+.calling-item {
+  border-bottom: 1px solid #e6e6e6;
+}
+
 .calling-button {
-  border-top: 1px solid #e6e6e6;
+  /* border-top: 1px solid #e6e6e6; */
+  color: #969696;
+}
+
+.calling-btn-icon {
+  width: 28rpx;
+  height: 28rpx;
+  margin: 0 15rpx;
 }
 
 .calling-title {
@@ -445,4 +443,45 @@
   line-height: 135rpx;
   border-bottom: 1px solid #e6e6e6;
   color: #646464;
+}
+
+
+.calling-foot-wrap {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 42rpx 20rpx 54rpx 0;
+  display: flex;
+  flex-flow: row nowrap;
+  color: #969696;
+  font-size: 26rpx;
+  line-height: 37rpx;
+
+}
+
+.close-camera {
+  position: relative;
+  margin-left: 53rpx;
+}
+
+.close-camera::before {
+  content: '';
+  position: absolute;
+  left: -53rpx;
+  top: -1rpx;
+  width: 40rpx;
+  height: 40rpx;
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/hh-radio-unchecked.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.close-camera.checked::before {
+  background-image: url('https://imgs.hh-medic.com/icon/wmp/hh-radio-checked.png');
+}
+
+.member-demo {
+  text-decoration: underline;
+  flex-grow: 1;
+  text-align: right;
 }

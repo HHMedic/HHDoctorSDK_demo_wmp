@@ -44,7 +44,7 @@
 
     </view>
     <!-- 是否允许成员独立登录 -->
-    <view wx:if='{{showAccount&&(memberUuid?memberUuid!=patient.uuid:true)}}'>
+    <view wx:if='{{showAccount&&(memberUuid?memberUuid!=patient.uuid:true) && (isInvite!=1?type != 4:true )}}'>
       <view class="member-inputs">
         <view class="inputs-item">
           <text class="inputs-text">允许成员独立登录</text>
@@ -65,10 +65,10 @@
 
     <button class='member-submit' form-type="submit" data-type='save' wx:if="{{type==1||type==3}}">保存</button>
     <view class='member-saves' wx:else>
-      <button class='{{isInvite==0 && !isFilling?"member-save":"member-submit"}}' form-type="submit"
+      <button class='{{isInvite==0 && !isHideCallBtn?"member-save":"member-submit"}}' form-type="submit"
         data-type='save'>保存</button>
       <button class='member-call' form-type="submit" data-type='saveCall'
-        wx:if='{{isInvite==0 && !isFilling}}'>保存并呼叫医生</button>
+        wx:if='{{isInvite==0 && !isHideCallBtn}}'>保存并呼叫医生</button>
     </view>
 
 

@@ -60,6 +60,7 @@ Page({
             userCnt: hhDoctor.getProduct() ? hhDoctor.getProduct().userCnt : 0
         })
         console.log(this.data.userCnt)
+        wx.hideHomeButton()
     },
 
     /**
@@ -205,7 +206,7 @@ Page({
         switch (self.data.modalMsgData.source) {
             case 'member':
                 wx.navigateTo({
-                    url: `../ehr-addmember/ehr-addmember?type=4&memberUuid=${self.data.memberUuid}&isFilling=true`
+                    url: `../ehr-addmember/ehr-addmember?type=4&memberUuid=${self.data.memberUuid}&isHideCallBtn=true`
                 })
                 break;
             case 'addmember': self.navigateAddMember();

@@ -4,68 +4,71 @@
         <!-- 功能区  -->
         <view hidden='{{isClickCamera}}'>
             <!-- 更换医生提示 -->
-            <view class="change-doctor-wrap"
-                wx:if='{{request.dept[0]!="F" && request.isInvite!=1 && request.enableChangeDoctor && videoTimeSeconds>=("test"== request.profileName ? 10 : 180)}}'
-                style="top:{{menuButton.top}}px;height:{{menuButton.height}}px;">
+            <view class="change-doctor-wrap" wx:if='{{request.dept[0]!="F" && request.isInvite!=1 && request.enableChangeDoctor && videoTimeSeconds>=("test"== request.profileName ? 10 : 180)}}' style="top:{{menuButton.top}}px;height:{{menuButton.height}}px;">
                 <text>对服务不满意？</text>
-                <text class="change-doctor-text" catchtap="bindIndexChangeDoctor">换个医生</text>
+                <text class="change-doctor-text" catchtap="bindIndexChangeDoctor">点此换个医生</text>
                 <text>试一试</text>
             </view>
             <image src="{{request.style.logoImage}}" class="logo-image" style="top:{{menuButton.bottom+10}}px;"></image>
-            <view class="room-function">
-                <view class="room-inner" wx:if='{{isExpand}}'>
-                    <view class="function-item function-certificate" catchtap='_bindPreviewCertificate'
-                        hidden='{{doctor.serviceTypeStatus=="zhuanke"}}'>
-                        <image src="{{icons.certificate}}" class="function-img"></image>
-                    </view>
-                    <view class="function-item function-flash" catchtap="bindFlashIcon">
-                        <image src="{{cameraTorch?icons.flash_on:icons.flash_off}}" class="function-img"
-                            catchtap="bindFlashIcon"></image>
-                    </view>
-                </view>
-                <view class="function-arrow" catchtap="bindArrow">
-                    <image src="{{isExpand?icons.arrow_down:icons.arrow_up}}" class="arrow-img"></image>
-                </view>
-            </view>
+            <!-- 右侧的箭头及证件、闪光灯 -->
+            <cover-view class="room-function" style="left:{{showMoreSize&&showMoreSize.left||274}}px;">
+                <cover-view class="room-inner" wx:if='{{isExpand}}'>
+                    <cover-view class="function-item function-certificate {{'private_aid'==request.callType?'jianguanshi':''}}" catchtap='_bindPreviewCertificate' hidden='{{doctor.serviceTypeStatus=="zhuanke"}}'>
+                        <cover-image src="{{icons.certificate}}" class="function-img"></cover-image>
+                    </cover-view>
+                    <cover-view class="function-item function-flash" catchtap="bindFlashIcon">
+                        <cover-image src="{{cameraTorch?icons.flash_on:icons.flash_off}}" class="function-img" catchtap="bindFlashIcon"></cover-image>
+                    </cover-view>
+                </cover-view>
+            </cover-view>
             <!-- 上传的照片 -->
             <view class="cover-upload" catchtap="bindPreviewPhotos" wx:if='{{chooseImages.length}}'>
-                <image
-                    src="{{chooseImages[chooseImages.length-1]['path_server']+'?x-oss-process=image/resize,m_fixed,w_60,h_60'}}"
-                    class="upload-img" wx:if="{{chooseImages[0]['path_server']}}"></image>
-                <view class="upload-num">{{chooseImages.length}}</view>
+                <image src="{{chooseImages[chooseImages.length-1]['path_server']+'?x-oss-process=image/resize,m_fixed,w_240,h_240'}}" class="upload-img" wx:if="{{chooseImages[0]['path_server']}}"></image>
+                <view class="upload-num">共{{chooseImages.length}}张</view>
+            </view>
+            <!-- 实名提示 -->
+            <view class="real-name-wrap" wx:if="{{!isAuth}}">
+                <view class="real-name-tip" catchtap="showRealname">据法规，问诊及购药需实名认证<text class="real-name-btn">点此实名认证</text></view>
             </view>
         </view>
         <!-- 底部按钮遮罩层 -->
-        <view class="room-mask">
+        <view class="room-mask" hidden='{{isClickCamera}}'>
             <view class="video-time">{{videoTime}}</view>
             <view class="room-bottom">
-                <view class="bottom-item" hidden='{{doctor.serviceTypeStatus=="zhuanke"}}'>
-                    <button class='bottom-image' catchtap='bindCamera' style='background-image:url({{icons.camera}});'
-                        id='d-camera'></button>
+                <!-- 拍照 -->
+                <view class="bottom-item camera" hidden='{{doctor.serviceTypeStatus=="zhuanke"}}' catchtap='bindCamera'>
+                    <button class='bottom-image' style='background-image:url({{icons.camera}});' id='d-camera'></button>
                 </view>
-                <view class="bottom-item">
-                    <button class='bottom-image' catchtap='bindHangUp' style='background-image:url({{icons.hangup}});'
-                        id='d-hangup'></button>
+                <!-- 邀请家人 -->
+                <view class="bottom-item invite" wx:if="{{(!isAccount&& 0==request.isInvite && 1==request.inviteInVideo && remoteUserCount<2)}}" catchtap='getMembers'>
+                    <button class='bottom-image' style='background-image:url({{icons.invite}});' id='d-invite'></button>
                 </view>
-                <view class="bottom-item">
-                    <button class='bottom-image' catchtap='bindChangeCamera'
-                        style='background-image:url({{icons.switch_camera}});' id='d-switch_camera'></button>
+                <!-- 翻转 -->
+                <view class="bottom-item switch" catchtap='bindChangeCamera'>
+                    <button class='bottom-image switch' style='background-image:url({{icons.switch_camera}});' id='d-switch_camera'></button>
+                </view>
+                <!-- 更多 -->
+                <view class="bottom-item more" catchtap="bindArrow">
+                    <button class='bottom-image' style='background-image:url({{isExpand?icons.arrow_down:icons.arrow_up}});' id='d-showmore'></button>
+                </view>
+            </view>
+            <view class="room-bottom hangup">
+                <!-- 挂断 -->
+                <view class="bottom-item hangup">
+                    <button class='bottom-image hangup' catchtap='bindHangUp' style='background-image:url({{icons.hangup}});' id='d-hangup'></button>
                 </view>
             </view>
         </view>
 
         <!-- 预览 -->
-        <view class="cover-preview" catchtap="bindClosePreviewPhotos" bindtouchstart="touchstart"
-            bindtouchend="touchend" wx:if="{{isPreviewPhoto}}">
-            <view class="preview-count">{{photoIdx+1}} / {{uploadImages.length}}</view>
-            <image bindload="bindImagesLoad"
-                src="{{uploadImages[photoIdx]+'?x-oss-process=image/resize,m_fixed,w_750'}}" class="preview-img"
-                mode='widthFix' style='width:{{setWidth}};height:{{setHeight}};'></image>
-        </view>
+        <cover-view class="cover-preview" catchtap="bindClosePreviewPhotos" bindtouchstart="touchstart" bindtouchend="touchend" wx:if="{{isPreviewPhoto}}">
+            <cover-view class="preview-count">{{photoIdx+1}} / {{uploadImages.length}}</cover-view>
+            <cover-image bindload="bindImagesLoad" src="{{uploadImages[photoIdx]+'?x-oss-process=image/resize,m_fixed,w_750'}}" class="preview-img" mode='widthFix' style='width:{{setWidth}};height:{{setHeight}};'></cover-image>
+        </cover-view>
         <!-- 执业医师资格证书预览模式 -->
-        <view class='cover-preview' hidden='{{!isCertificate}}' bindtap='_bindPreviewCertificate'>
-            <image src='{{doctor.license}}' class='preview-img' mode='widthFix'></image>
-        </view>
+        <cover-view class='cover-preview' hidden='{{!isCertificate}}' bindtap='_bindPreviewCertificate'>
+            <cover-image src='{{doctor.license}}' class='preview-img' mode='widthFix'></cover-image>
+        </cover-view>
         <!-- 拍照弹窗 -->
         <view class='camera-wrap' wx:if="{{isClickCamera}}" catchtap='bindCancel'>
             <view class='camera-box'>
@@ -79,3 +82,37 @@
 
     </view>
 </view>
+
+<page-container show="{{pageStatus}}" round="{{true}}" close-on-slideDown="{{true}}" z-index="999" style="display: flex;" bind:afterleave="hidePage">
+    <block wx:if="{{pageStatus==pageStatusEnum.AUTH}}">
+        <view class="auth-title-wrap">
+            <view class="auth-title">据互联网诊疗管理办法诊疗及购药需实名</view>
+            <view class="auth-close" catchtap="hidePage"></view>
+        </view>
+        <realname-data id="realname" member-name="{{patientName}}"></realname-data>
+        <view class="auth-btn-wrap">
+            <view class="auth-btn" catchtap="commitRealname">确认</view>
+        </view>
+    </block>
+    <block wx:if="{{pageStatus==pageStatusEnum.MEMBERS}}">
+        <view class="member-list-wrap">
+            <view class="member-list-title">请选择邀请谁一起视频</view>
+            <scroll-view class="list-wrap" scroll-y="{{true}}" style="height: {{util.calcHeight(memberList)}}rpx;">
+                <button class="member-item-btn" plain="{{true}}" wx:for="{{memberList}}" open-type="share" catchtap="bindInvite" data-user-token="{{item.userToken}}">{{item.name}}</button>
+                <button class="member-item-btn" plain="{{true}}" open-type="share" catchtap="bindInvite" data-user-token="">其他亲友</button>
+                <button class="member-item-btn cancel" plain="{{true}}" catchtap="hidePage">取消</button>
+            </scroll-view>
+        </view>
+    </block>
+</page-container>
+
+<wxs module="util">
+    var calcHeight = function (memberList) {
+        var h = memberList.length * 98 + 128
+        if (h > 500) h = 500
+        return h;
+    }
+    module.exports = {
+        calcHeight: calcHeight
+    }
+</wxs>

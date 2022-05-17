@@ -1,22 +1,18 @@
-<view class='page' >
-    <view class='auth-main'>
-        <view class='auth-flex'>
-            <view class='auth-title'>为方便您的使用，请授权以下权限</view>
-            <!-- 未授权列表 首次弹出 -->
-            <block wx:if='{{!authList}}'>
-                <view class='auth-item auth-camera'>摄像头：允许后可视频</view>
-                <view class='auth-item auth-record'>语音：允许后可语音沟通</view>
-                <view class='auth-item auth-position'>位置：精准匹配线下服务</view>
-                <button class='auth-button' catchtap='bindFirstAuth'>我知道了</button>
-            </block>
-            <!-- 有授权列表但用户曾拒绝过授权 -->
-            <block wx:else>
-                <view class='auth-item auth-camera' wx:if='{{!authList.camera}}'>摄像头：允许后可视频</view>
-                <view class='auth-item auth-record' wx:if='{{!authList.record}}'>语音：允许后可语音沟通</view>
-                <view class='auth-item auth-position' wx:if='{{!authList.userLocation}}'>位置：允许后可购买药品</view>
-                <button class='auth-button auth-go' open-type='openSetting' catchtap='bindHideAuth'>去授权</button>
-                <view class='auth-wait' catchtap='bindNoAuth'>暂不授权</view>
-            </block>
-        </view>
-    </view>
+<view class="page">
+        <cover-view class="auth-main">
+            <cover-view class='auth-flex'>
+                <cover-view class='auth-title'>为方便您的使用，请授权以下权限</cover-view>
+                <cover-view class="auth-item" wx:for="{{authArr}}" wx:key="index">
+                    <cover-image src='{{item.icons}}' class="auth-image"></cover-image>
+                    <cover-view>{{item.text}}</cover-view>
+                </cover-view>
+                <button class='auth-button' wx:if='{{!authList}}' catchtap='bindFirstAuth'>我知道了</button>
+                <block wx:else>
+                    <!-- 有授权列表但用户曾拒绝过授权 -->
+                    <button class='auth-button auth-go' open-type='openSetting' catchtap='bindHideAuth'>去授权</button>
+                    <cover-view class='auth-wait' catchtap='bindNoAuth'>暂不授权</cover-view>
+                </block>
+            </cover-view>
+            <cover-view class="auth-bottom"></cover-view>
+        </cover-view>
 </view>

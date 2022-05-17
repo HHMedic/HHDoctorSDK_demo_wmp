@@ -1,9 +1,9 @@
 /** 对UI交互API进行二次封装 */
 
 function toast(title, duration, icon) {
-  wx.hideLoading()
+  hideLoading()
   wx.showToast({
-    title,
+    title:title||'',
     icon: icon || 'none',
     duration: duration || 1500,
     mask: true
@@ -11,7 +11,7 @@ function toast(title, duration, icon) {
 }
 
 function modal(title, content, confirmText, confirmColor, showCancel, cancelText, cancelColor) {
-  wx.hideLoading()
+  hideLoading()
   return new Promise((resolve, reject) => {
     wx.showModal({
       title,

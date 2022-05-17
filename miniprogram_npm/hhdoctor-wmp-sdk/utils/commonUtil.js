@@ -90,7 +90,7 @@ function isInteger(obj) {
   return (obj | 0) === obj;
 }
 /** 解析文本中的超链接 */
-function findLinkFromText(text) {
+function findLinkFromText(text, typeText) {
   let linkArr = []
   let reg = /[http|https|wxapp]+:\/\/[\w|\-|_|.|~|!|\*|'|\(|\)|;|:|@|&|=|+|\$|,|\/|\?|#|\[|\]|%]*/g
   let link = reg.exec(text)
@@ -98,12 +98,25 @@ function findLinkFromText(text) {
     linkArr.push(link[0]);
     link = reg.exec(text)
   }
-  let txtArr = text.split(reg)
+  let txtArr = ''
+  if (typeText) {
+    txtArr = text.split(typeText)
+    txtArr.splice(1, 0, typeText)
+  } else {
+    txtArr = text.split(reg)
+
+  }
   let arr = []
   for (let i = 0; i < txtArr.length; i++) {
-    arr.push({ type: 'text', value: txtArr[i] })
-    if (i < linkArr.length)
+    if (typeText && typeof txtArr[i] == 'number') {
+      arr.push({ type: 'light', value: txtArr[i], name: typeText })
+    } else {
+      arr.push({ type: 'text', value: txtArr[i] })
+    }
+    if (i < linkArr.length) {
       arr.push({ type: 'link', value: linkArr[i], name: getLinkName(linkArr[i]) })
+    }
+
   }
   return arr
 }
@@ -244,6 +257,16 @@ function throttle(btn, wait) {
   return seconds < (wait ? wait : 2000)
 }
 
+function getViewSize(id, components) {
+  return new Promise((resolve, reject) => {
+    let query = wx.createSelectorQuery().in(components)
+    query.select(id).boundingClientRect(function (res) {
+      resolve(res)
+    }).exec()
+  })
+
+}
+
 //对外公开接口
 module.exports = {
   throttle,
@@ -260,5 +283,6 @@ module.exports = {
   formatDate: formatDate,
   formatTimeLength: formatTimeLength,
   getCurrentPageUrl,
-  getLogTagName
+  getLogTagName,
+  getViewSize
 }

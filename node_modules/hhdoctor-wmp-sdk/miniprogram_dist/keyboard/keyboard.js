@@ -1,4 +1,7 @@
 const kbUtil = require('../utils/keyboard-util.js');
+const layout = require('../utils/keyboard-layout-default')
+const s1 =require('../utils/keyboard-layout-symbol')
+const s2 =require('../utils/keyboard-layout-upper')
 let inputArr = [];
 let _options = {
   layout: 'default',

@@ -106,13 +106,13 @@ page {
 .card-desc-list {
   position: absolute;
   left: 25px;
-  top: 55px;
+  top: 110rpx;
 }
 
 .card-desc {
-  font-size: 14px;
-  line-height: 14px;
-  margin-top: 12px;
+  font-size: 28rpx;
+  line-height: 28rpx;
+  margin-top: 24rpx;
   margin-left: 12px;
   position: relative;
 }
@@ -151,8 +151,8 @@ page {
   position: absolute;
   left: 20px;
   bottom: 20px;
-  font-size: 12px;
-  line-height: 12px;
+  font-size: 24rpx;
+  line-height: 24rpx;
 }
 
 .price-unit {
@@ -160,7 +160,7 @@ page {
 }
 
 .price-num {
-  font-size: 23px;
+  font-size: 46rpx;
   font-weight: bolder;
 }
 
@@ -235,15 +235,15 @@ page {
   width: 100px;
   height: 25px;
   border-radius: 13px;
-  border: solid 0.5px #0592f5;
+  border: solid 0.5px var(--hh-main-color, #0592f5);
   text-align: center;
   line-height: 25px;
   font-size: 14px;
-  color: #0592f5;
+  color: var(--hh-main-color, #0592f5);
 }
 
 .row-extbtn:active {
-  background-color: #0592f5;
+  background-color: var(--hh-main-color, #0592f5);
   color: #fff;
 }
 
@@ -289,7 +289,7 @@ page {
 
 .license.name {
   margin-left: auto;
-  color: #0592f5;
+  color: var(--hh-main-color, #0592f5);
 }
 
 .btn {
@@ -303,7 +303,7 @@ page {
   line-height: 55px;
   font-size: 18px;
   font-weight: bold;
-  background-color: #0592f5;
+  background-color: var(--hh-main-color, #0592f5);
   z-index: 9;
   border-radius: 0px;
 }

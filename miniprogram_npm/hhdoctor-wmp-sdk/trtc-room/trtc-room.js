@@ -4,7 +4,7 @@ import { EVENT, DEFAULT_COMPONENT_CONFIG } from 'common/constants.js'
 import Event from 'utils/event.js'
 import * as ENV from 'utils/environment.js'
 import TIM from 'libs/tim-wx.js'
-import MTA from 'libs/mta_analysis.js'
+//import MTA from 'libs/mta_analysis.js'
 
 const hhDoctor = require('../hhDoctor.js');
 const TAG_NAME = 'TRTC-ROOM'
@@ -117,12 +117,12 @@ Component({
       self = this;
       // 在组件实例刚刚被创建时执行
       console.log(TAG_NAME, 'created', ENV)
-      MTA.App.init({
-        appID: '500710685',
-        eventID: '500710697',
-        autoReport: true,
-        statParam: true,
-      })
+      // MTA.App.init({
+      //   appID: '500710685',
+      //   eventID: '500710697',
+      //   autoReport: true,
+      //   statParam: true,
+      // })
     },
     attached: function () {
       // 在组件实例进入页面节点树时执行
@@ -132,7 +132,7 @@ Component({
       })
 
       this._init()
-      MTA.Page.stat()
+      //MTA.Page.stat()
     },
     ready: function () {
       // 在组件在视图层布局完成后执行
@@ -284,9 +284,9 @@ Component({
         if (config.enableIM && config.sdkAppID) {
           this._initIM(config)
         }
-        if (config.sdkAppID && data.oldVal.sdkAppID !== config.sdkAppID && MTA) {
-          MTA.Event.stat('sdkAppID', { 'value': config.sdkAppID })
-        }
+        // if (config.sdkAppID && data.oldVal.sdkAppID !== config.sdkAppID && MTA) {
+        //   MTA.Event.stat('sdkAppID', { 'value': config.sdkAppID })
+        // }
         // 独立设置与pusher无关的配置
         this.setData({
           enableIM: config.enableIM,
@@ -314,6 +314,7 @@ Component({
           reject(new Error('缺少必要参数'))
           return
         }
+
         // 2. 根据参数拼接 push url，赋值给 live-pusher，
         this._getPushUrl(this.data.config).then((pushUrl) => {
           this.data.pusher.url = pushUrl
@@ -327,7 +328,7 @@ Component({
             self.requestRtcLog('2', 'TRTC-getPusherContext-start', self.data.orderid)
             this.status.isPush = true;
             //自己加的
-            self.requestRtcLog('2', '进房成功回调的enableCamera' + this.data.pusher.enableCamera, self.data.orderid)
+            self.requestRtcLog('2', '进房成功回调的enableCamera:' + this.data.pusher.enableCamera + ',enableMic:' + this.data.pusher.enableMic, self.data.orderid)
 
             if (this.data.pusher.enableMic) {
               this.unpublishLocalAudio().then(() => {
@@ -410,18 +411,15 @@ Component({
 
 
     startPreview() {
+      this._setPusherConfig({ enableCamera: true })
       this.data.pusher.autopush = false;
       this.data.pusher.getPusherContext().startPreview();
-      this.setData({
-        pusher: this.data.pusher
-      })
+      this.setData({ pusher: this.data.pusher })
     },
     stopPreview() {
       this.data.pusher.autopush = true;
       this.data.pusher.getPusherContext().stopPreview();
-      this.setData({
-        pusher: this.data.pusher
-      })
+      this.setData({ pusher: this.data.pusher })
     },
     publishLocalVideo() {
       // 设置 pusher enableCamera
@@ -432,10 +430,14 @@ Component({
         self.requestRtcLog('2', msg, self.data.orderid)
         return
       }
-      console.log(TAG_NAME, 'publishLocalVideo 开启摄像头')
-      self.requestRtcLog('2', 'TRTC-publishLocalVideo 开启摄像头', self.data.orderid)
       if (!pusher) pusher = wx.createLivePusherContext()
-      //setTimeout(() => pusher.startPreview(), 100)
+      //进房前，打开本地摄像头预览并返回，不实际推流
+      if (!self.data.pusher || !self.data.pusher.url) {
+        self.requestRtcLog('2', 'TRTC-publishLocalVideo 未进房，启动预览', self.data.orderid)
+        return self.startPreview()
+      }
+      //进房后实际推流
+      self.requestRtcLog('2', 'TRTC-publishLocalVideo 开启摄像头', self.data.orderid)
       return this._setPusherConfig({ enableCamera: true, autopush: true })
     },
     /**
@@ -856,6 +858,24 @@ Component({
             },
           })
         }
+      })
+    },
+    enterPictureInPicture(params) {
+      console.log(TAG_NAME, 'enterPictureInPicture', params)
+      return new Promise((resolve, reject) => {
+        let player = this.userController.getStream(params).playerContext
+        if (!player) return reject({})
+        console.log('>>> playerContext:', player)
+        player.requestPictureInPicture({
+          success: (event) => {
+            console.log(TAG_NAME, 'enterPictureInPicture success', event)
+            resolve(event)
+          },
+          fail: (event) => {
+            console.log(TAG_NAME, 'enterPictureInPicture fail', JSON.stringify(event))
+            reject(event)
+          },
+        })
       })
     },
     /**
@@ -1527,7 +1547,7 @@ Component({
           break
         case -1307:
           console.error(TAG_NAME, '推流连接断开: ', code)
-          this._emitter.emit(EVENT.ERROR, { code, msg: '推流连接断开' })
+          this._emitter.emit(EVENT.ERROR, { code, msg: '视频服务断开' })
           break
         case -3301:
           console.error(TAG_NAME, '进房失败: ', code, message)

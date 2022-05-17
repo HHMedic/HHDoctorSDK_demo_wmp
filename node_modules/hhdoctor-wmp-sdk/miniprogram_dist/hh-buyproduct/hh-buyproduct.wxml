@@ -25,19 +25,19 @@
     <!-- 描述信息 -->
     <view class='card-desc-list' wx:if='{{productDetail && productDetail.length>0}}'>
       <view class='card-desc'>{{productComment[0]}}</view>
-      <view class='card-desc'>{{productComment[1]}}</view>
+      <view class='card-desc' wx:if="{{canOrderExpert}}">{{productComment[1]}}</view>
       <view wx:if="{{userCnt>0}}" class='card-desc'>可添加{{userCnt}}名成员共享权益</view>
     </view>
     <!-- 实际价格 -->
     <view class='card-price'>
       <text class='price-unit'>￥</text>
-      <text class='price-num'>{{discountPrice && discountPrice < productPrice ? discountPrice : productPrice}}</text>/{{common.getPeriod2(batchType,batchNum,validateMonth)}}
+      <text class='price-num'>{{discountPrice && discountPrice < productPrice ? discountPrice : productPrice}}</text>/{{common.getPeriod2(batchType,batchNum,validateMonth,validateDay)}}
     </view>
     <!-- 划线价 -->
     <block wx:if='{{discountPrice && discountPrice<productPrice}}'>
       <view class='card-price-raw'>
         <text class=''>￥</text>
-        <text class='price-num-raw'>{{productPrice}}</text>/{{common.getPeriod2(batchType,batchNum,validateMonth)}}
+        <text class='price-num-raw'>{{productPrice}}</text>/{{common.getPeriod2(batchType,batchNum,validateMonth,validateDay)}}
       </view>
     </block>
     <view wx:if='{{productDetail && productDetail.length>0}}' class='view-right' catchtap='_viewRight' data-pid='{{productServiceId}}'>查看权益</view>
@@ -51,19 +51,19 @@
     <view class='card-title prime'>{{productServiceName}}</view>
     <view class='card-desc-list' wx:if='{{productDetail && productDetail.length>0}}'>
       <view class='card-desc prime'>{{productComment[0]}}</view>
-      <view class='card-desc prime'>{{productComment[1]}}</view>
+      <view class='card-desc prime' wx:if="{{canOrderExpert}}">{{productComment[1]}}</view>
       <view wx:if="{{userCnt>0}}" class='card-desc prime'>可添加{{userCnt}}名成员共享权益</view>
     </view>
     <!-- 实际价格 -->
     <view class='card-price'>
       <text class='price-unit'>￥</text>
-      <text class='price-num'>{{discountPrice && discountPrice < productPrice ? discountPrice : productPrice}}</text>/{{common.getPeriod2(batchType,batchNum,validateMonth)}}
+      <text class='price-num'>{{discountPrice && discountPrice < productPrice ? discountPrice : productPrice}}</text>/{{common.getPeriod2(batchType,batchNum,validateMonth,validateDay)}}
     </view>
     <!-- 划线价 -->
     <block wx:if='{{discountPrice && discountPrice<productPrice}}'>
       <view class='card-price-raw prime'>
         <text class=''>￥</text>
-        <text class='price-num-raw'>{{productPrice}}</text>/{{common.getPeriod2(batchType,batchNum,validateMonth)}}
+        <text class='price-num-raw'>{{productPrice}}</text>/{{common.getPeriod2(batchType,batchNum,validateMonth,validateDay)}}
       </view>
     </block>
     <view wx:if='{{productDetail && productDetail.length>0}}' class='view-right prime' catchtap='_viewRight' data-pid='{{productServiceId}}'>查看权益</view>

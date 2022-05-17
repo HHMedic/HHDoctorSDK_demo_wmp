@@ -28,8 +28,7 @@ Page({
   /**
    * 生命周期函数--监听页面加载
    */
-  onLoad: function(options) {
-
+  onLoad: function (options) {
     wx.hideShareMenu()
     that = this;
     initTimeout = 0;
@@ -39,69 +38,83 @@ Page({
     //   famPid: options.pid
     // })
     console.log('pay options:', options);
-    if ('undefined' != typeof(options.name)) {
-      this.setData({
-        name: options.name
-      })
-    }
-    if ('undefined' != typeof(options.price)) {
-      this.setData({
-        price: options.price
-      })
-    }
-    if ('undefined' != typeof(options.payMoney)) {
-      this.setData({
-        price: options.payMoney
-      })
-    }
-    if ('undefined' != typeof(options.pid)) {
-      this.setData({
-        famPid: options.pid
-      })
-    }
-    if ('undefined' != typeof(options.orderId)) {
-      this.setData({
-        orderId: options.orderId
-      })
-    }
+    this.setData({
+      name: options && options.name || '',
+      price: options && options.price || options.payMoney || -1,
+      famPid: options && options.pid || '',
+      orderId: options && options.orderId || '',
+      desc: options && options.desc || '',
+      userToken: options && options.userToken || app.globalData._hhSdkOptions._userToken || '',
+      sdkProductId: options && options.sdkProductId || app.globalData._hhSdkOptions._sdkProductId || '',
+      profileName: options && options.profileName || app.globalData._hhSdkOptions._profileName || '',
+      subDomain: options && options.subDomain || app.globalData._hhSdkOptions._subDomain || '',
+      openId: options && options.openId || app.globalData._hhSdkOptions._openId || '',
+      nextPage: options && options.nextPage || ''
+    })
 
-    if ('undefined' != typeof(options.desc)) {
-      this.setData({
-        desc: options.desc
-      })
-    }
-    if ('undefined' != typeof(options.userToken)) {
-      this.setData({
-        userToken: options.userToken
-      })
-    }
-    if ('undefined' != typeof(options.openId)) {
-      this.setData({
-        openId: options.openId
-      })
-    }
-    if ('undefined' != typeof(options.sdkProductId)) {
-      this.setData({
-        sdkProductId: options.sdkProductId
-      })
-    }
-    if ('undefined' != typeof(options.nextPage)) {
-      this.setData({
-        nextPage: options.nextPage
-      })
-    }
-    if ('undefined' != typeof(options.profileName)) {
-      this.setData({
-        profileName: options.profileName
-      })
-    }
-    if ('undefined' != typeof(options.subDomain)) {
-      this.setData({
-        subDomain: options.subDomain
-      })
-    }
+    // if ('undefined' != typeof (options.name)) {
+    //   this.setData({
+    //     name: options.name
+    //   })
+    // }
+    // if ('undefined' != typeof (options.price)) {
+    //   this.setData({
+    //     price: options.price
+    //   })
+    // }
+    // if ('undefined' != typeof (options.payMoney)) {
+    //   this.setData({
+    //     price: options.payMoney
+    //   })
+    // }
+    // if ('undefined' != typeof (options.pid)) {
+    //   this.setData({
+    //     famPid: options.pid
+    //   })
+    // }
+    // if ('undefined' != typeof (options.orderId)) {
+    //   this.setData({
+    //     orderId: options.orderId
+    //   })
+    // }
 
-    checkHandler = setInterval(function() {
+    // if ('undefined' != typeof (options.desc)) {
+    //   this.setData({
+    //     desc: options.desc
+    //   })
+    // }
+    // if ('undefined' != typeof (options.userToken)) {
+    //   this.setData({
+    //     userToken: options.userToken
+    //   })
+    // }
+    // if ('undefined' != typeof (options.openId)) {
+    //   this.setData({
+    //     openId: options.openId
+    //   })
+    // }
+    // if ('undefined' != typeof (options.sdkProductId)) {
+    //   this.setData({
+    //     sdkProductId: options.sdkProductId
+    //   })
+    // }
+    // if ('undefined' != typeof (options.nextPage)) {
+    //   this.setData({
+    //     nextPage: options.nextPage
+    //   })
+    // }
+    // if ('undefined' != typeof (options.profileName)) {
+    //   this.setData({
+    //     profileName: options.profileName
+    //   })
+    // }
+    // if ('undefined' != typeof (options.subDomain)) {
+    //   this.setData({
+    //     subDomain: options.subDomain
+    //   })
+    // }
+
+    checkHandler = setInterval(function () {
       //未登录用户
       if (!that.data.userToken || !that.data.sdkProductId) {
         console.error('请传入userToken和sdkProductId参数');
@@ -126,7 +139,7 @@ Page({
           title: '支付失败',
           content: '请稍候再试',
           showCancel: false,
-          success: function() {
+          success: function () {
             wx.navigateBack({
               delta: 1
             })
@@ -169,21 +182,21 @@ Page({
   /**
    * 生命周期函数--监听页面初次渲染完成
    */
-  onReady: function() {
+  onReady: function () {
 
   },
 
   /**
    * 生命周期函数--监听页面显示
    */
-  onShow: function() {
+  onShow: function () {
 
   },
 
   /**
    * 生命周期函数--监听页面隐藏
    */
-  onHide: function() {
+  onHide: function () {
     if (launchOpts && 1037 == launchOpts.scene) {
       //从其他小程序跳转
       var extData = {
@@ -191,7 +204,7 @@ Page({
       }
       wx.navigateBackMiniProgram({
         extraData: extData,
-        success: function(res) {
+        success: function (res) {
           console.log('wx.navigateBackMiniProgram succes');
         }
       })
@@ -202,7 +215,7 @@ Page({
   /**
    * 生命周期函数--监听页面卸载
    */
-  onUnload: function() {
+  onUnload: function () {
 
   },
 
@@ -229,7 +242,7 @@ Page({
       url: url,
       data: {},
       method: 'POST',
-      success: function(res) {
+      success: function (res) {
         if (res && res.data && 200 == res.data.status) {
           //成功
           console.log('data:', res.data.data);
@@ -244,7 +257,7 @@ Page({
                 title: '支付失败',
                 content: '暂时无法使用微信支付，请稍后再试',
                 showCancel: false,
-                success: function() {
+                success: function () {
                   wx.navigateBack({
                     delta: 1
                   })
@@ -261,7 +274,7 @@ Page({
             title: '支付失败',
             content: '暂时无法使用微信支付，请稍后再试',
             showCancel: false,
-            success: function() {
+            success: function () {
               wx.navigateBack({
                 delta: 1
               })
@@ -269,7 +282,7 @@ Page({
           })
         }
       },
-      fail: function() {
+      fail: function () {
         //服务器错误
         wx.showModal({
           title: '支付失败',
@@ -288,7 +301,7 @@ Page({
       title: '支付完成',
       content: '订单支付成功',
       showCancel: false,
-      success: function() {
+      success: function () {
         that.naviToNextPage(true);
       }
     })
@@ -299,19 +312,19 @@ Page({
     wx.requestPayment({
       timeStamp: tn.timeStamp,
       nonceStr: tn.nonceStr,
-      "package": tn.package,
+      package: tn.package,
       signType: tn.signType,
       paySign: tn.paySign,
-      success: function(res) {
+      success: function (res) {
         console.log('pay success');
         that.naviToNextPage(true);
       },
-      fail: function(res) {
+      fail: function (res) {
         wx.showModal({
           title: '支付失败',
           content: '支付出现问题或已取消，请稍后再试',
           showCancel: false,
-          success: function() {
+          success: function () {
             that.naviToNextPage(false);
           }
         })
@@ -321,22 +334,12 @@ Page({
 
   naviToNextPage(paySuccess) {
     if (paySuccess) {
-      var page = getApp().globalData._hhSdkOptions.redirectPage;
-      if (!page) {
-        page = '/pages/index/index';
-      }
-      if (page.indexOf('?') >= 0) {
-        page += ('&paySuccess=true');
-      } else {
-        page += ('?paySuccess=true');
-      }
-      wx.redirectTo({
-        url: page
-      })
-    } else {
-      wx.navigateBack({
-        delta: 1
-      })
-    }
+      let wxAppId = wx.getAccountInfoSync().miniProgram.appId
+      let page = this.data.nextPage || getApp().globalData._hhSdkOptions.redirectPage || '';
+      if (!page || 'wx15e414719996d59f' != wxAppId) return wx.navigateBack({ delta: 1 })
+      if (page.indexOf('?') >= 0) page += ('&paySuccess=true');
+      else page += ('?paySuccess=true');
+      wx.reLaunch({ url: page, })
+    } else wx.navigateBack({ delta: 1 })
   }
 })
