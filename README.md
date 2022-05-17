@@ -35,7 +35,7 @@
 
 6. 小程序开发完成后，需提交微信审核，审核通过后方可正式上线。如贵方小程序属首次提交审核，请务必预留充足的审核时间（至少预留1周审核时间，特殊情况下可能需要2周）。如在上线审核过程中遇到问题，可咨询和缓接口人寻求更多建议。
 
-7. 在小程序后台“设置”-“基本设置”下，<u>将“基础库最低版本设置”设置为2.10.0或更高版本</u>。
+7. 在小程序后台“设置”-“基本设置”下，<u>将“基础库最低版本设置”设置为2.19.6或更高版本</u>。
 
 8. 生产环境与测试环境的sdkProductId可以通用，但用户数据是完全隔离的，请勿将测试环境的userToken数据应用到生产环境，反之亦然。
 
@@ -105,7 +105,22 @@
   
   - 编辑index.js文件，通过setData()给相应的变量赋值。
 
-### 6. 如何更新SDK
+### 6. 在app.json的pages下声明需要使用的SDK页面。
+
+  - SDK中可使用的页面
+  ```
+    "miniprogram_npm/hhdoctor-wmp-sdk/innerpages/realName/realName",
+    "miniprogram_npm/hhdoctor-wmp-sdk/innerpages/user/user",
+    "miniprogram_npm/hhdoctor-wmp-sdk/innerpages/ehr-family/ehr-family",
+    "miniprogram_npm/hhdoctor-wmp-sdk/innerpages/ehr-filings/ehr-filings",
+    "miniprogram_npm/hhdoctor-wmp-sdk/innerpages/ehr-filingdetail/ehr-filingdetail",
+    "miniprogram_npm/hhdoctor-wmp-sdk/innerpages/view/view",
+    "miniprogram_npm/hhdoctor-wmp-sdk/innerpages/pay/pay",
+    "miniprogram_npm/hhdoctor-wmp-sdk/innerpages/invitationcode/invitationcode",
+    "miniprogram_npm/hhdoctor-wmp-sdk/innerpages/doctorInfo/doctorInfo"
+  ```
+
+### 7. 如何更新SDK
 
   - 使用命令提示符或终端，进入小程序项目所在根目录，执行命令更新：`npm i hhdoctor-wmp-sdk@latest --production`。
   
