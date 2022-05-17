@@ -1,4 +1,4 @@
-# 和缓视频医生微信小程序SDK使用指南（3.1.0）
+# 和缓视频医生微信小程序SDK使用指南（3.2.0）
 
 和缓视频医生微信小程序SDK（**本SDK**）为小程序自定义组件形式，使用npm方式发布。本文引导开发者从零开始，一步一步搭建起和缓视频医生基本功能框架。如果开发者是在现有项目中集成本SDK，可直接从第2步开始阅读。
 
@@ -121,30 +121,33 @@
 
   - request合法域名:
   ```
-    https://wmp.hh-medic.com
+    https://e.hh-medic.com
     https://mp.hh-medic.com
+    https://wmp.hh-medic.com
     https://test.hh-medic.com
     https://pingtas.qq.com
-    https://official.opensso.tencent-cloud.com
     https://yun.tim.qq.com
-    https://cloud.tencent.com
     https://webim.tim.qq.com
+    https://cloud.tencent.com
+    https://official.opensso.tencent-cloud.com
+    
   ```
   - socket合法域名:
   ```
     wss://mp.hh-medic.com
+    wss://wmp.hh-medic.com
     wss://test.hh-medic.com
   ```
   - uploadFile合法域名:
   ```
-    https://wmp.hh-medic.com
     https://mp.hh-medic.com
+    https://wmp.hh-medic.com
     https://test.hh-medic.com
   ```
   - downloadFile合法域名:
   ```
-    https://wmp.hh-medic.com
     https://mp.hh-medic.com
+    https://wmp.hh-medic.com
     https://imgfamily.hh-medic.com
     https://imgs.hh-medic.com
     https://test.hh-medic.com
@@ -152,18 +155,18 @@
 
 ### 4.在"业务域名”下增加如下配置：
   ```
-    https://test.hh-medic.com
-    https://wmp.hh-medic.com
-    https://mp.hh-medic.com
-    https://sec.hh-medic.com
     https://e.hh-medic.com
+    https://mp.hh-medic.com
+    https://wmp.hh-medic.com
+    https://sec.hh-medic.com
+    https://test.hh-medic.com
     https://dicom.hh-medic.com
   ```
 ### 5.在"开发"-"接口设置"下打开相应权限
 
  ![](https://imgs.hh-medic.com/icon/wmp/sdk/WX20190225-093837.png)  
     
-### 6. 在“设置”-“基本设置”下，将“基础库最低版本设置”设置为2.10.0或更高版本。
+### 6. 在“设置”-“基本设置”下，将“基础库最低版本设置”设置为2.19.6或更高版本。
 
 ---
 
