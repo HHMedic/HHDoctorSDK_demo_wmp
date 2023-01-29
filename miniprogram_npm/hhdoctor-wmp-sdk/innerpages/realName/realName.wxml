@@ -1,9 +1,0 @@
-<view class="tip-wrap" wx:if="{{tip}}">{{tip}}</view>
-<realname-data id="realname" member-name="{{memberName}}"></realname-data>
-<view class="btn-wrap" wx:if="{{mode && mode == 'drug'}}"> 
-  <view class="btn primary" catchtap="commit" data-action="save-call" wx:if="{{realPatientUuid}}">确认并呼叫医生重新开药</view>
-  <view class="btn primary hairline" catchtap="commit" data-action="save">保存稍后呼叫医生</view>
-</view>
-<view class="btn-wrap" wx:else>
-  <view class="btn primary" catchtap="commit" data-action="save">确认保存</view>
-</view>

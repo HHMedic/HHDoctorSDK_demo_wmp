@@ -1,8 +1,0 @@
-{
-    "component": true,
-    "usingComponents": {
-        "hh-Modal": "../hh-modal/hh-modal",
-        "hh-calling": "../hh-calling/hh-calling",
-        "hh-bottom": "../hh-bottom/hh-bottom"
-    }
-}

@@ -1,2 +1,0 @@
-<hhLive id="live" class="live" request="{{hhRequest}}" base-path="{{basePath}}" bindclose="onClose" bindinputcomment="onInputComment" bindliveinfoupdated="onLiveInfoUpdated" bindlivelistempty="onLiveListEmpty" ></hhLive>
-<hhNetwork wx:if='{{!isConnect}}'></hhNetwork>

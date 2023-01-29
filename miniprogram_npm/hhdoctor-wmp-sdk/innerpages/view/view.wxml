@@ -1,4 +1,0 @@
-<view class='page'>
-<web-view src="{{viewSrc}}" bindload="bindLoad"></web-view>
-<hhNetwork wx:if='{{!isConnect}}'></hhNetwork>
-</view>
