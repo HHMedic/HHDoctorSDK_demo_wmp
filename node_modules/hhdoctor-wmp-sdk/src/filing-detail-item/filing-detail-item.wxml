@@ -1,4 +1,0 @@
-<view class='item-box'>
-    <view class='item-caption'>{{caption}}</view>
-    <slot/>
-</view>

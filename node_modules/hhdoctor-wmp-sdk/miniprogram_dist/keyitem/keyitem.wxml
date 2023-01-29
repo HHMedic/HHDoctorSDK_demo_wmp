@@ -1,3 +1,0 @@
-<view class="key-container {{style}}" catchtap="_onTap">
-  <view>{{keyText}}</view>
-</view>

@@ -1,6 +1,0 @@
-<!--components/hh-network/hh-network.wxml-->
-<cover-view class='main'>
-    <cover-image src='../images/network.png' class='main-icon'></cover-image>
-    <cover-view class='main-text'>世界上最遥远的距离就是网络不给力</cover-view>
-    <cover-view bindtap='bindReload' class='main-btn'>重新加载</cover-view>
-</cover-view>

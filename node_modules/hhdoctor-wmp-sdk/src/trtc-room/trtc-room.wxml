@@ -1,8 +1,0 @@
-<import src='./template/custom/custom.wxml' />
-
-<view class="trtc-room-container {{isFullscreenDevice?'fullscreen-device-fix':''}}">
-  <block wx:if="{{template === 'custom'}}">
-    <template is='custom'
-      data="{{pusher, streamList, debug, enableIM,phase,menuButton,localVideoStatus,patientStatus,patientStatusEnum,patientName}}"></template>
-  </block>
-</view>

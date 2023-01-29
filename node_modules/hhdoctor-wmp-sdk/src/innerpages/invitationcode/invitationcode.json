@@ -1,7 +1,0 @@
-{
-  "usingComponents": {
-    "keyboard": "../../keyboard/keyboard",
-    "hhNetwork": "../../hh-network/hh-network"
-  },
-  "navigationBarTitleText": "激活码激活"
-}

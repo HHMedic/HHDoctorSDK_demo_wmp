@@ -1,5 +1,0 @@
-<view class='image-panel'>
-  <image class='right-image' src='https://imgs.hh-medic.com/icon/wmp/prod-right-top2.png' mode='widthFix'></image>
-</view>
-
-<rightList product='{{product}}' base-path='{{basePath}}'></rightList>

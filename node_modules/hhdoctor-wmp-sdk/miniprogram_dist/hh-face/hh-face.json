@@ -1,6 +1,0 @@
-{
-    "component": true,
-    "usingComponents": {
-        "realname-input":"../realname-input/realname-input"
-    }
-}

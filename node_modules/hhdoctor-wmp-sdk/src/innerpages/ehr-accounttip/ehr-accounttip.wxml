@@ -1,7 +1,0 @@
-<!--components/innerpages/ehr-accounttip/ehr-accounttip.wxml-->
-<view class='page'>
-    <view class='account-text'> 
-        <text>独立登录成员\n开通成功</text>
-    </view>
-    <button class='account-button' bindtap='bindSuccess'>完成</button>
-</view>

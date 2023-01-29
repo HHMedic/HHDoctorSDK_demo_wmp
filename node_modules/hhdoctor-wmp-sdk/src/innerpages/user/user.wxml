@@ -1,4 +1,0 @@
-<!--components/innerpages/user/user.wxml-->
-
-<hhMy request='{{hhRequest}}' base-path='../../' bindlogout='onLogout' binderror="onLogoutFail"></hhMy>
-<hhNetwork wx:if='{{!isConnect}}'></hhNetwork>

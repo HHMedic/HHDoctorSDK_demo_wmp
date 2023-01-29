@@ -1,8 +1,0 @@
-{
-    "component": true,
-    "usingComponents": {
-        "hh-Modal": "../hh-modal/hh-modal",
-        "hh-face":"../hh-face/hh-face",
-        "hh-auth":"../hh-auth/hh-auth"
-    }
-}

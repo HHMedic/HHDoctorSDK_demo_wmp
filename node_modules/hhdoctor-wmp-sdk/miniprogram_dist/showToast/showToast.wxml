@@ -1,7 +1,0 @@
-<!--components/showToast/showToast.wxml-->
-<view class='toast-wrap'>
-    <view class='toast-flex'> 
-        <view class='toast-title'>{{toastTitle}}</view>
-
-    </view>
-</view>
